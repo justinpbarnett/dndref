@@ -284,10 +284,10 @@ export default function SettingsScreen() {
           />
         </View>
         {dsLocal.srdEnabled && (
-          <View style={{ gap: 6 }}>
+          <View style={styles.sourcesList}>
             <Text style={styles.sourcesLabel}>SOURCES</Text>
             {SRD_PUBLISHER_GROUPS.map(([publisher, sources]) => (
-              <View key={publisher} style={{ gap: 3 }}>
+              <View key={publisher} style={styles.publisherGroup}>
                 <Text style={styles.publisherLabel}>{publisher}</Text>
                 {sources.map((src) => {
                   const checked = dsLocal.srdSources.includes(src.slug);
@@ -859,6 +859,12 @@ function createStyles(C: Colors, isWide: boolean) {
     },
 
     // Source selection
+    sourcesList: {
+      gap: 6,
+    },
+    publisherGroup: {
+      gap: 3,
+    },
     sourcesLabel: {
       color: C.textDim,
       fontSize: 9,
