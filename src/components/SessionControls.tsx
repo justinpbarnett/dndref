@@ -49,21 +49,21 @@ const dot = StyleSheet.create({
 
 export function SessionControls() {
   const C = useColors();
-  const { status, sttStatus, start, pause, stop } = useSession();
+  const { status, sttStatus, sttError, start, pause, stop } = useSession();
   const styles = useMemo(() => createStyles(C), [C]);
 
   const webBarShadow = Platform.OS === 'web'
     ? { boxShadow: `0 1px 0 ${C.border}, 0 4px 16px #00000030` }
     : {};
 
-  const statusLabel =
-    sttStatus === 'connecting' ? 'Connecting' :
-    sttStatus === 'error' ? 'Mic Error' :
-    status === 'active' ? 'Listening' :
-    status === 'paused' ? 'Paused' :
-    'Ready';
+  let statusLabel = 'Ready';
+  if (sttStatus === 'connecting') statusLabel = 'Connecting';
+  else if (sttStatus === 'error') statusLabel = 'Mic Error';
+  else if (status === 'active') statusLabel = 'Listening';
+  else if (status === 'paused') statusLabel = 'Paused';
 
   return (
+    <View>
     <View style={[styles.bar, webBarShadow as object]}>
       <Text style={styles.appName}>DnD{'\u2009'}Ref</Text>
 
@@ -79,19 +79,14 @@ export function SessionControls() {
       </View>
 
       <View style={styles.buttons}>
-        {status === 'idle' && (
+        {(status === 'idle' || status === 'paused') && (
           <TouchableOpacity style={[styles.btn, styles.btnStart]} onPress={start} activeOpacity={0.75}>
-            <Text style={styles.btnTextStart}>Start</Text>
+            <Text style={styles.btnTextStart}>{status === 'idle' ? 'Start' : 'Resume'}</Text>
           </TouchableOpacity>
         )}
         {status === 'active' && (
           <TouchableOpacity style={[styles.btn, styles.btnPause]} onPress={pause} activeOpacity={0.75}>
             <Text style={styles.btnTextPause}>Pause</Text>
-          </TouchableOpacity>
-        )}
-        {status === 'paused' && (
-          <TouchableOpacity style={[styles.btn, styles.btnStart]} onPress={start} activeOpacity={0.75}>
-            <Text style={styles.btnTextStart}>Resume</Text>
           </TouchableOpacity>
         )}
         {status !== 'idle' && (
@@ -100,6 +95,12 @@ export function SessionControls() {
           </TouchableOpacity>
         )}
       </View>
+    </View>
+    {sttStatus === 'error' && sttError && (
+      <View style={styles.errorBanner}>
+        <Text style={styles.errorText} numberOfLines={2}>{sttError}</Text>
+      </View>
+    )}
     </View>
   );
 }
@@ -177,6 +178,19 @@ function createStyles(C: Colors) {
       fontSize: 12,
       fontWeight: '600',
       fontFamily: F.mono,
+    },
+    errorBanner: {
+      backgroundColor: C.bgSurface,
+      borderBottomWidth: 1,
+      borderBottomColor: C.border,
+      paddingHorizontal: 18,
+      paddingVertical: 6,
+    },
+    errorText: {
+      color: C.error,
+      fontSize: 11,
+      fontFamily: F.mono,
+      letterSpacing: 0.3,
     },
   });
 }

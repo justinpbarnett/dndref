@@ -43,6 +43,7 @@ export interface Colors {
 
   active: string;
   paused: string;
+  error: string;
 }
 
 export const DARK: Colors = {
@@ -69,6 +70,7 @@ export const DARK: Colors = {
 
   active: '#3fc878',
   paused: '#c47a2c',
+  error: '#c44d6a',
 };
 
 export const LIGHT: Colors = {
@@ -95,6 +97,7 @@ export const LIGHT: Colors = {
 
   active: '#1e8050',
   paused: '#9a5018',
+  error: '#b03060',
 };
 
 export function typeAccent(type: EntityType, colors: Colors): string {
