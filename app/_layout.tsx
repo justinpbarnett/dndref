@@ -25,10 +25,10 @@ function ThemedTabs() {
         tabBarActiveTintColor: C.textPrimary,
         tabBarInactiveTintColor: C.textSecondary,
         tabBarLabelStyle: {
-          fontSize: 9,
-          fontWeight: '700',
-          letterSpacing: 2,
-          fontFamily: F.mono,
+          fontSize: 10,
+          fontWeight: '600',
+          letterSpacing: 1,
+          fontFamily: F.display,
         },
       }}
     >
