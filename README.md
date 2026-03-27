@@ -1,6 +1,6 @@
 # DnD Ref
 
-Sits on your D&D table, listens, and pops up cards when entities are mentioned -- NPCs, locations, factions, items. No lookup, no tab-switching.
+Sits on your D&D table, listens, and pops up cards when entities are mentioned: NPCs, locations, factions, items. No lookup, no tab-switching.
 
 iPad app and web app at [dndref.com](https://dndref.com).
 
@@ -11,7 +11,7 @@ iPad app and web app at [dndref.com](https://dndref.com).
 3. Cards appear as entities are mentioned
 4. Pin to keep a card visible; dismiss when done
 
-Detection runs every 2 seconds using fuzzy matching against your loaded entities. No AI in the live path -- just fast, deterministic string matching.
+Detection runs every 2 seconds using fuzzy matching against your loaded entities. No AI in the live path, just fast deterministic string matching.
 
 ## Data sources
 
@@ -37,7 +37,7 @@ You can have multiple sources active at once. Mix and match as needed.
 3. Paste page URLs (comma-separated) in Settings
 
 ### AI parsing
-Paste any campaign text and Claude pulls out named entities into a structured upload. Uses Haiku -- roughly $0.001 per parse. Requires an Anthropic API key from console.anthropic.com.
+Paste any campaign text and Claude pulls out named entities into a structured upload. Uses Haiku (~$0.001 per parse). Requires an Anthropic API key from console.anthropic.com.
 
 ## STT options
 
