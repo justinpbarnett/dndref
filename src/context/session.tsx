@@ -265,6 +265,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setSttError(null);
     setSttProviderName('');
     setStatus('idle');
+    setCards([]);
     setTranscript('');
     transcriptRef.current = '';
     setRecentDetections([]);
