@@ -141,6 +141,7 @@ export function CardGrid() {
           return (
             <Animated.View
               key={card.instanceId}
+              testID="entity-card"
               style={[styles.cardWrapper, { left: anim.left, top: anim.top }]}
               onLayout={(e) => onCardLayout(card.instanceId, e.nativeEvent.layout.height)}
             >

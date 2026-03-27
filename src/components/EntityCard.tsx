@@ -81,6 +81,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
             <View style={styles.actions}>
               <TouchableOpacity
                 onPress={pinned ? onUnpin : onPin}
+                accessibilityLabel={pinned ? 'Unpin' : 'Pin'}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
               >
                 <Ionicons
@@ -91,6 +92,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={onDismiss}
+                accessibilityLabel="Dismiss"
                 hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
               >
                 <Ionicons name="close" size={14 * fontScale} color={C.textDim} />
