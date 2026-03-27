@@ -22,6 +22,14 @@ ios:
 check:
     npx tsc --noEmit
 
+# Run Playwright screenshot tests against local dist/ build
+screenshot:
+    npx playwright test e2e/screenshots.spec.ts --config playwright.config.ts
+
+# Run Playwright screenshot tests with dark mode emulation
+screenshot-dark:
+    npx playwright test e2e/screenshots-dark.spec.ts --config playwright.config.ts
+
 # ── Web build + deploy ────────────────────────────────────────────────────────
 
 # Export static web build to dist/
