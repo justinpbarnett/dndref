@@ -38,15 +38,14 @@ async function setup(page: Page) {
 
 test('og image', async ({ page }) => {
   await setup(page);
-  await page.setViewportSize({ width: 1200, height: 1200 });
+  // 900px wide, taller than wide → portrait mode → 2 columns (M size).
+  await page.setViewportSize({ width: 900, height: 2000 });
   await page.goto('/');
   await page.waitForSelector('text=Ready', { timeout: 20000 });
 
-  // Start session
   await page.getByText('Start', { exact: true }).click();
   await page.waitForTimeout(300);
 
-  // Populate with a varied mix of entity types across 3 rows
   const phrases = [
     'Valdrath the Undying speaks',
     'we entered Ironspire through the gate',
@@ -54,9 +53,6 @@ test('og image', async ({ page }) => {
     'Lady Seraphine Voss delivered her report',
     'Gorm Ironfist showed us the blueprints',
     'the Obsidian Compact moves against us',
-    'the Dawnwarden Order has been alerted',
-    'we must travel through Silvermarsh',
-    'the Sundering Blade was stolen from the vault',
   ];
 
   for (const phrase of phrases) {
@@ -64,5 +60,19 @@ test('og image', async ({ page }) => {
     await page.waitForTimeout(2100);
   }
 
-  await page.screenshot({ path: 'assets/og-image.png' });
+  // Measure the bottom of the last card row, then clip screenshot to that height.
+  // We don't resize the viewport because that would flip the layout from portrait (2 cols)
+  // to landscape (3 cols) once height drops below width.
+  const totalHeight = await page.evaluate(() => {
+    const cards = Array.from(document.querySelectorAll('[data-testid="entity-card"]'));
+    if (!cards.length) return 900;
+    const maxBottom = Math.max(...cards.map(c => {
+      const r = c.getBoundingClientRect();
+      return r.top + r.height;
+    }));
+    // Include tab bar (56px) + small bottom margin
+    return Math.ceil(maxBottom) + 62;
+  });
+
+  await page.screenshot({ path: 'assets/og-image.png', clip: { x: 0, y: 0, width: 900, height: totalHeight } });
 });
