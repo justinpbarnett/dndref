@@ -13,6 +13,7 @@ function ThemedTabs() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        sceneStyle: { backgroundColor: C.bg },
         tabBarStyle: {
           backgroundColor: C.bgSurface,
           borderTopColor: C.border,
@@ -36,7 +37,7 @@ function ThemedTabs() {
         options={{
           title: 'REFERENCE',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'library' : 'library-outline'} size={20} color={color} />
+            <Ionicons name={focused ? 'layers' : 'layers-outline'} size={20} color={color} />
           ),
         }}
       />
@@ -46,7 +47,7 @@ function ThemedTabs() {
           title: 'DEBUG',
           href: __DEV__ ? undefined : null,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'terminal' : 'terminal-outline'} size={20} color={color} />
+            <Ionicons name={focused ? 'bug' : 'bug-outline'} size={20} color={color} />
           ),
         }}
       />

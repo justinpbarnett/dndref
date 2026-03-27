@@ -1,6 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Linking, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Linking, Platform, ScrollView, StyleSheet, Switch, Text,
+  TextInput, TouchableOpacity, View, useWindowDimensions,
+} from 'react-native';
 import { CARD_SIZE_CONFIGS, CardSize, ColorScheme, useColors, useUISettings } from '../src/context/ui-settings';
 import { DataSourcesSettings, useDataSources } from '../src/context/data-sources';
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
@@ -8,83 +12,88 @@ import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entiti
 import { parseWithAI } from '../src/entities/ai-parser';
 import { Colors, F } from '../src/theme';
 
+type Category = 'display' | 'voice' | 'data' | 'files' | 'ai';
+
+const CATEGORIES: { id: Category; label: string; icon: string; iconFocused: string }[] = [
+  { id: 'display', label: 'Display',  icon: 'grid-outline',          iconFocused: 'grid' },
+  { id: 'voice',   label: 'Voice',    icon: 'mic-outline',           iconFocused: 'mic' },
+  { id: 'data',    label: 'Sources',  icon: 'globe-outline',         iconFocused: 'globe' },
+  { id: 'files',   label: 'Files',    icon: 'document-text-outline', iconFocused: 'document-text' },
+  { id: 'ai',      label: 'AI Parse', icon: 'sparkles-outline',      iconFocused: 'sparkles' },
+];
+
+const CARD_SIZE_LABELS: Record<CardSize, string> = { S: 'S', M: 'M', L: 'L', XL: 'XL' };
+const CARD_SIZE_DESCS: Record<CardSize, string> = {
+  S: '4/3 cols', M: '3/2 cols', L: '2/2 cols', XL: '2/1 cols',
+};
+const COLOR_SCHEME_LABELS: Record<ColorScheme, string> = {
+  system: 'System', dark: 'Dark', light: 'Light',
+};
+
 function KeyLink({ label, url }: { label: string; url: string }) {
   const C = useColors();
   return (
     <TouchableOpacity onPress={() => Linking.openURL(url)} activeOpacity={0.7}>
-      <Text style={{ color: C.location, fontSize: 11, fontFamily: F.mono, letterSpacing: 0.2 }}>{label} ↗</Text>
+      <Text style={{ color: C.location, fontSize: 11, fontFamily: F.mono, letterSpacing: 0.2 }}>
+        {label} ↗
+      </Text>
     </TouchableOpacity>
   );
 }
 
-const CARD_SIZE_LABELS: Record<CardSize, string> = { S: 'S', M: 'M', L: 'L', XL: 'XL' };
-const CARD_SIZE_DESCS: Record<CardSize, string> = {
-  S:  '4 / 3 cols',
-  M:  '3 / 2 cols',
-  L:  '2 / 2 cols',
-  XL: '2 / 1 cols',
-};
-
-const COLOR_SCHEME_LABELS: Record<ColorScheme, string> = {
-  system: 'System',
-  dark: 'Dark',
-  light: 'Light',
-};
-
 export default function SettingsScreen() {
   const C = useColors();
   const styles = useMemo(() => createStyles(C), [C]);
+  const { width } = useWindowDimensions();
+  const isWide = width >= 640;
 
-  const [settings, setSettings] = useState<STTSettings>(DEFAULT_STT_SETTINGS);
-  const [saved, setSaved] = useState(false);
-  const [saveError, setSaveError] = useState(false);
+  const [category, setCategory] = useState<Category>('display');
+  const [sttSettings, setSttSettings] = useState<STTSettings>(DEFAULT_STT_SETTINGS);
+  const [voiceSaved, setVoiceSaved] = useState(false);
+  const [dataSaved, setDataSaved] = useState(false);
   const { cardSize, setCardSize, colorScheme, setColorScheme } = useUISettings();
   const { settings: ds, update: updateDs, bumpUploads } = useDataSources();
   const [dsLocal, setDsLocal] = useState<DataSourcesSettings>(ds);
-  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const voiceSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dataSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // File uploads
   const [uploads, setUploads] = useState<UploadedFile[]>([]);
   const [pasteFileName, setPasteFileName] = useState('');
   const [pasteContent, setPasteContent] = useState('');
-
-  // AI parsing
   const [aiContent, setAiContent] = useState('');
   const [aiParsing, setAiParsing] = useState(false);
   const [aiResult, setAiResult] = useState('');
 
   const refreshUploads = useCallback(async () => {
-    const uploads = await getUploads();
-    setUploads(uploads);
+    setUploads(await getUploads());
     bumpUploads();
   }, [bumpUploads]);
 
   useEffect(() => {
     AsyncStorage.getItem(STT_SETTINGS_KEY).then((raw) => {
-      if (raw) setSettings({ ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) });
+      if (raw) setSttSettings({ ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) });
     });
     refreshUploads();
-    return () => { if (savedTimerRef.current) clearTimeout(savedTimerRef.current); };
+    return () => {
+      if (voiceSavedTimer.current) clearTimeout(voiceSavedTimer.current);
+      if (dataSavedTimer.current) clearTimeout(dataSavedTimer.current);
+    };
   }, [refreshUploads]);
 
-  useEffect(() => {
-    setDsLocal(ds);
-  }, [ds]);
+  useEffect(() => { setDsLocal(ds); }, [ds]);
 
-  const save = async () => {
-    try {
-      await Promise.all([
-        AsyncStorage.setItem(STT_SETTINGS_KEY, JSON.stringify(settings)),
-        updateDs(dsLocal),
-      ]);
-      setSaved(true);
-      setSaveError(false);
-      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
-      savedTimerRef.current = setTimeout(() => setSaved(false), 2000);
-    } catch (e) {
-      console.warn('[dnd-ref] Failed to save settings:', e);
-      setSaveError(true);
-    }
+  const saveVoice = async () => {
+    await AsyncStorage.setItem(STT_SETTINGS_KEY, JSON.stringify(sttSettings));
+    setVoiceSaved(true);
+    if (voiceSavedTimer.current) clearTimeout(voiceSavedTimer.current);
+    voiceSavedTimer.current = setTimeout(() => setVoiceSaved(false), 2000);
+  };
+
+  const saveData = async () => {
+    await updateDs(dsLocal);
+    setDataSaved(true);
+    if (dataSavedTimer.current) clearTimeout(dataSavedTimer.current);
+    dataSavedTimer.current = setTimeout(() => setDataSaved(false), 2000);
   };
 
   const pickFilesWeb = () => {
@@ -95,12 +104,8 @@ export default function SettingsScreen() {
     input.onchange = async () => {
       const files = Array.from(input.files ?? []);
       input.onchange = null;
-      try {
-        await Promise.all(files.map((f) => f.text().then((text) => addUpload(f.name, text))));
-        await refreshUploads();
-      } catch (e) {
-        console.warn('[dnd-ref] File upload failed:', e);
-      }
+      await Promise.all(files.map((f) => f.text().then((text) => addUpload(f.name, text))));
+      await refreshUploads();
     };
     input.click();
   };
@@ -108,23 +113,15 @@ export default function SettingsScreen() {
   const handlePasteAdd = async () => {
     const name = pasteFileName.trim() || 'Pasted Content.md';
     if (!pasteContent.trim()) return;
-    try {
-      await addUpload(name, pasteContent);
-      setPasteFileName('');
-      setPasteContent('');
-      await refreshUploads();
-    } catch (e) {
-      console.warn('[dnd-ref] Failed to save pasted content:', e);
-    }
+    await addUpload(name, pasteContent);
+    setPasteFileName('');
+    setPasteContent('');
+    await refreshUploads();
   };
 
   const handleDeleteUpload = async (id: string) => {
-    try {
-      await removeUpload(id);
-      await refreshUploads();
-    } catch (e) {
-      console.warn('[dnd-ref] Failed to delete upload:', e);
-    }
+    await removeUpload(id);
+    await refreshUploads();
   };
 
   const handleAIParse = async () => {
@@ -145,113 +142,119 @@ export default function SettingsScreen() {
     }
   };
 
-  const isWebSpeechAvailable = Platform.OS === 'web';
+  const isWebSpeech = Platform.OS === 'web';
 
-  return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      <Text style={styles.pageTitle}>SETTINGS</Text>
+  // --- Content renderers ---
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>CARD SIZE</Text>
-        <View style={styles.sizeRow}>
+  const renderDisplay = () => (
+    <View style={styles.contentInner}>
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>CARD SIZE</Text>
+        <View style={styles.segmentRow}>
           {(Object.keys(CARD_SIZE_CONFIGS) as CardSize[]).map((size) => (
             <TouchableOpacity
               key={size}
-              style={[styles.sizeBtn, cardSize === size && styles.sizeBtnSelected]}
+              style={[styles.segment, cardSize === size && styles.segmentActive]}
               onPress={() => setCardSize(size)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.sizeBtnLabel, cardSize === size && styles.sizeBtnLabelSelected]}>
+              <Text style={[styles.segmentLabel, cardSize === size && styles.segmentLabelActive]}>
                 {CARD_SIZE_LABELS[size]}
               </Text>
-              <Text style={styles.sizeBtnDesc}>{CARD_SIZE_DESCS[size]}</Text>
+              <Text style={[styles.segmentDesc, cardSize === size && styles.segmentDescActive]}>
+                {CARD_SIZE_DESCS[size]}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.hint}>Landscape / portrait column counts. Takes effect immediately.</Text>
+        <Text style={styles.fieldHint}>Landscape / portrait column counts.</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>APPEARANCE</Text>
-        <View style={styles.sizeRow}>
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>THEME</Text>
+        <View style={styles.segmentRow}>
           {(['system', 'dark', 'light'] as ColorScheme[]).map((scheme) => (
             <TouchableOpacity
               key={scheme}
-              style={[styles.sizeBtn, colorScheme === scheme && styles.sizeBtnSelected]}
+              style={[styles.segment, colorScheme === scheme && styles.segmentActive]}
               onPress={() => setColorScheme(scheme)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.sizeBtnLabel, colorScheme === scheme && styles.sizeBtnLabelSelected]}>
+              <Text style={[styles.segmentLabel, colorScheme === scheme && styles.segmentLabelActive]}>
                 {COLOR_SCHEME_LABELS[scheme]}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.hint}>System follows your device setting. Defaults to dark.</Text>
+        <Text style={styles.fieldHint}>System follows your device setting. Defaults to dark.</Text>
       </View>
+    </View>
+  );
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>STT PROVIDER</Text>
-
-        {isWebSpeechAvailable && (
+  const renderVoice = () => (
+    <View style={styles.contentInner}>
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>STT PROVIDER</Text>
+        {isWebSpeech && (
           <TouchableOpacity
-            style={[styles.option, settings.provider === 'web-speech' && styles.optionSelected]}
-            onPress={() => setSettings((s) => ({ ...s, provider: 'web-speech' }))}
+            style={[styles.optionRow, sttSettings.provider === 'web-speech' && styles.optionRowActive]}
+            onPress={() => setSttSettings((s) => ({ ...s, provider: 'web-speech' }))}
             activeOpacity={0.7}
           >
-            <View style={[styles.radio, settings.provider === 'web-speech' && styles.radioSelected]} />
-            <View style={styles.optionText}>
+            <View style={[styles.radio, sttSettings.provider === 'web-speech' && styles.radioActive]} />
+            <View style={styles.optionBody}>
               <Text style={styles.optionTitle}>Web Speech</Text>
               <Text style={styles.optionDesc}>Chrome / Edge only. No API key required.</Text>
             </View>
           </TouchableOpacity>
         )}
-
         <TouchableOpacity
-          style={[styles.option, settings.provider === 'deepgram' && styles.optionSelected]}
-          onPress={() => setSettings((s) => ({ ...s, provider: 'deepgram' }))}
+          style={[styles.optionRow, sttSettings.provider === 'deepgram' && styles.optionRowActive]}
+          onPress={() => setSttSettings((s) => ({ ...s, provider: 'deepgram' }))}
           activeOpacity={0.7}
         >
-          <View style={[styles.radio, settings.provider === 'deepgram' && styles.radioSelected]} />
-          <View style={styles.optionText}>
+          <View style={[styles.radio, sttSettings.provider === 'deepgram' && styles.radioActive]} />
+          <View style={styles.optionBody}>
             <Text style={styles.optionTitle}>Deepgram</Text>
             <Text style={styles.optionDesc}>Works on web and iPad. ~$0.004 / min.</Text>
           </View>
         </TouchableOpacity>
+        {!isWebSpeech && sttSettings.provider === 'web-speech' && (
+          <Text style={styles.warning}>Web Speech is only available in Chrome / Edge. Switch to Deepgram for iPad.</Text>
+        )}
       </View>
 
-      {settings.provider === 'deepgram' && (
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>DEEPGRAM API KEY</Text>
+      {sttSettings.provider === 'deepgram' && (
+        <View style={styles.group}>
+          <Text style={styles.groupLabel}>DEEPGRAM API KEY</Text>
           <TextInput
             style={styles.input}
-            value={settings.deepgramApiKey}
-            onChangeText={(v) => setSettings((s) => ({ ...s, deepgramApiKey: v }))}
+            value={sttSettings.deepgramApiKey}
+            onChangeText={(v) => setSttSettings((s) => ({ ...s, deepgramApiKey: v }))}
             placeholder="paste key here"
             placeholderTextColor={C.textMuted}
             secureTextEntry
             autoCorrect={false}
             autoCapitalize="none"
           />
-          <KeyLink label="Get a free API key" url="https://console.deepgram.com" />
+          <KeyLink label="Get a free Deepgram key" url="https://console.deepgram.com" />
         </View>
       )}
 
-      {!isWebSpeechAvailable && settings.provider === 'web-speech' && (
-        <View style={styles.section}>
-          <Text style={styles.warning}>
-            Web Speech is only available in Chrome / Edge. Switch to Deepgram for iPad.
-          </Text>
-        </View>
-      )}
+      <TouchableOpacity style={styles.saveBtn} onPress={saveVoice} activeOpacity={0.7}>
+        <Text style={styles.saveBtnText}>{voiceSaved ? 'Saved' : 'Save'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>DATA SOURCES</Text>
-
+  const renderData = () => (
+    <View style={styles.contentInner}>
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>D&D 5E SRD</Text>
         <View style={styles.toggleRow}>
-          <View style={styles.toggleText}>
-            <Text style={styles.optionTitle}>D&D 5e SRD</Text>
-            <Text style={styles.optionDesc}>Monsters and magic items from the official SRD. No API key needed.</Text>
+          <View style={styles.toggleBody}>
+            <Text style={styles.optionTitle}>Official SRD</Text>
+            <Text style={styles.optionDesc}>Monsters and magic items. No key required.</Text>
           </View>
           <Switch
             value={dsLocal.srdEnabled}
@@ -260,145 +263,164 @@ export default function SettingsScreen() {
             thumbColor={dsLocal.srdEnabled ? C.active : C.textSecondary}
           />
         </View>
-
-        <View style={styles.subsection}>
-          <Text style={styles.optionTitle}>Kanka</Text>
-          <Text style={styles.optionDesc}>Campaign world data: characters, locations, factions, items.</Text>
-          <TextInput
-            style={[styles.input, { marginTop: 8 }]}
-            value={dsLocal.kankaToken}
-            onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaToken: v }))}
-            placeholder="API token"
-            placeholderTextColor={C.textMuted}
-            secureTextEntry
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={[styles.input, { marginTop: 6 }]}
-            value={dsLocal.kankaCampaignId}
-            onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaCampaignId: v.replace(/\D/g, '') }))}
-            placeholder="Campaign ID (from kanka.io URL)"
-            placeholderTextColor={C.textMuted}
-            keyboardType="numeric"
-            autoCorrect={false}
-          />
-          <KeyLink label="Get your API token" url="https://kanka.io/en/profile/api" />
-          <Text style={styles.hint}>Campaign ID is in the URL: kanka.io/en/campaign/12345</Text>
-        </View>
-
-        <View style={styles.subsection}>
-          <Text style={styles.optionTitle}>Homebrewery</Text>
-          <Text style={styles.optionDesc}>Paste the share URL of any public Homebrewery document.</Text>
-          <TextInput
-            style={[styles.input, { marginTop: 8 }]}
-            value={dsLocal.homebreweryUrl}
-            onChangeText={(v) => setDsLocal((s) => ({ ...s, homebreweryUrl: v }))}
-            placeholder="https://homebrewery.naturalcrit.com/share/..."
-            placeholderTextColor={C.textMuted}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.subsection}>
-          <Text style={styles.optionTitle}>Notion</Text>
-          <Text style={styles.optionDesc}>Fetches pages from your Notion workspace. Add your integration token and page URLs (comma-separated).</Text>
-          <TextInput
-            style={[styles.input, { marginTop: 8 }]}
-            value={dsLocal.notionToken}
-            onChangeText={(v) => setDsLocal((s) => ({ ...s, notionToken: v }))}
-            placeholder="secret_..."
-            placeholderTextColor={C.textMuted}
-            secureTextEntry
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={[styles.input, { marginTop: 6 }]}
-            value={dsLocal.notionPageIds}
-            onChangeText={(v) => setDsLocal((s) => ({ ...s, notionPageIds: v }))}
-            placeholder="notion.so/... (comma-separated)"
-            placeholderTextColor={C.textMuted}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-          <KeyLink label="Create a Notion integration" url="https://www.notion.so/my-integrations" />
-          <Text style={styles.hint}>Share each target page with the integration.</Text>
-        </View>
-
-        <View style={styles.subsection}>
-          <Text style={styles.optionTitle}>Google Docs</Text>
-          <Text style={styles.optionDesc}>Paste the share URL. The doc must be set to "Anyone with the link can view".</Text>
-          <TextInput
-            style={[styles.input, { marginTop: 8 }]}
-            value={dsLocal.googleDocsUrl}
-            onChangeText={(v) => setDsLocal((s) => ({ ...s, googleDocsUrl: v }))}
-            placeholder="https://docs.google.com/document/d/..."
-            placeholderTextColor={C.textMuted}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-        </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>WORLD FILES</Text>
-        <Text style={styles.hint}>Upload .md, .txt, or .json files from Obsidian, DiceCloud exports, or any campaign notes.</Text>
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>KANKA</Text>
+        <Text style={styles.groupDesc}>Campaign world data: characters, locations, factions, items.</Text>
+        <TextInput
+          style={styles.input}
+          value={dsLocal.kankaToken}
+          onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaToken: v }))}
+          placeholder="API token"
+          placeholderTextColor={C.textMuted}
+          secureTextEntry
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          value={dsLocal.kankaCampaignId}
+          onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaCampaignId: v.replace(/\D/g, '') }))}
+          placeholder="Campaign ID (from kanka.io/en/campaign/12345)"
+          placeholderTextColor={C.textMuted}
+          keyboardType="numeric"
+          autoCorrect={false}
+        />
+        <KeyLink label="Get your Kanka API token" url="https://kanka.io/en/profile/api" />
+      </View>
 
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>HOMEBREWERY</Text>
+        <Text style={styles.groupDesc}>Paste the share URL of any public document.</Text>
+        <TextInput
+          style={styles.input}
+          value={dsLocal.homebreweryUrl}
+          onChangeText={(v) => setDsLocal((s) => ({ ...s, homebreweryUrl: v }))}
+          placeholder="https://homebrewery.naturalcrit.com/share/..."
+          placeholderTextColor={C.textMuted}
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+      </View>
+
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>NOTION</Text>
+        <Text style={styles.groupDesc}>Fetches pages from your workspace.</Text>
+        <TextInput
+          style={styles.input}
+          value={dsLocal.notionToken}
+          onChangeText={(v) => setDsLocal((s) => ({ ...s, notionToken: v }))}
+          placeholder="Integration token (secret_...)"
+          placeholderTextColor={C.textMuted}
+          secureTextEntry
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          value={dsLocal.notionPageIds}
+          onChangeText={(v) => setDsLocal((s) => ({ ...s, notionPageIds: v }))}
+          placeholder="Page URLs, comma-separated"
+          placeholderTextColor={C.textMuted}
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+        <KeyLink label="Create a Notion integration" url="https://www.notion.so/my-integrations" />
+        <Text style={styles.fieldHint}>Share each page with the integration after creating it.</Text>
+      </View>
+
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>GOOGLE DOCS</Text>
+        <Text style={styles.groupDesc}>The doc must be set to "Anyone with the link can view".</Text>
+        <TextInput
+          style={styles.input}
+          value={dsLocal.googleDocsUrl}
+          onChangeText={(v) => setDsLocal((s) => ({ ...s, googleDocsUrl: v }))}
+          placeholder="https://docs.google.com/document/d/..."
+          placeholderTextColor={C.textMuted}
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+      </View>
+
+      <TouchableOpacity style={styles.saveBtn} onPress={saveData} activeOpacity={0.7}>
+        <Text style={styles.saveBtnText}>{dataSaved ? 'Saved' : 'Save'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderFiles = () => (
+    <View style={styles.contentInner}>
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>UPLOAD FILES</Text>
+        <Text style={styles.groupDesc}>
+          Upload .md, .txt, or .json from Obsidian, DiceCloud, or any campaign notes.
+        </Text>
         {Platform.OS === 'web' && (
           <TouchableOpacity style={styles.outlineBtn} onPress={pickFilesWeb} activeOpacity={0.7}>
-            <Text style={styles.outlineBtnText}>Pick Files</Text>
+            <Ionicons name="cloud-upload-outline" size={14} color={C.active} style={{ marginRight: 6 }} />
+            <Text style={styles.outlineBtnText}>Choose Files</Text>
           </TouchableOpacity>
-        )}
-
-        <View style={styles.subsection}>
-          <Text style={styles.optionDesc}>Or paste content directly:</Text>
-          <TextInput
-            style={[styles.input, { marginTop: 6 }]}
-            value={pasteFileName}
-            onChangeText={setPasteFileName}
-            placeholder="File name (e.g. my-campaign.md)"
-            placeholderTextColor={C.textMuted}
-            autoCorrect={false}
-          />
-          <TextInput
-            style={[styles.input, styles.textarea, { marginTop: 6 }]}
-            value={pasteContent}
-            onChangeText={setPasteContent}
-            placeholder="Paste content here..."
-            placeholderTextColor={C.textMuted}
-            multiline
-            autoCorrect={false}
-          />
-          <TouchableOpacity
-            style={[styles.outlineBtn, { marginTop: 6 }]}
-            onPress={handlePasteAdd}
-            activeOpacity={0.7}
-            disabled={!pasteContent.trim()}
-          >
-            <Text style={styles.outlineBtnText}>Add</Text>
-          </TouchableOpacity>
-        </View>
-
-        {uploads.length > 0 && (
-          <View style={styles.fileList}>
-            {uploads.map((f) => (
-              <View key={f.id} style={styles.fileRow}>
-                <Text style={styles.fileName} numberOfLines={1}>{f.name}</Text>
-                <TouchableOpacity onPress={() => handleDeleteUpload(f.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Text style={styles.deleteIcon}>✕</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
         )}
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>AI PARSING</Text>
-        <Text style={styles.hint}>Paste any campaign content and Claude will extract entities automatically. Requires an Anthropic API key.</Text>
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>PASTE CONTENT</Text>
+        <TextInput
+          style={styles.input}
+          value={pasteFileName}
+          onChangeText={setPasteFileName}
+          placeholder="File name (e.g. my-campaign.md)"
+          placeholderTextColor={C.textMuted}
+          autoCorrect={false}
+        />
+        <TextInput
+          style={[styles.input, styles.textarea]}
+          value={pasteContent}
+          onChangeText={setPasteContent}
+          placeholder="Paste content here..."
+          placeholderTextColor={C.textMuted}
+          multiline
+          autoCorrect={false}
+        />
+        <TouchableOpacity
+          style={[styles.outlineBtn, !pasteContent.trim() && styles.outlineBtnDisabled]}
+          onPress={handlePasteAdd}
+          activeOpacity={0.7}
+          disabled={!pasteContent.trim()}
+        >
+          <Text style={styles.outlineBtnText}>Add</Text>
+        </TouchableOpacity>
+      </View>
 
+      {uploads.length > 0 && (
+        <View style={styles.group}>
+          <Text style={styles.groupLabel}>UPLOADED ({uploads.length})</Text>
+          {uploads.map((f) => (
+            <View key={f.id} style={styles.fileRow}>
+              <Ionicons name="document-text-outline" size={13} color={C.textDim} />
+              <Text style={styles.fileName} numberOfLines={1}>{f.name}</Text>
+              <TouchableOpacity
+                onPress={() => handleDeleteUpload(f.id)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close" size={14} color={C.textDim} />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
+  const renderAI = () => (
+    <View style={styles.contentInner}>
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>ANTHROPIC API KEY</Text>
+        <Text style={styles.groupDesc}>
+          Paste any campaign content and the AI will extract entities automatically.
+        </Text>
         <TextInput
           style={styles.input}
           value={dsLocal.aiApiKey}
@@ -409,97 +431,272 @@ export default function SettingsScreen() {
           autoCorrect={false}
           autoCapitalize="none"
         />
-        <KeyLink label="Get an API key" url="https://console.anthropic.com" />
-        <Text style={styles.hint}>Uses claude-haiku (~$0.001 per parse).</Text>
+        <KeyLink label="Get an Anthropic API key" url="https://console.anthropic.com" />
+        <Text style={styles.fieldHint}>Uses claude-haiku (~$0.001 per parse).</Text>
+      </View>
 
+      <View style={styles.group}>
+        <Text style={styles.groupLabel}>PARSE CAMPAIGN CONTENT</Text>
         <TextInput
           style={[styles.input, styles.textarea]}
           value={aiContent}
           onChangeText={setAiContent}
-          placeholder="Paste your campaign notes, backstory, or any D&D content..."
+          placeholder="Paste campaign notes, backstory, or any D&D content..."
           placeholderTextColor={C.textMuted}
           multiline
           autoCorrect={false}
         />
-
         <TouchableOpacity
           style={[styles.outlineBtn, (!aiContent.trim() || !dsLocal.aiApiKey || aiParsing) && styles.outlineBtnDisabled]}
           onPress={handleAIParse}
           activeOpacity={0.7}
           disabled={!aiContent.trim() || !dsLocal.aiApiKey || aiParsing}
         >
+          <Ionicons name="sparkles-outline" size={14} color={C.active} style={{ marginRight: 6 }} />
           <Text style={styles.outlineBtnText}>{aiParsing ? 'Parsing...' : 'Parse with AI'}</Text>
         </TouchableOpacity>
-
-        {!!aiResult && <Text style={[styles.hint, { color: aiResult.startsWith('Error') ? C.paused : C.active }]}>{aiResult}</Text>}
+        {!!aiResult && (
+          <Text style={[styles.fieldHint, { color: aiResult.startsWith('Error') ? C.paused : C.active }]}>
+            {aiResult}
+          </Text>
+        )}
       </View>
+    </View>
+  );
 
-      <TouchableOpacity style={styles.saveBtn} onPress={save} activeOpacity={0.7}>
-        <Text style={styles.saveBtnText}>{saved ? 'Saved' : 'Save Settings'}</Text>
-      </TouchableOpacity>
+  const renderContent = () => {
+    switch (category) {
+      case 'display': return renderDisplay();
+      case 'voice':   return renderVoice();
+      case 'data':    return renderData();
+      case 'files':   return renderFiles();
+      case 'ai':      return renderAI();
+    }
+  };
 
-      {saveError && <Text style={styles.warning}>Failed to save. Device storage may be full.</Text>}
+  return (
+    <View style={styles.root}>
+      {isWide ? (
+        <View style={styles.sidebar}>
+          <Text style={styles.sidebarTitle}>SETTINGS</Text>
+          {CATEGORIES.map((cat) => {
+            const active = category === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                style={[styles.sidebarItem, active && styles.sidebarItemActive]}
+                onPress={() => setCategory(cat.id)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={(active ? cat.iconFocused : cat.icon) as any}
+                  size={16}
+                  color={active ? C.textPrimary : C.textSecondary}
+                />
+                <Text style={[styles.sidebarLabel, active && styles.sidebarLabelActive]}>
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabBar}
+          contentContainerStyle={styles.tabBarContent}
+        >
+          {CATEGORIES.map((cat) => {
+            const active = category === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                style={[styles.tab, active && styles.tabActive]}
+                onPress={() => setCategory(cat.id)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
+                  {cat.label.toUpperCase()}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
 
-      <Text style={styles.note}>Changes take effect when you start the next session.</Text>
-    </ScrollView>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentPad}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderContent()}
+      </ScrollView>
+    </View>
   );
 }
 
 function createStyles(C: Colors) {
   return StyleSheet.create({
-    scroll: { flex: 1, backgroundColor: C.bg },
-    container: { padding: 20, paddingTop: 24, gap: 24 },
-    pageTitle: {
-      color: C.textDim,
-      fontSize: 10,
+    root: {
+      flex: 1,
+      flexDirection: 'row',
+      backgroundColor: C.bg,
+    },
+
+    // Sidebar (wide)
+    sidebar: {
+      width: 168,
+      backgroundColor: C.bgSurface,
+      borderRightWidth: 1,
+      borderRightColor: C.border,
+      paddingTop: 24,
+      paddingBottom: 16,
+      paddingHorizontal: 10,
+      gap: 2,
+    },
+    sidebarTitle: {
+      color: C.textMuted,
+      fontSize: 8,
       fontWeight: '700',
       letterSpacing: 3,
       fontFamily: F.mono,
-      marginBottom: 4,
+      paddingHorizontal: 8,
+      paddingBottom: 14,
     },
-    section: { gap: 10 },
-    sizeRow: {
+    sidebarItem: {
       flexDirection: 'row',
-      gap: 8,
+      alignItems: 'center',
+      gap: 10,
+      paddingHorizontal: 10,
+      paddingVertical: 10,
+      borderRadius: 4,
     },
-    sizeBtn: {
+    sidebarItemActive: {
+      backgroundColor: C.bgCard,
+    },
+    sidebarLabel: {
+      color: C.textSecondary,
+      fontSize: 12,
+      fontFamily: F.mono,
+      letterSpacing: 0.3,
+    },
+    sidebarLabelActive: {
+      color: C.textPrimary,
+    },
+
+    // Tab bar (narrow)
+    tabBar: {
+      flexGrow: 0,
+      backgroundColor: C.bgSurface,
+      borderBottomWidth: 1,
+      borderBottomColor: C.border,
+    },
+    tabBarContent: {
+      paddingHorizontal: 8,
+    },
+    tab: {
+      paddingHorizontal: 14,
+      paddingVertical: 14,
+      borderBottomWidth: 2,
+      borderBottomColor: 'transparent',
+    },
+    tabActive: {
+      borderBottomColor: C.active,
+    },
+    tabLabel: {
+      color: C.textSecondary,
+      fontSize: 10,
+      fontWeight: '700',
+      letterSpacing: 1.5,
+      fontFamily: F.mono,
+    },
+    tabLabelActive: {
+      color: C.textPrimary,
+    },
+
+    // Content
+    content: {
+      flex: 1,
+    },
+    contentPad: {
+      flexGrow: 1,
+    },
+    contentInner: {
+      padding: 24,
+      gap: 28,
+    },
+
+    // Groups
+    group: {
+      gap: 10,
+    },
+    groupLabel: {
+      color: C.textDim,
+      fontSize: 9,
+      fontWeight: '700',
+      letterSpacing: 2.5,
+      fontFamily: F.mono,
+    },
+    groupDesc: {
+      color: C.textSecondary,
+      fontSize: 11,
+      fontFamily: F.mono,
+      letterSpacing: 0.2,
+      marginTop: -4,
+    },
+    fieldHint: {
+      color: C.textSecondary,
+      fontSize: 11,
+      fontFamily: F.mono,
+      letterSpacing: 0.2,
+    },
+    warning: {
+      color: C.paused,
+      fontSize: 11,
+      fontFamily: F.mono,
+    },
+
+    // Segment controls (card size, theme)
+    segmentRow: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+    segment: {
       flex: 1,
       alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 6,
+      paddingVertical: 11,
+      paddingHorizontal: 4,
       backgroundColor: C.bgCard,
       borderRadius: 4,
       borderWidth: 1,
       borderColor: C.border,
-      gap: 4,
+      gap: 3,
     },
-    sizeBtnSelected: {
-      borderColor: C.active + '60',
+    segmentActive: {
+      borderColor: C.active + '70',
       backgroundColor: C.bgCardPinned,
     },
-    sizeBtnLabel: {
+    segmentLabel: {
       color: C.textSecondary,
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: '700',
       fontFamily: F.mono,
     },
-    sizeBtnLabelSelected: {
+    segmentLabelActive: {
       color: C.active,
     },
-    sizeBtnDesc: {
+    segmentDesc: {
       color: C.textMuted,
       fontSize: 9,
       fontFamily: F.mono,
-      letterSpacing: 0.5,
     },
-    sectionLabel: {
-      color: C.textDim,
-      fontSize: 9,
-      fontWeight: '700',
-      letterSpacing: 2,
-      fontFamily: F.mono,
+    segmentDescActive: {
+      color: C.active + 'aa',
     },
-    option: {
+
+    // Option rows (radio buttons)
+    optionRow: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: 12,
@@ -509,7 +706,7 @@ function createStyles(C: Colors) {
       borderWidth: 1,
       borderColor: C.border,
     },
-    optionSelected: {
+    optionRowActive: {
       borderColor: C.active + '60',
       backgroundColor: C.bgCardPinned,
     },
@@ -521,11 +718,11 @@ function createStyles(C: Colors) {
       borderColor: C.borderStrong,
       marginTop: 2,
     },
-    radioSelected: {
+    radioActive: {
       borderColor: C.active,
       backgroundColor: C.active,
     },
-    optionText: { flex: 1, gap: 3 },
+    optionBody: { flex: 1, gap: 3 },
     optionTitle: {
       color: C.textPrimary,
       fontSize: 13,
@@ -538,48 +735,8 @@ function createStyles(C: Colors) {
       fontFamily: F.mono,
       letterSpacing: 0.2,
     },
-    input: {
-      backgroundColor: C.bgInput,
-      color: C.textPrimary,
-      borderRadius: 3,
-      padding: 12,
-      fontSize: 13,
-      borderWidth: 1,
-      borderColor: C.border,
-      fontFamily: F.mono,
-    },
-    hint: {
-      color: C.textSecondary,
-      fontSize: 11,
-      fontFamily: F.mono,
-      letterSpacing: 0.2,
-    },
-    warning: {
-      color: C.paused,
-      fontSize: 12,
-      fontFamily: F.mono,
-      letterSpacing: 0.2,
-    },
-    saveBtn: {
-      backgroundColor: C.active,
-      borderRadius: 3,
-      paddingVertical: 12,
-      alignItems: 'center',
-    },
-    saveBtnText: {
-      color: C.bg,
-      fontSize: 12,
-      fontWeight: '700',
-      letterSpacing: 0.5,
-      fontFamily: F.mono,
-    },
-    note: {
-      color: C.textMuted,
-      fontSize: 11,
-      fontFamily: F.mono,
-      textAlign: 'center',
-      letterSpacing: 0.2,
-    },
+
+    // Toggle row (switch)
     toggleRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -590,25 +747,48 @@ function createStyles(C: Colors) {
       borderWidth: 1,
       borderColor: C.border,
     },
-    toggleText: { flex: 1, gap: 3 },
-    subsection: {
-      padding: 14,
-      backgroundColor: C.bgCard,
-      borderRadius: 4,
+    toggleBody: { flex: 1, gap: 3 },
+
+    // Inputs
+    input: {
+      backgroundColor: C.bgInput,
+      color: C.textPrimary,
+      borderRadius: 3,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+      fontSize: 13,
       borderWidth: 1,
       borderColor: C.border,
-      gap: 2,
+      fontFamily: F.mono,
     },
     textarea: {
       minHeight: 100,
       textAlignVertical: 'top',
     },
+
+    // Buttons
+    saveBtn: {
+      backgroundColor: C.active,
+      borderRadius: 3,
+      paddingVertical: 12,
+      alignItems: 'center',
+      marginTop: 4,
+    },
+    saveBtnText: {
+      color: C.bg,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+      fontFamily: F.mono,
+    },
     outlineBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
       borderWidth: 1,
       borderColor: C.active + '80',
       borderRadius: 3,
       paddingVertical: 10,
-      alignItems: 'center',
     },
     outlineBtnDisabled: {
       borderColor: C.border,
@@ -621,30 +801,24 @@ function createStyles(C: Colors) {
       letterSpacing: 0.5,
       fontFamily: F.mono,
     },
-    fileList: {
-      gap: 6,
-    },
+
+    // File list
     fileRow: {
       flexDirection: 'row',
       alignItems: 'center',
+      gap: 8,
       paddingHorizontal: 12,
       paddingVertical: 9,
       backgroundColor: C.bgCard,
       borderRadius: 3,
       borderWidth: 1,
       borderColor: C.border,
-      gap: 8,
     },
     fileName: {
       flex: 1,
       color: C.textSecondary,
       fontSize: 12,
       fontFamily: F.mono,
-    },
-    deleteIcon: {
-      color: C.textDim,
-      fontSize: 11,
-      fontWeight: '700',
     },
   });
 }
