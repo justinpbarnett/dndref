@@ -4,6 +4,7 @@ import { Tabs } from 'expo-router';
 import Head from 'expo-router/head';
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UISettingsProvider, useColors } from '../src/context/ui-settings';
 import { DataSourcesProvider } from '../src/context/data-sources';
 import { SessionProvider } from '../src/context/session';
@@ -11,6 +12,7 @@ import { F } from '../src/theme';
 
 function ThemedTabs() {
   const C = useColors();
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
@@ -20,8 +22,8 @@ function ThemedTabs() {
           backgroundColor: C.bgSurface,
           borderTopColor: C.border,
           borderTopWidth: 1,
-          height: 56,
-          paddingBottom: 8,
+          height: 56 + insets.bottom,
+          paddingBottom: 8 + insets.bottom,
           paddingTop: 6,
         },
         tabBarActiveTintColor: C.textPrimary,
@@ -93,14 +95,16 @@ export default function RootLayout() {
         <meta property="og:title" content="DnD Ref" />
         <meta property="og:description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
         <meta property="og:image" content="https://dndref.com/og-image.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="1200" />
+        <meta property="og:image:width" content="900" />
+        <meta property="og:image:height" content="747" />
         <meta property="og:url" content="https://dndref.com" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="DnD Ref" />
         <meta name="twitter:description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
-        <meta name="twitter:image" content="https://dndref.com/og-image.png" />
+        <meta name="twitter:image" content="https://dndref.com/og-image-wide.png" />
+        <meta name="twitter:image:width" content="1200" />
+        <meta name="twitter:image:height" content="630" />
       </Head>
       <UISettingsProvider>
         <DataSourcesProvider>

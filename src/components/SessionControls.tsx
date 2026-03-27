@@ -143,8 +143,8 @@ function createStyles(C: Colors) {
       justifyContent: 'flex-end',
     },
     btn: {
-      paddingHorizontal: 14,
-      paddingVertical: 7,
+      paddingHorizontal: 16,
+      paddingVertical: 9,
       borderRadius: 3,
     },
     btnStart: {

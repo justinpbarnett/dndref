@@ -82,7 +82,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
               <TouchableOpacity
                 onPress={pinned ? onUnpin : onPin}
                 accessibilityLabel={pinned ? 'Unpin' : 'Pin'}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 6 }}
               >
                 <Ionicons
                   name={pinned ? 'bookmark' : 'bookmark-outline'}
@@ -93,7 +93,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
               <TouchableOpacity
                 onPress={onDismiss}
                 accessibilityLabel="Dismiss"
-                hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
+                hitSlop={{ top: 12, bottom: 12, left: 6, right: 12 }}
               >
                 <Ionicons name="close" size={14 * fontScale} color={C.textDim} />
               </TouchableOpacity>
@@ -131,12 +131,12 @@ function createStyles(C: Colors) {
   return StyleSheet.create({
     card: {
       backgroundColor: C.bgCard,
-      borderRadius: 4,
+      borderRadius: 6,
       margin: 5,
       borderWidth: 1,
       borderColor: C.border,
       overflow: 'hidden',
-      minHeight: 200,
+      minHeight: 160,
     },
     cardPinned: {
       backgroundColor: C.bgCardPinned,
@@ -166,7 +166,7 @@ function createStyles(C: Colors) {
     portrait: {
       width: 48,
       height: 64,
-      borderRadius: 2,
+      borderRadius: 4,
       borderWidth: 1,
     },
     name: {
@@ -182,7 +182,7 @@ function createStyles(C: Colors) {
     },
     actions: {
       flexDirection: 'row',
-      gap: 9,
+      gap: 12,
       paddingTop: 1,
     },
     divider: {

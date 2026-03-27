@@ -10,6 +10,7 @@ import { DataSourcesSettings, useDataSources } from '../src/context/data-sources
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
 import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
 import { parseWithAI } from '../src/entities/ai-parser';
+import { SRD_SOURCES } from '../src/entities/providers/srd';
 import { Colors, F } from '../src/theme';
 
 type Category = 'display' | 'voice' | 'data' | 'files' | 'ai';
@@ -30,6 +31,15 @@ const COLOR_SCHEME_LABELS: Record<ColorScheme, string> = {
   system: 'System', dark: 'Dark', light: 'Light',
 };
 
+const SRD_PUBLISHER_GROUPS = (() => {
+  const map = new Map<string, { slug: string; label: string }[]>();
+  for (const src of SRD_SOURCES) {
+    if (!map.has(src.publisher)) map.set(src.publisher, []);
+    map.get(src.publisher)!.push({ slug: src.slug, label: src.label });
+  }
+  return Array.from(map.entries());
+})();
+
 function KeyLink({ label, url }: { label: string; url: string }) {
   const C = useColors();
   return (
@@ -43,9 +53,9 @@ function KeyLink({ label, url }: { label: string; url: string }) {
 
 export default function SettingsScreen() {
   const C = useColors();
-  const styles = useMemo(() => createStyles(C), [C]);
   const { width } = useWindowDimensions();
   const isWide = width >= 640;
+  const styles = useMemo(() => createStyles(C, isWide), [C, isWide]);
 
   const [category, setCategory] = useState<Category>('display');
   const [sttSettings, setSttSettings] = useState<STTSettings>(DEFAULT_STT_SETTINGS);
@@ -94,6 +104,16 @@ export default function SettingsScreen() {
     setDataSaved(true);
     if (dataSavedTimer.current) clearTimeout(dataSavedTimer.current);
     dataSavedTimer.current = setTimeout(() => setDataSaved(false), 2000);
+  };
+
+  const toggleSrdSource = (slug: string) => {
+    setDsLocal((s) => {
+      const current = s.srdSources;
+      const next = current.includes(slug)
+        ? current.filter((x) => x !== slug)
+        : [...current, slug];
+      return { ...s, srdSources: next };
+    });
   };
 
   const pickFilesWeb = () => {
@@ -253,7 +273,7 @@ export default function SettingsScreen() {
         <Text style={styles.groupLabel}>D&D 5E SRD</Text>
         <View style={styles.toggleRow}>
           <View style={styles.toggleBody}>
-            <Text style={styles.optionTitle}>Official SRD</Text>
+            <Text style={styles.optionTitle}>Open5e</Text>
             <Text style={styles.optionDesc}>Monsters and magic items. No key required.</Text>
           </View>
           <Switch
@@ -263,6 +283,34 @@ export default function SettingsScreen() {
             thumbColor={dsLocal.srdEnabled ? C.active : C.textSecondary}
           />
         </View>
+        {dsLocal.srdEnabled && (
+          <View style={{ gap: 6 }}>
+            <Text style={styles.sourcesLabel}>SOURCES</Text>
+            {SRD_PUBLISHER_GROUPS.map(([publisher, sources]) => (
+              <View key={publisher} style={{ gap: 3 }}>
+                <Text style={styles.publisherLabel}>{publisher}</Text>
+                {sources.map((src) => {
+                  const checked = dsLocal.srdSources.includes(src.slug);
+                  return (
+                    <TouchableOpacity
+                      key={src.slug}
+                      style={[styles.checkRow, checked && styles.checkRowActive]}
+                      onPress={() => toggleSrdSource(src.slug)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+                        {checked && <Ionicons name="checkmark" size={9} color={C.bg} />}
+                      </View>
+                      <Text style={[styles.checkRowLabel, checked && styles.checkRowLabelChecked]}>
+                        {src.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))}
+          </View>
+        )}
       </View>
 
       <View style={styles.group}>
@@ -516,6 +564,11 @@ export default function SettingsScreen() {
                 onPress={() => setCategory(cat.id)}
                 activeOpacity={0.7}
               >
+                <Ionicons
+                  name={(active ? cat.iconFocused : cat.icon) as any}
+                  size={16}
+                  color={active ? C.textPrimary : C.textSecondary}
+                />
                 <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
                   {cat.label.toUpperCase()}
                 </Text>
@@ -536,11 +589,11 @@ export default function SettingsScreen() {
   );
 }
 
-function createStyles(C: Colors) {
+function createStyles(C: Colors, isWide: boolean) {
   return StyleSheet.create({
     root: {
       flex: 1,
-      flexDirection: 'row',
+      flexDirection: isWide ? 'row' : 'column',
       backgroundColor: C.bg,
     },
 
@@ -596,8 +649,11 @@ function createStyles(C: Colors) {
       paddingHorizontal: 8,
     },
     tab: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 3,
       paddingHorizontal: 14,
-      paddingVertical: 14,
+      paddingVertical: 10,
       borderBottomWidth: 2,
       borderBottomColor: 'transparent',
     },
@@ -623,8 +679,8 @@ function createStyles(C: Colors) {
       flexGrow: 1,
     },
     contentInner: {
-      padding: 24,
-      gap: 28,
+      padding: isWide ? 24 : 16,
+      gap: 24,
     },
 
     // Groups
@@ -711,9 +767,9 @@ function createStyles(C: Colors) {
       backgroundColor: C.bgCardPinned,
     },
     radio: {
-      width: 14,
-      height: 14,
-      borderRadius: 7,
+      width: 16,
+      height: 16,
+      borderRadius: 8,
       borderWidth: 1,
       borderColor: C.borderStrong,
       marginTop: 2,
@@ -800,6 +856,59 @@ function createStyles(C: Colors) {
       fontWeight: '700',
       letterSpacing: 0.5,
       fontFamily: F.mono,
+    },
+
+    // Source selection
+    sourcesLabel: {
+      color: C.textDim,
+      fontSize: 9,
+      fontWeight: '700',
+      letterSpacing: 2,
+      fontFamily: F.mono,
+      marginTop: 4,
+    },
+    publisherLabel: {
+      color: C.textMuted,
+      fontSize: 9,
+      fontWeight: '600',
+      letterSpacing: 1,
+      fontFamily: F.mono,
+      marginTop: 2,
+    },
+    checkRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      backgroundColor: C.bgCard,
+      borderRadius: 3,
+      borderWidth: 1,
+      borderColor: C.border,
+    },
+    checkRowActive: {
+      borderColor: C.active + '50',
+    },
+    checkbox: {
+      width: 16,
+      height: 16,
+      borderRadius: 3,
+      borderWidth: 1,
+      borderColor: C.borderStrong,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkboxChecked: {
+      backgroundColor: C.active,
+      borderColor: C.active,
+    },
+    checkRowLabel: {
+      color: C.textSecondary,
+      fontSize: 12,
+      fontFamily: F.mono,
+    },
+    checkRowLabelChecked: {
+      color: C.textPrimary,
     },
 
     // File list
