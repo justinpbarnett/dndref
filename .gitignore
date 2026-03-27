@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+expo-env.d.ts
+
+# Build outputs
+ios/
+android/
+web-build/
+
+# Cloudflare
+.wrangler/
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Certificates / signing
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*

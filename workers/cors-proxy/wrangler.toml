@@ -1,0 +1,10 @@
+name = "dnd-ref-proxy"
+main = "index.ts"
+compatibility_date = "2025-01-01"
+
+# After deploying, add a DNS CNAME record in Cloudflare:
+#   proxy.dndref.com -> dnd-ref-proxy.<your-subdomain>.workers.dev
+# Then uncomment:
+# [[routes]]
+# pattern = "proxy.dndref.com/*"
+# zone_name = "dndref.com"

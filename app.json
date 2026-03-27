@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "DnD Ref",
+    "slug": "dnd-ref",
+    "version": "1.0.0",
+    "orientation": "default",
+    "scheme": "dndref",
+    "platforms": ["ios", "web"],
+    "backgroundColor": "#0f0f11",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dndref.app",
+      "buildNumber": "1"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png",
+      "name": "DnD Ref",
+      "shortName": "DnD Ref",
+      "description": "Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time.",
+      "themeColor": "#0f0f11",
+      "backgroundColor": "#0f0f11",
+      "display": "standalone",
+      "orientation": "any"
+    },
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
