@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { Tabs } from 'expo-router';
+import Head from 'expo-router/head';
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { UISettingsProvider, useColors } from '../src/context/ui-settings';
@@ -85,12 +86,27 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <UISettingsProvider>
-      <DataSourcesProvider>
-        <SessionProvider>
-          <ThemedTabs />
-        </SessionProvider>
-      </DataSourcesProvider>
-    </UISettingsProvider>
+    <>
+      <Head>
+        <title>DnD Ref</title>
+        <meta name="description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
+        <meta property="og:title" content="DnD Ref" />
+        <meta property="og:description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
+        <meta property="og:image" content="https://dndref.com/og-image.png" />
+        <meta property="og:url" content="https://dndref.com" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="DnD Ref" />
+        <meta name="twitter:description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
+        <meta name="twitter:image" content="https://dndref.com/og-image.png" />
+      </Head>
+      <UISettingsProvider>
+        <DataSourcesProvider>
+          <SessionProvider>
+            <ThemedTabs />
+          </SessionProvider>
+        </DataSourcesProvider>
+      </UISettingsProvider>
+    </>
   );
 }
