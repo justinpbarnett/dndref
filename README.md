@@ -1,21 +1,21 @@
 # DnD Ref
 
-A live reference tool for D&D sessions. Listens to the table, detects when entities from your world are mentioned, and surfaces the relevant notes automatically -- no lookup required.
+Sits on your D&D table, listens, and pops up cards when entities are mentioned -- NPCs, locations, factions, items. No lookup, no tab-switching.
 
-Works as an iPad app and a web app at [dndref.com](https://dndref.com).
+iPad app and web app at [dndref.com](https://dndref.com).
 
 ## How it works
 
-1. Load your world data at session start (Kanka, Notion, Homebrewery, Google Docs, or file uploads)
+1. Load your world data in Settings (Kanka, Notion, Homebrewery, Google Docs, or file uploads)
 2. Tap Start and set the iPad on the table
-3. As entities are mentioned at the table, cards pop up with their summary
-4. Pin cards to keep them visible; dismiss when done
+3. Cards appear as entities are mentioned
+4. Pin to keep a card visible; dismiss when done
 
-Entity detection runs every 2 seconds using fuzzy matching against your loaded entities. No AI in the live path -- just fast, deterministic string matching.
+Detection runs every 2 seconds using fuzzy matching against your loaded entities. No AI in the live path -- just fast, deterministic string matching.
 
 ## Data sources
 
-Configure in the Settings tab. Multiple sources can be active at once.
+You can have multiple sources active at once. Mix and match as needed.
 
 | Source | What it loads | Notes |
 |---|---|---|
@@ -37,17 +37,17 @@ Configure in the Settings tab. Multiple sources can be active at once.
 3. Paste page URLs (comma-separated) in Settings
 
 ### AI parsing
-Paste any campaign text and Claude extracts all named entities into a structured JSON upload. Uses `claude-haiku` -- roughly $0.001 per parse. Requires an Anthropic API key from console.anthropic.com.
+Paste any campaign text and Claude pulls out named entities into a structured upload. Uses Haiku -- roughly $0.001 per parse. Requires an Anthropic API key from console.anthropic.com.
 
-## STT setup
+## STT options
 
-**Web Speech** -- works in Chrome and Edge, no API key needed. Good for testing.
+**Web Speech** works in Chrome and Edge, no API key needed. Fine for quick testing.
 
-**Deepgram** -- works on web and iPad. ~$0.004/min (~$0.72 for a 3-hour session). Get a free key at console.deepgram.com.
+**Deepgram** works on web and iPad. ~$0.004/min, about $0.72 for a 3-hour session. If you're actually running this at a table, Deepgram is more reliable. Get a key at console.deepgram.com.
 
 ## Commands
 
-Uses [just](https://github.com/casey/just) as a task runner. Run `just` with no args to see all commands.
+Uses [just](https://github.com/casey/just). Run `just` with no args to list everything.
 
 ```bash
 just dev             # web dev server
@@ -68,7 +68,7 @@ just submit-ios      # submit to App Store
 
 ## iOS build setup
 
-Requires an Apple Developer account and EAS configured:
+Requires an Apple Developer account and EAS:
 
 ```bash
 npm install -g eas-cli
@@ -79,7 +79,7 @@ just build-ios-dev   # first build
 
 ## CORS proxy
 
-Notion, Google Docs, and the Anthropic API are blocked by CORS in the browser. The web app routes those calls through a Cloudflare Worker at `proxy.dndref.com`.
+Notion, Google Docs, and the Anthropic API block browser requests via CORS. On web, calls route through a Cloudflare Worker at `proxy.dndref.com`. On native (iOS), everything goes directly.
 
 To deploy your own:
 
@@ -89,9 +89,7 @@ just proxy-dev       # test locally at localhost:8787
 just proxy-deploy    # deploy to Cloudflare Workers
 ```
 
-After deploying, add a CNAME in Cloudflare DNS: `proxy` -> `dnd-ref-proxy.<account>.workers.dev`, then uncomment the `[[routes]]` block in `workers/cors-proxy/wrangler.toml` and redeploy.
-
-On native (iOS), all API calls go directly -- no proxy needed.
+After deploying, add a CNAME in Cloudflare DNS: `proxy` -> `dnd-ref-proxy.<account>.workers.dev`. Then uncomment the `[[routes]]` block in `workers/cors-proxy/wrangler.toml` and redeploy.
 
 ## Project structure
 
@@ -134,9 +132,4 @@ workers/
 
 ## Stack
 
-- React Native + Expo SDK 52 (iOS + web)
-- Expo Router (file-based navigation)
-- fuse.js (fuzzy entity matching)
-- Deepgram / Web Speech (STT)
-- AsyncStorage (settings + file uploads)
-- Cloudflare Pages (web hosting) + Workers (CORS proxy)
+React Native + Expo SDK 52, Expo Router, fuse.js for fuzzy matching, Deepgram or Web Speech for STT, AsyncStorage for settings and uploads. Hosted on Cloudflare Pages with a Cloudflare Worker handling CORS for the API calls that need it.
