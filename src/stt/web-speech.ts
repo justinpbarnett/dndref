@@ -24,6 +24,12 @@ export class WebSpeechProvider implements STTProvider {
     this.onError = onError;
   }
 
+  private isPermissionError(e: unknown): boolean {
+    if (e instanceof DOMException && e.name === 'NotAllowedError') return true;
+    const msg = e instanceof Error ? e.message : String(e);
+    return msg.toLowerCase().includes('not-allowed');
+  }
+
   async start(): Promise<void> {
     const SR: (new () => AnyRecognition) | undefined =
       (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
@@ -49,26 +55,32 @@ export class WebSpeechProvider implements STTProvider {
     };
 
     this.recognition.onerror = (event: any) => {
-      if (event.error !== 'no-speech' && event.error !== 'aborted') {
-        this.onError(`Mic error: ${event.error as string}`);
-      }
+      const err: string = event.error;
+      if (err === 'no-speech' || err === 'aborted') return;
+      // Prevent onend from attempting a restart after a fatal permission/hardware error
+      if (err === 'not-allowed' || err === 'audio-capture') this.active = false;
+      this.onError(`Mic error: ${err}`);
     };
 
     // Chrome stops recognition after silence -- restart automatically
     this.recognition.onend = () => {
       if (!this.active) return;
-      try {
-        this.recognition?.start();
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        if (msg.includes('already started')) return;
-        this.active = false;
-        if (msg.includes('not-allowed') || msg.includes('NotAllowed')) {
-          this.onError('Mic permission was revoked. Allow microphone access and restart.');
-        } else {
-          this.onError(`Failed to restart mic: ${msg}`);
+      // Small delay so the browser fully transitions to INACTIVE before start()
+      setTimeout(() => {
+        if (!this.active) return;
+        try {
+          this.recognition?.start();
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (msg.includes('already started') || msg.includes('already starting')) return;
+          this.active = false;
+          if (this.isPermissionError(e)) {
+            this.onError('Mic paused. Tap Resume to continue listening.');
+          } else {
+            this.onError(`Failed to restart mic: ${msg}`);
+          }
         }
-      }
+      }, 50);
     };
 
     try {
@@ -89,7 +101,11 @@ export class WebSpeechProvider implements STTProvider {
       this.recognition?.start();
     } catch (e) {
       this.active = false;
-      this.onError(`Failed to resume mic: ${e instanceof Error ? e.message : String(e)}`);
+      if (this.isPermissionError(e)) {
+        this.onError('Mic permission required. Allow microphone access in browser settings.');
+      } else {
+        this.onError(`Failed to resume mic: ${e instanceof Error ? e.message : String(e)}`);
+      }
     }
   }
 

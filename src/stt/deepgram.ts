@@ -90,7 +90,7 @@ export class DeepgramProvider implements STTProvider {
           ? 'Deepgram rejected the connection -- verify your API key.'
           : `Deepgram connection closed (${event.code}). Check your network.`;
         this.onError(msg);
-        this.recorder?.stop();
+        if (this.recorder?.state !== 'inactive') this.recorder?.stop();
         this.active = false;
       }
     };
@@ -177,7 +177,7 @@ export class DeepgramProvider implements STTProvider {
   resume(): void {
     this.active = true;
     if (Platform.OS === 'web') {
-      this.recorder?.resume();
+      if (this.recorder?.state === 'paused') this.recorder.resume();
     } else {
       void this.startNativeChunks();
     }
@@ -186,7 +186,7 @@ export class DeepgramProvider implements STTProvider {
   stop(): void {
     this.active = false;
     if (Platform.OS === 'web') {
-      this.recorder?.stop();
+      if (this.recorder?.state !== 'inactive') this.recorder?.stop();
       if (this.ws?.readyState === WebSocket.OPEN) this.ws.close();
       this.stream?.getTracks().forEach((t) => t.stop());
       this.recorder = null;

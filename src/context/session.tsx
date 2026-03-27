@@ -174,7 +174,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       });
 
     return () => { cancelled = true; };
-  }, [ds.srdEnabled, ds.srdSources, ds.kankaToken, ds.kankaCampaignId, ds.homebreweryUrl, ds.notionToken, ds.notionPageIds, ds.googleDocsUrl, uploadsVersion]);
+  }, [ds.srdEnabled, ds.srdSources.join(','), ds.kankaToken, ds.kankaCampaignId, ds.homebreweryUrl, ds.notionToken, ds.notionPageIds, ds.googleDocsUrl, uploadsVersion]);
 
   useEffect(() => {
     if (status !== 'active') return;
@@ -232,7 +232,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const provider = buildProvider(
       settings,
       appendTranscript,
-      (err) => { setSttError(err); setSttStatus('error'); },
+      (err) => {
+        sttRef.current?.stop();
+        sttRef.current = null;
+        setSttError(err);
+        setSttStatus('error');
+        setStatus((prev) => prev === 'active' ? 'paused' : prev);
+      },
     );
 
     sttRef.current = provider;
@@ -241,7 +247,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     try {
       await provider.start();
     } catch (e) {
-      setSttError(`Failed to start mic: ${e}`);
+      setSttError(`Failed to start mic: ${e instanceof Error ? e.message : String(e)}`);
       setSttStatus('error');
       sttRef.current = null;
       return;
