@@ -83,7 +83,7 @@ export default function RootLayout() {
     document.head.appendChild(link);
   }, []);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded && Platform.OS !== 'web') return null;
 
   return (
     <>
@@ -93,6 +93,8 @@ export default function RootLayout() {
         <meta property="og:title" content="DnD Ref" />
         <meta property="og:description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
         <meta property="og:image" content="https://dndref.com/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="1200" />
         <meta property="og:url" content="https://dndref.com" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />

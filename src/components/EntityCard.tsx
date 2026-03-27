@@ -35,8 +35,8 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
 
   useEffect(() => {
     const anim = Animated.parallel([
-      Animated.timing(fadeIn, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.timing(slideUp, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.timing(fadeIn, { toValue: 1, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(slideUp, { toValue: 0, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
     ]);
     anim.start();
     return () => anim.stop();

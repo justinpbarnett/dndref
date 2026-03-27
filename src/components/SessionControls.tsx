@@ -18,12 +18,12 @@ function PulseDot({ status }: { status: 'idle' | 'active' | 'paused' }) {
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.parallel([
-          Animated.timing(scale, { toValue: 1.7, duration: 1000, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0, duration: 1000, useNativeDriver: true }),
+          Animated.timing(scale, { toValue: 1.7, duration: 1000, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(opacity, { toValue: 0, duration: 1000, useNativeDriver: Platform.OS !== 'web' }),
         ]),
         Animated.parallel([
-          Animated.timing(scale, { toValue: 1, duration: 0, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 1, duration: 0, useNativeDriver: true }),
+          Animated.timing(scale, { toValue: 1, duration: 0, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(opacity, { toValue: 1, duration: 0, useNativeDriver: Platform.OS !== 'web' }),
         ]),
       ])
     );
