@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFonts } from 'expo-font';
 import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
@@ -64,7 +65,14 @@ function ThemedTabs() {
   );
 }
 
+// Cloudflare Pages can't serve paths containing '@' as static assets, so the
+// bundled Ionicons TTF never loads in production. Load from CDN instead.
+const IONICONS_CDN =
+  'https://cdn.jsdelivr.net/npm/@expo/vector-icons@14.0.4/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf';
+
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({ Ionicons: IONICONS_CDN });
+
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     const link = document.createElement('link');
@@ -73,6 +81,8 @@ export default function RootLayout() {
       'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap';
     document.head.appendChild(link);
   }, []);
+
+  if (!fontsLoaded) return null;
 
   return (
     <UISettingsProvider>
