@@ -1,12 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Linking, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CARD_SIZE_CONFIGS, CardSize, useUISettings } from '../src/context/ui-settings';
 import { DataSourcesSettings, useDataSources } from '../src/context/data-sources';
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
 import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
 import { parseWithAI } from '../src/entities/ai-parser';
 import { C, F } from '../src/theme';
+
+function KeyLink({ label, url }: { label: string; url: string }) {
+  return (
+    <TouchableOpacity onPress={() => Linking.openURL(url)} activeOpacity={0.7}>
+      <Text style={styles.keyLink}>{label} ↗</Text>
+    </TouchableOpacity>
+  );
+}
 
 const CARD_SIZE_LABELS: Record<CardSize, string> = { S: 'S', M: 'M', L: 'L', XL: 'XL' };
 const CARD_SIZE_DESCS: Record<CardSize, string> = {
@@ -196,7 +204,7 @@ export default function SettingsScreen() {
             autoCorrect={false}
             autoCapitalize="none"
           />
-          <Text style={styles.hint}>Get a free key at console.deepgram.com</Text>
+          <KeyLink label="Get a free API key" url="https://console.deepgram.com" />
         </View>
       )}
 
@@ -246,7 +254,8 @@ export default function SettingsScreen() {
             keyboardType="numeric"
             autoCorrect={false}
           />
-          <Text style={styles.hint}>Get your API token at kanka.io/en/profile/api. Campaign ID is in the URL: kanka.io/en/campaign/12345</Text>
+          <KeyLink label="Get your API token" url="https://kanka.io/en/profile/api" />
+          <Text style={styles.hint}>Campaign ID is in the URL: kanka.io/en/campaign/12345</Text>
         </View>
 
         <View style={styles.subsection}>
@@ -285,7 +294,8 @@ export default function SettingsScreen() {
             autoCorrect={false}
             autoCapitalize="none"
           />
-          <Text style={styles.hint}>Create an integration at notion.so/my-integrations. Share each page with it.</Text>
+          <KeyLink label="Create a Notion integration" url="https://www.notion.so/my-integrations" />
+          <Text style={styles.hint}>Share each target page with the integration.</Text>
         </View>
 
         <View style={styles.subsection}>
@@ -370,7 +380,8 @@ export default function SettingsScreen() {
           autoCorrect={false}
           autoCapitalize="none"
         />
-        <Text style={styles.hint}>Get a key at console.anthropic.com. Uses claude-haiku (~$0.001 per parse).</Text>
+        <KeyLink label="Get an API key" url="https://console.anthropic.com" />
+        <Text style={styles.hint}>Uses claude-haiku (~$0.001 per parse).</Text>
 
         <TextInput
           style={[styles.input, styles.textarea]}
@@ -509,6 +520,12 @@ const styles = StyleSheet.create({
   },
   hint: {
     color: C.textSecondary,
+    fontSize: 11,
+    fontFamily: F.mono,
+    letterSpacing: 0.2,
+  },
+  keyLink: {
+    color: C.location,
     fontSize: 11,
     fontFamily: F.mono,
     letterSpacing: 0.2,
