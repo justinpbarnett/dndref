@@ -38,7 +38,7 @@ async function setup(page: Page) {
 
 test('og image', async ({ page }) => {
   await setup(page);
-  await page.setViewportSize({ width: 1200, height: 630 });
+  await page.setViewportSize({ width: 1200, height: 1200 });
   await page.goto('/');
   await page.waitForSelector('text=Ready', { timeout: 20000 });
 
@@ -46,7 +46,7 @@ test('og image', async ({ page }) => {
   await page.getByText('Start', { exact: true }).click();
   await page.waitForTimeout(300);
 
-  // Populate with a varied mix of entity types across 2 columns
+  // Populate with a varied mix of entity types across 3 rows
   const phrases = [
     'Valdrath the Undying speaks',
     'we entered Ironspire through the gate',
@@ -54,17 +54,15 @@ test('og image', async ({ page }) => {
     'Lady Seraphine Voss delivered her report',
     'Gorm Ironfist showed us the blueprints',
     'the Obsidian Compact moves against us',
+    'the Dawnwarden Order has been alerted',
+    'we must travel through Silvermarsh',
+    'the Sundering Blade was stolen from the vault',
   ];
 
   for (const phrase of phrases) {
     await page.evaluate((t) => (window as any).__speak(t), phrase);
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(2100);
   }
-
-  // Pin Valdrath so there's visual variety
-  const valdrath = page.locator('[data-testid="entity-card"]').filter({ hasText: 'Valdrath the Undying' });
-  await valdrath.locator('[aria-label="Pin"]').click();
-  await page.waitForTimeout(400);
 
   await page.screenshot({ path: 'assets/og-image.png' });
 });
