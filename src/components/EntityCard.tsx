@@ -1,8 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CARD_SIZE_CONFIGS, useUISettings } from '../context/ui-settings';
+import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
 import { CardState } from '../context/session';
-import { C, F, typeAccent } from '../theme';
+import { Colors, F, typeAccent } from '../theme';
 
 function parseBullets(summary: string): string[] {
   return summary
@@ -22,12 +23,15 @@ interface Props {
 
 export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
   const { entity, pinned } = card;
-  const color = typeAccent(entity.type);
+  const C = useColors();
+  const color = typeAccent(entity.type, C);
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(8)).current;
 
   const { cardSize } = useUISettings();
   const { fontScale } = CARD_SIZE_CONFIGS[cardSize];
+
+  const styles = useMemo(() => createStyles(C), [C]);
 
   useEffect(() => {
     const anim = Animated.parallel([
@@ -43,8 +47,8 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
   const webStyles = Platform.OS === 'web'
     ? {
         boxShadow: pinned
-          ? `0 0 0 1px ${color}48, 0 6px 28px ${color}20, 0 2px 8px #00000060`
-          : '0 2px 12px #00000050',
+          ? `0 0 0 1px ${color}48, 0 6px 28px ${color}20, 0 2px 8px #00000040`
+          : '0 2px 12px #00000030',
       }
     : {};
 
@@ -79,15 +83,17 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
                 onPress={pinned ? onUnpin : onPin}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
               >
-                <Text style={[styles.pinIcon, pinned && { color, opacity: 1 }]}>
-                  {pinned ? '◈' : '◇'}
-                </Text>
+                <Ionicons
+                  name={pinned ? 'bookmark' : 'bookmark-outline'}
+                  size={15 * fontScale}
+                  color={pinned ? color : C.textDim}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={onDismiss}
                 hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
               >
-                <Text style={styles.dismissIcon}>✕</Text>
+                <Ionicons name="close" size={14 * fontScale} color={C.textDim} />
               </TouchableOpacity>
             </View>
             {entity.image && (
@@ -107,7 +113,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
         {bullets.map((bullet, i) => (
           <View key={i} style={styles.bulletRow}>
             <Text style={[styles.bulletMark, { color: color + 'aa', fontSize: 11 * fontScale, lineHeight: 18 * fontScale }]}>
-              ›
+              {'>'}
             </Text>
             <Text style={[styles.bulletText, { fontSize: 12 * fontScale, lineHeight: 18 * fontScale }]}>
               {bullet}
@@ -119,92 +125,85 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: C.bgCard,
-    borderRadius: 4,
-    margin: 5,
-    borderWidth: 1,
-    borderColor: C.border,
-    overflow: 'hidden',
-    minHeight: 200,
-  },
-  cardPinned: {
-    backgroundColor: C.bgCardPinned,
-  },
-  topStrip: {
-    height: 3,
-    width: '100%',
-  },
-  header: {
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  headerLeft: {
-    flex: 1,
-    gap: 5,
-  },
-  headerRight: {
-    alignItems: 'flex-end',
-    gap: 6,
-  },
-  portrait: {
-    width: 48,
-    height: 64,
-    borderRadius: 2,
-    borderWidth: 1,
-  },
-  name: {
-    color: C.textPrimary,
-    fontWeight: '600',
-    letterSpacing: 0.6,
-    fontFamily: F.display,
-  },
-  typeLabel: {
-    fontWeight: '700',
-    letterSpacing: 2.2,
-    fontFamily: F.mono,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 9,
-    paddingTop: 1,
-  },
-  pinIcon: {
-    fontSize: 12,
-    color: C.textDim,
-    opacity: 0.55,
-  },
-  dismissIcon: {
-    fontSize: 10,
-    color: C.textDim,
-    fontWeight: '700',
-  },
-  divider: {
-    height: 1,
-  },
-  bullets: {
-    padding: 12,
-    paddingTop: 9,
-    gap: 6,
-  },
-  bulletRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 5,
-  },
-  bulletMark: {
-    fontWeight: '700',
-  },
-  bulletText: {
-    color: C.textSecondary,
-    flex: 1,
-    fontFamily: F.body,
-  },
-});
+function createStyles(C: Colors) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: C.bgCard,
+      borderRadius: 4,
+      margin: 5,
+      borderWidth: 1,
+      borderColor: C.border,
+      overflow: 'hidden',
+      minHeight: 200,
+    },
+    cardPinned: {
+      backgroundColor: C.bgCardPinned,
+    },
+    topStrip: {
+      height: 3,
+      width: '100%',
+    },
+    header: {
+      paddingHorizontal: 12,
+      paddingTop: 10,
+      paddingBottom: 10,
+    },
+    headerTop: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 8,
+    },
+    headerLeft: {
+      flex: 1,
+      gap: 5,
+    },
+    headerRight: {
+      alignItems: 'flex-end',
+      gap: 6,
+    },
+    portrait: {
+      width: 48,
+      height: 64,
+      borderRadius: 2,
+      borderWidth: 1,
+    },
+    name: {
+      color: C.textPrimary,
+      fontWeight: '600',
+      letterSpacing: 0.6,
+      fontFamily: F.display,
+    },
+    typeLabel: {
+      fontWeight: '700',
+      letterSpacing: 2.2,
+      fontFamily: F.mono,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: 9,
+      paddingTop: 1,
+    },
+    divider: {
+      height: 1,
+    },
+    bullets: {
+      padding: 12,
+      paddingTop: 9,
+      gap: 6,
+    },
+    bulletRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 5,
+    },
+    bulletMark: {
+      fontWeight: '700',
+      fontFamily: F.mono,
+    },
+    bulletText: {
+      color: C.textSecondary,
+      flex: 1,
+      fontFamily: F.body,
+    },
+  });
+}

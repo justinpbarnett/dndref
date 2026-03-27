@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSession } from '../context/session';
-import { C, F } from '../theme';
+import { useColors } from '../context/ui-settings';
+import { Colors, F } from '../theme';
 
 function PulseDot({ status }: { status: 'idle' | 'active' | 'paused' }) {
+  const C = useColors();
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -45,12 +47,14 @@ const dot = StyleSheet.create({
   core: { width: 6, height: 6, borderRadius: 3 },
 });
 
-const webBarShadow = Platform.OS === 'web'
-  ? { boxShadow: '0 1px 0 #1c1610, 0 4px 16px #00000040' }
-  : {};
-
 export function SessionControls() {
+  const C = useColors();
   const { status, sttStatus, start, pause, stop } = useSession();
+  const styles = useMemo(() => createStyles(C), [C]);
+
+  const webBarShadow = Platform.OS === 'web'
+    ? { boxShadow: `0 1px 0 ${C.border}, 0 4px 16px #00000030` }
+    : {};
 
   const statusLabel =
     sttStatus === 'connecting' ? 'Connecting' :
@@ -100,77 +104,79 @@ export function SessionControls() {
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    backgroundColor: C.bgSurface,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
-    minHeight: 50,
-  },
-  appName: {
-    color: C.textDim,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 2.5,
-    fontFamily: F.display,
-    minWidth: 80,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-  statusText: {
-    color: C.textSecondary,
-    fontSize: 11,
-    letterSpacing: 0.8,
-    fontFamily: F.mono,
-  },
-  buttons: {
-    flexDirection: 'row',
-    gap: 6,
-    minWidth: 80,
-    justifyContent: 'flex-end',
-  },
-  btn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 3,
-  },
-  btnStart: {
-    backgroundColor: C.active,
-  },
-  btnPause: {
-    backgroundColor: C.paused + '20',
-    borderWidth: 1,
-    borderColor: C.paused + '60',
-  },
-  btnStop: {
-    borderWidth: 1,
-    borderColor: C.borderStrong,
-  },
-  btnTextStart: {
-    color: '#06120a',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-    fontFamily: F.mono,
-  },
-  btnTextPause: {
-    color: C.paused,
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: F.mono,
-  },
-  btnTextStop: {
-    color: C.textSecondary,
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: F.mono,
-  },
-});
+function createStyles(C: Colors) {
+  return StyleSheet.create({
+    bar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 18,
+      paddingVertical: 10,
+      backgroundColor: C.bgSurface,
+      borderBottomWidth: 1,
+      borderBottomColor: C.border,
+      minHeight: 50,
+    },
+    appName: {
+      color: C.textDim,
+      fontSize: 11,
+      fontWeight: '600',
+      letterSpacing: 2.5,
+      fontFamily: F.display,
+      minWidth: 80,
+    },
+    statusRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+    },
+    statusText: {
+      color: C.textSecondary,
+      fontSize: 11,
+      letterSpacing: 0.8,
+      fontFamily: F.mono,
+    },
+    buttons: {
+      flexDirection: 'row',
+      gap: 6,
+      minWidth: 80,
+      justifyContent: 'flex-end',
+    },
+    btn: {
+      paddingHorizontal: 14,
+      paddingVertical: 7,
+      borderRadius: 3,
+    },
+    btnStart: {
+      backgroundColor: C.active,
+    },
+    btnPause: {
+      backgroundColor: C.paused + '25',
+      borderWidth: 1,
+      borderColor: C.paused + '70',
+    },
+    btnStop: {
+      borderWidth: 1,
+      borderColor: C.borderStrong,
+    },
+    btnTextStart: {
+      color: C.bg,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.3,
+      fontFamily: F.mono,
+    },
+    btnTextPause: {
+      color: C.paused,
+      fontSize: 12,
+      fontWeight: '600',
+      fontFamily: F.mono,
+    },
+    btnTextStop: {
+      color: C.textSecondary,
+      fontSize: 12,
+      fontWeight: '600',
+      fontFamily: F.mono,
+    },
+  });
+}

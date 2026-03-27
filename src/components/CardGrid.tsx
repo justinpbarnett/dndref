@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { CARD_SIZE_CONFIGS, useUISettings } from '../context/ui-settings';
+import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
 import { CardState, useSession } from '../context/session';
-import { C, F } from '../theme';
+import { Colors, F } from '../theme';
 import { EntityCard } from './EntityCard';
 
 const GRID_PAD = 5;
-const CARD_MARGIN = 5; // must match EntityCard styles.card.margin
+const CARD_MARGIN = 5;
 
 interface CardPos { x: number; y: number }
 interface AnimPair { left: Animated.Value; top: Animated.Value }
@@ -47,18 +47,18 @@ function computePositions(
 const SPRING_CONFIG = { friction: 22, tension: 55, useNativeDriver: false } as const;
 
 export function CardGrid() {
+  const C = useColors();
   const { cards, status, pin, unpin, dismiss } = useSession();
   const { cardSize } = useUISettings();
   const { width, height: winHeight } = useWindowDimensions();
   const config = CARD_SIZE_CONFIGS[cardSize];
   const columns = width > winHeight ? config.landscapeCols : config.portraitCols;
   const cardWidth = (width - 10) / columns - 10;
+  const styles = useMemo(() => createStyles(C), [C]);
 
   const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
 
-  // Animated left/top per card -- never reset, only animated to new positions
   const animRef = useRef<Record<string, AnimPair>>({});
-  // Previous committed positions for change detection
   const prevPos = useRef<Record<string, CardPos>>({});
 
   const { positions: targets, totalHeight } = useMemo(
@@ -66,9 +66,6 @@ export function CardGrid() {
     [cards, cardHeights, columns, cardWidth],
   );
 
-  // Eagerly initialize Animated values for any new cards.
-  // This runs in the render body (before JSX) so the map always finds them.
-  // Mutating a ref during render is safe -- no re-render is triggered.
   for (const [id, pos] of Object.entries(targets)) {
     if (!animRef.current[id]) {
       animRef.current[id] = {
@@ -77,12 +74,10 @@ export function CardGrid() {
       };
     }
   }
-  // Remove stale entries (dismissed cards)
   for (const id of Object.keys(animRef.current)) {
     if (!targets[id]) delete animRef.current[id];
   }
 
-  // Spring existing cards to their new positions when targets change
   useEffect(() => {
     const springs: Animated.CompositeAnimation[] = [];
 
@@ -101,7 +96,6 @@ export function CardGrid() {
       }
     }
 
-    // Snapshot current targets for next diff
     prevPos.current = Object.fromEntries(
       Object.entries(targets).map(([id, pos]) => [id, { ...pos }]),
     );
@@ -109,7 +103,6 @@ export function CardGrid() {
     if (springs.length > 0) Animated.parallel(springs).start();
   }, [targets, cards]);
 
-  // Prune heights for dismissed cards
   useEffect(() => {
     setCardHeights((prev) => {
       const activeIds = new Set(cards.map((c) => c.instanceId));
@@ -132,6 +125,9 @@ export function CardGrid() {
         <Text style={styles.emptyLabel}>
           {status === 'idle' ? 'Session not started' : 'Awaiting entities\u2026'}
         </Text>
+        {status === 'idle' && (
+          <Text style={styles.emptyHint}>Tap Start to begin listening</Text>
+        )}
       </View>
     );
   }
@@ -163,25 +159,34 @@ export function CardGrid() {
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1 },
-  cardWrapper: { position: 'absolute' },
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  emptyGlyph: {
-    fontSize: 24,
-    color: C.textMuted,
-    fontFamily: F.display,
-    opacity: 0.6,
-  },
-  emptyLabel: {
-    color: C.textMuted,
-    fontSize: 11,
-    letterSpacing: 1.5,
-    fontFamily: F.mono,
-  },
-});
+function createStyles(C: Colors) {
+  return StyleSheet.create({
+    scroll: { flex: 1 },
+    cardWrapper: { position: 'absolute' },
+    empty: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+    },
+    emptyGlyph: {
+      fontSize: 24,
+      color: C.textMuted,
+      fontFamily: F.display,
+      opacity: 0.6,
+    },
+    emptyLabel: {
+      color: C.textDim,
+      fontSize: 13,
+      letterSpacing: 0.5,
+      fontFamily: F.mono,
+    },
+    emptyHint: {
+      color: C.textMuted,
+      fontSize: 11,
+      letterSpacing: 0.5,
+      fontFamily: F.mono,
+      marginTop: 2,
+    },
+  });
+}

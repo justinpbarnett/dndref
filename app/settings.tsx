@@ -1,17 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { CARD_SIZE_CONFIGS, CardSize, useUISettings } from '../src/context/ui-settings';
+import { CARD_SIZE_CONFIGS, CardSize, ColorScheme, useColors, useUISettings } from '../src/context/ui-settings';
 import { DataSourcesSettings, useDataSources } from '../src/context/data-sources';
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
 import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
 import { parseWithAI } from '../src/entities/ai-parser';
-import { C, F } from '../src/theme';
+import { Colors, F } from '../src/theme';
 
 function KeyLink({ label, url }: { label: string; url: string }) {
+  const C = useColors();
   return (
     <TouchableOpacity onPress={() => Linking.openURL(url)} activeOpacity={0.7}>
-      <Text style={styles.keyLink}>{label} ↗</Text>
+      <Text style={{ color: C.location, fontSize: 11, fontFamily: F.mono, letterSpacing: 0.2 }}>{label} ↗</Text>
     </TouchableOpacity>
   );
 }
@@ -24,11 +25,20 @@ const CARD_SIZE_DESCS: Record<CardSize, string> = {
   XL: '2 / 1 cols',
 };
 
+const COLOR_SCHEME_LABELS: Record<ColorScheme, string> = {
+  system: 'System',
+  dark: 'Dark',
+  light: 'Light',
+};
+
 export default function SettingsScreen() {
+  const C = useColors();
+  const styles = useMemo(() => createStyles(C), [C]);
+
   const [settings, setSettings] = useState<STTSettings>(DEFAULT_STT_SETTINGS);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState(false);
-  const { cardSize, setCardSize } = useUISettings();
+  const { cardSize, setCardSize, colorScheme, setColorScheme } = useUISettings();
   const { settings: ds, update: updateDs, bumpUploads } = useDataSources();
   const [dsLocal, setDsLocal] = useState<DataSourcesSettings>(ds);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -159,6 +169,25 @@ export default function SettingsScreen() {
           ))}
         </View>
         <Text style={styles.hint}>Landscape / portrait column counts. Takes effect immediately.</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>APPEARANCE</Text>
+        <View style={styles.sizeRow}>
+          {(['system', 'dark', 'light'] as ColorScheme[]).map((scheme) => (
+            <TouchableOpacity
+              key={scheme}
+              style={[styles.sizeBtn, colorScheme === scheme && styles.sizeBtnSelected]}
+              onPress={() => setColorScheme(scheme)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.sizeBtnLabel, colorScheme === scheme && styles.sizeBtnLabelSelected]}>
+                {COLOR_SCHEME_LABELS[scheme]}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={styles.hint}>System follows your device setting. Defaults to dark.</Text>
       </View>
 
       <View style={styles.section}>
@@ -409,217 +438,213 @@ export default function SettingsScreen() {
         <Text style={styles.saveBtnText}>{saved ? 'Saved' : 'Save Settings'}</Text>
       </TouchableOpacity>
 
-      {saveError && <Text style={styles.warning}>Failed to save -- device storage may be full.</Text>}
+      {saveError && <Text style={styles.warning}>Failed to save. Device storage may be full.</Text>}
 
       <Text style={styles.note}>Changes take effect when you start the next session.</Text>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: C.bg },
-  container: { padding: 20, paddingTop: 24, gap: 24 },
-  pageTitle: {
-    color: C.textDim,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 3,
-    fontFamily: F.mono,
-    marginBottom: 4,
-  },
-  section: { gap: 10 },
-  sizeRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  sizeBtn: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 6,
-    backgroundColor: C.bgCard,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: C.border,
-    gap: 4,
-  },
-  sizeBtnSelected: {
-    borderColor: C.active + '60',
-    backgroundColor: C.bgCardPinned,
-  },
-  sizeBtnLabel: {
-    color: C.textSecondary,
-    fontSize: 14,
-    fontWeight: '700',
-    fontFamily: F.mono,
-  },
-  sizeBtnLabelSelected: {
-    color: C.active,
-  },
-  sizeBtnDesc: {
-    color: C.textMuted,
-    fontSize: 9,
-    fontFamily: F.mono,
-    letterSpacing: 0.5,
-  },
-  sectionLabel: {
-    color: C.textDim,
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 2,
-    fontFamily: F.mono,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    padding: 14,
-    backgroundColor: C.bgCard,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  optionSelected: {
-    borderColor: C.active + '60',
-    backgroundColor: C.bgCardPinned,
-  },
-  radio: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: C.borderStrong,
-    marginTop: 2,
-  },
-  radioSelected: {
-    borderColor: C.active,
-    backgroundColor: C.active,
-  },
-  optionText: { flex: 1, gap: 3 },
-  optionTitle: {
-    color: C.textPrimary,
-    fontSize: 13,
-    fontWeight: '600',
-    fontFamily: F.display,
-  },
-  optionDesc: {
-    color: C.textSecondary,
-    fontSize: 11,
-    fontFamily: F.mono,
-    letterSpacing: 0.2,
-  },
-  input: {
-    backgroundColor: C.bgInput,
-    color: C.textPrimary,
-    borderRadius: 3,
-    padding: 12,
-    fontSize: 13,
-    borderWidth: 1,
-    borderColor: C.border,
-    fontFamily: F.mono,
-  },
-  hint: {
-    color: C.textSecondary,
-    fontSize: 11,
-    fontFamily: F.mono,
-    letterSpacing: 0.2,
-  },
-  keyLink: {
-    color: C.location,
-    fontSize: 11,
-    fontFamily: F.mono,
-    letterSpacing: 0.2,
-  },
-  warning: {
-    color: C.paused,
-    fontSize: 12,
-    fontFamily: F.mono,
-    letterSpacing: 0.2,
-  },
-  saveBtn: {
-    backgroundColor: C.active,
-    borderRadius: 3,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  saveBtnText: {
-    color: C.bg,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    fontFamily: F.mono,
-  },
-  note: {
-    color: C.textMuted,
-    fontSize: 11,
-    fontFamily: F.mono,
-    textAlign: 'center',
-    letterSpacing: 0.2,
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 14,
-    backgroundColor: C.bgCard,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  toggleText: { flex: 1, gap: 3 },
-  subsection: {
-    padding: 14,
-    backgroundColor: C.bgCard,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: C.border,
-    gap: 2,
-  },
-  textarea: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  outlineBtn: {
-    borderWidth: 1,
-    borderColor: C.active + '80',
-    borderRadius: 3,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  outlineBtnDisabled: {
-    borderColor: C.border,
-    opacity: 0.5,
-  },
-  outlineBtnText: {
-    color: C.active,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    fontFamily: F.mono,
-  },
-  fileList: {
-    gap: 6,
-  },
-  fileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    backgroundColor: C.bgCard,
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: C.border,
-    gap: 8,
-  },
-  fileName: {
-    flex: 1,
-    color: C.textSecondary,
-    fontSize: 12,
-    fontFamily: F.mono,
-  },
-  deleteIcon: {
-    color: C.textDim,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-});
+function createStyles(C: Colors) {
+  return StyleSheet.create({
+    scroll: { flex: 1, backgroundColor: C.bg },
+    container: { padding: 20, paddingTop: 24, gap: 24 },
+    pageTitle: {
+      color: C.textDim,
+      fontSize: 10,
+      fontWeight: '700',
+      letterSpacing: 3,
+      fontFamily: F.mono,
+      marginBottom: 4,
+    },
+    section: { gap: 10 },
+    sizeRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    sizeBtn: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 6,
+      backgroundColor: C.bgCard,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: C.border,
+      gap: 4,
+    },
+    sizeBtnSelected: {
+      borderColor: C.active + '60',
+      backgroundColor: C.bgCardPinned,
+    },
+    sizeBtnLabel: {
+      color: C.textSecondary,
+      fontSize: 14,
+      fontWeight: '700',
+      fontFamily: F.mono,
+    },
+    sizeBtnLabelSelected: {
+      color: C.active,
+    },
+    sizeBtnDesc: {
+      color: C.textMuted,
+      fontSize: 9,
+      fontFamily: F.mono,
+      letterSpacing: 0.5,
+    },
+    sectionLabel: {
+      color: C.textDim,
+      fontSize: 9,
+      fontWeight: '700',
+      letterSpacing: 2,
+      fontFamily: F.mono,
+    },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+      padding: 14,
+      backgroundColor: C.bgCard,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: C.border,
+    },
+    optionSelected: {
+      borderColor: C.active + '60',
+      backgroundColor: C.bgCardPinned,
+    },
+    radio: {
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      borderWidth: 1,
+      borderColor: C.borderStrong,
+      marginTop: 2,
+    },
+    radioSelected: {
+      borderColor: C.active,
+      backgroundColor: C.active,
+    },
+    optionText: { flex: 1, gap: 3 },
+    optionTitle: {
+      color: C.textPrimary,
+      fontSize: 13,
+      fontWeight: '600',
+      fontFamily: F.display,
+    },
+    optionDesc: {
+      color: C.textSecondary,
+      fontSize: 11,
+      fontFamily: F.mono,
+      letterSpacing: 0.2,
+    },
+    input: {
+      backgroundColor: C.bgInput,
+      color: C.textPrimary,
+      borderRadius: 3,
+      padding: 12,
+      fontSize: 13,
+      borderWidth: 1,
+      borderColor: C.border,
+      fontFamily: F.mono,
+    },
+    hint: {
+      color: C.textSecondary,
+      fontSize: 11,
+      fontFamily: F.mono,
+      letterSpacing: 0.2,
+    },
+    warning: {
+      color: C.paused,
+      fontSize: 12,
+      fontFamily: F.mono,
+      letterSpacing: 0.2,
+    },
+    saveBtn: {
+      backgroundColor: C.active,
+      borderRadius: 3,
+      paddingVertical: 12,
+      alignItems: 'center',
+    },
+    saveBtnText: {
+      color: C.bg,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+      fontFamily: F.mono,
+    },
+    note: {
+      color: C.textMuted,
+      fontSize: 11,
+      fontFamily: F.mono,
+      textAlign: 'center',
+      letterSpacing: 0.2,
+    },
+    toggleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      padding: 14,
+      backgroundColor: C.bgCard,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: C.border,
+    },
+    toggleText: { flex: 1, gap: 3 },
+    subsection: {
+      padding: 14,
+      backgroundColor: C.bgCard,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: C.border,
+      gap: 2,
+    },
+    textarea: {
+      minHeight: 100,
+      textAlignVertical: 'top',
+    },
+    outlineBtn: {
+      borderWidth: 1,
+      borderColor: C.active + '80',
+      borderRadius: 3,
+      paddingVertical: 10,
+      alignItems: 'center',
+    },
+    outlineBtnDisabled: {
+      borderColor: C.border,
+      opacity: 0.5,
+    },
+    outlineBtnText: {
+      color: C.active,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+      fontFamily: F.mono,
+    },
+    fileList: {
+      gap: 6,
+    },
+    fileRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      backgroundColor: C.bgCard,
+      borderRadius: 3,
+      borderWidth: 1,
+      borderColor: C.border,
+      gap: 8,
+    },
+    fileName: {
+      flex: 1,
+      color: C.textSecondary,
+      fontSize: 12,
+      fontFamily: F.mono,
+    },
+    deleteIcon: {
+      color: C.textDim,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+  });
+}

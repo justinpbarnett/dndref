@@ -2,11 +2,12 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { CardGrid } from '../src/components/CardGrid';
 import { SessionControls } from '../src/components/SessionControls';
-import { C } from '../src/theme';
+import { useColors } from '../src/context/ui-settings';
 
 export default function ReferenceScreen() {
+  const C = useColors();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: C.bg }]}>
       <SessionControls />
       <CardGrid />
     </View>
@@ -14,8 +15,5 @@ export default function ReferenceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: C.bg,
-  },
+  container: { flex: 1 },
 });
