@@ -5,6 +5,7 @@ const DATA_SOURCES_KEY = 'dndref:data-sources';
 
 export interface DataSourcesSettings {
   srdEnabled: boolean;
+  srdSources: string[];
   kankaToken: string;
   kankaCampaignId: string;
   homebreweryUrl: string;
@@ -16,6 +17,7 @@ export interface DataSourcesSettings {
 
 const DEFAULT: DataSourcesSettings = {
   srdEnabled: true,
+  srdSources: ['wotc-srd'],
   kankaToken: '',
   kankaCampaignId: '',
   homebreweryUrl: '',

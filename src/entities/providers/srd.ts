@@ -2,8 +2,35 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../index';
 
 const OPEN5E = 'https://api.open5e.com/v1';
-const CACHE_KEY = 'dndref:srd-cache';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+export interface SRDSource {
+  slug: string;
+  label: string;
+  publisher: string;
+}
+
+export const SRD_SOURCES: SRDSource[] = [
+  { slug: 'o5e',       label: 'Open5e Original Content',                      publisher: 'Open5e' },
+  { slug: 'wotc-srd',  label: '5e Core Rules',                                publisher: 'Wizards of the Coast' },
+  { slug: 'tob',       label: 'Tome of Beasts',                               publisher: 'Kobold Press' },
+  { slug: 'cc',        label: 'Creature Codex',                               publisher: 'Kobold Press' },
+  { slug: 'tob2',      label: 'Tome of Beasts 2',                             publisher: 'Kobold Press' },
+  { slug: 'dmag',      label: 'Deep Magic 5e',                                publisher: 'Kobold Press' },
+  { slug: 'tob3',      label: 'Tome of Beasts 3',                             publisher: 'Kobold Press' },
+  { slug: 'kp',        label: 'Kobold Press Compilation',                     publisher: 'Kobold Press' },
+  { slug: 'dmag-e',    label: 'Deep Magic Extended',                          publisher: 'Kobold Press' },
+  { slug: 'warlock',   label: 'Warlock Archives',                             publisher: 'Kobold Press' },
+  { slug: 'vom',       label: 'Vault of Magic',                               publisher: 'Kobold Press' },
+  { slug: 'toh',       label: 'Tome of Heroes',                               publisher: 'Kobold Press' },
+  { slug: 'blackflag', label: 'Black Flag SRD',                               publisher: 'Kobold Press' },
+  { slug: 'tob-2023',  label: 'Tome of Beasts 2023',                          publisher: 'Kobold Press' },
+  { slug: 'menagerie', label: 'Level Up A5e Monstrous Menagerie',             publisher: 'EN Publishing' },
+  { slug: 'a5e',       label: 'Level Up Advanced 5e',                         publisher: 'EN Publishing' },
+  { slug: 'tal-dorei', label: "Critical Role: Tal'Dorei Campaign Setting",    publisher: 'Green Ronin Publishing' },
+];
+
+export const DEFAULT_SRD_SOURCES = ['wotc-srd'];
 
 interface SRDCache {
   ts: number;
@@ -12,29 +39,37 @@ interface SRDCache {
 
 export class SRDProvider implements WorldDataProvider {
   readonly name = 'D&D 5e SRD';
+  private sources: string[];
+
+  constructor(sources: string[] = DEFAULT_SRD_SOURCES) {
+    this.sources = sources;
+  }
 
   async load(): Promise<EntityIndex> {
-    const cached = await loadCache();
+    if (this.sources.length === 0) return [];
+    const cacheKey = `dndref:srd-${[...this.sources].sort().join(',')}`;
+    const cached = await loadCache(cacheKey);
     if (cached) return cached;
 
+    const sourceParam = this.sources.join(',');
     const [monsters, items] = await Promise.all([
-      fetchAll<any>(`${OPEN5E}/monsters/?limit=500`),
-      fetchAll<any>(`${OPEN5E}/magicitems/?limit=500`),
+      fetchAll<any>(`${OPEN5E}/monsters/?limit=500&document__slug__in=${sourceParam}`),
+      fetchAll<any>(`${OPEN5E}/magicitems/?limit=500&document__slug__in=${sourceParam}`),
     ]);
     const entities = [
       ...monsters.map(monsterToEntity),
       ...items.map(itemToEntity),
     ];
-    await saveCache(entities);
+    await saveCache(cacheKey, entities);
     return entities;
   }
 
   getName(): string { return this.name; }
 }
 
-async function loadCache(): Promise<EntityIndex | null> {
+async function loadCache(key: string): Promise<EntityIndex | null> {
   try {
-    const raw = await AsyncStorage.getItem(CACHE_KEY);
+    const raw = await AsyncStorage.getItem(key);
     if (!raw) return null;
     const cache = JSON.parse(raw) as SRDCache;
     if (Date.now() - cache.ts > CACHE_TTL_MS) return null;
@@ -44,9 +79,9 @@ async function loadCache(): Promise<EntityIndex | null> {
   }
 }
 
-async function saveCache(entities: EntityIndex): Promise<void> {
+async function saveCache(key: string, entities: EntityIndex): Promise<void> {
   try {
-    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), entities }));
+    await AsyncStorage.setItem(key, JSON.stringify({ ts: Date.now(), entities }));
   } catch {
     // Storage full -- skip caching
   }

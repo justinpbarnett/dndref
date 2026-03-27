@@ -148,7 +148,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       new MarkdownProvider(SAMPLE_WORLD, 'Sample World'),
       new FileUploadProvider(),
     ];
-    if (ds.srdEnabled) providers.push(new SRDProvider());
+    if (ds.srdEnabled) providers.push(new SRDProvider(ds.srdSources));
     if (ds.kankaToken && ds.kankaCampaignId) {
       providers.push(new KankaProvider(ds.kankaToken, Number(ds.kankaCampaignId)));
     }
@@ -174,7 +174,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       });
 
     return () => { cancelled = true; };
-  }, [ds.srdEnabled, ds.kankaToken, ds.kankaCampaignId, ds.homebreweryUrl, ds.notionToken, ds.notionPageIds, ds.googleDocsUrl, uploadsVersion]);
+  }, [ds.srdEnabled, ds.srdSources, ds.kankaToken, ds.kankaCampaignId, ds.homebreweryUrl, ds.notionToken, ds.notionPageIds, ds.googleDocsUrl, uploadsVersion]);
 
   useEffect(() => {
     if (status !== 'active') return;
