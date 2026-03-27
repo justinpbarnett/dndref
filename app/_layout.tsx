@@ -1,11 +1,21 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { UISettingsProvider } from '../src/context/ui-settings';
 import { DataSourcesProvider } from '../src/context/data-sources';
 import { SessionProvider } from '../src/context/session';
 import { C, F } from '../src/theme';
 
 export default function RootLayout() {
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href =
+      'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap';
+    document.head.appendChild(link);
+  }, []);
+
   return (
     <UISettingsProvider><DataSourcesProvider><SessionProvider>
       <Tabs
@@ -15,16 +25,16 @@ export default function RootLayout() {
             backgroundColor: C.bgSurface,
             borderTopColor: C.border,
             borderTopWidth: 1,
-            height: 44,
-            paddingBottom: 6,
-            paddingTop: 6,
+            height: 48,
+            paddingBottom: 7,
+            paddingTop: 7,
           },
           tabBarActiveTintColor: C.textPrimary,
           tabBarInactiveTintColor: C.textDim,
           tabBarLabelStyle: {
-            fontSize: 10,
+            fontSize: 9,
             fontWeight: '700',
-            letterSpacing: 1.5,
+            letterSpacing: 2,
             fontFamily: F.mono,
           },
         }}

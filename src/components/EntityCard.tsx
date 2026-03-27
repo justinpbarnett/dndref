@@ -24,15 +24,15 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
   const { entity, pinned } = card;
   const color = typeAccent(entity.type);
   const fadeIn = useRef(new Animated.Value(0)).current;
-  const slideUp = useRef(new Animated.Value(10)).current;
+  const slideUp = useRef(new Animated.Value(8)).current;
 
   const { cardSize } = useUISettings();
   const { fontScale } = CARD_SIZE_CONFIGS[cardSize];
 
   useEffect(() => {
     const anim = Animated.parallel([
-      Animated.timing(fadeIn, { toValue: 1, duration: 250, useNativeDriver: true }),
-      Animated.timing(slideUp, { toValue: 0, duration: 250, useNativeDriver: true }),
+      Animated.timing(fadeIn, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.timing(slideUp, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]);
     anim.start();
     return () => anim.stop();
@@ -41,7 +41,11 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
   const bullets = useMemo(() => parseBullets(entity.summary), [entity.summary]);
 
   const webStyles = Platform.OS === 'web'
-    ? { boxShadow: pinned ? `0 0 0 1px ${color}50, 0 4px 20px ${color}18` : '0 2px 12px #00000040' }
+    ? {
+        boxShadow: pinned
+          ? `0 0 0 1px ${color}48, 0 6px 28px ${color}20, 0 2px 8px #00000060`
+          : '0 2px 12px #00000050',
+      }
     : {};
 
   return (
@@ -50,21 +54,24 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
         styles.card,
         { width, opacity: fadeIn, transform: [{ translateY: slideUp }] },
         pinned && styles.cardPinned,
-        pinned && { borderColor: color + '40' },
+        pinned && { borderColor: color + '40', borderLeftColor: color, borderLeftWidth: 3 },
         webStyles as object,
       ]}
     >
       <View style={[styles.topStrip, { backgroundColor: color }]} />
 
-      <View style={[styles.header, { backgroundColor: color + '14' }]}>
+      <View style={[styles.header, { backgroundColor: color + (pinned ? '12' : '0b') }]}>
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
-            <Text style={[styles.name, { fontSize: 14 * fontScale, lineHeight: 19 * fontScale }]} numberOfLines={2}>
+            <Text
+              style={[styles.name, { fontSize: 14 * fontScale, lineHeight: 20 * fontScale }]}
+              numberOfLines={2}
+            >
               {entity.name}
             </Text>
-            <View style={[styles.typePill, { borderColor: color + '60', backgroundColor: color + '18' }]}>
-              <Text style={[styles.typeText, { color, fontSize: 8 * fontScale }]}>{entity.type.toUpperCase()}</Text>
-            </View>
+            <Text style={[styles.typeLabel, { color: color + 'b0', fontSize: 8 * fontScale }]}>
+              {entity.type.toUpperCase()}
+            </Text>
           </View>
           <View style={styles.headerRight}>
             <View style={styles.actions}>
@@ -86,7 +93,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
             {entity.image && (
               <Image
                 source={{ uri: entity.image }}
-                style={[styles.portrait, { borderColor: color + '30' }]}
+                style={[styles.portrait, { borderColor: color + '35' }]}
                 resizeMode="cover"
               />
             )}
@@ -94,13 +101,17 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
         </View>
       </View>
 
-      <View style={[styles.divider, { backgroundColor: color + '28' }]} />
+      <View style={[styles.divider, { backgroundColor: color + '22' }]} />
 
       <View style={styles.bullets}>
         {bullets.map((bullet, i) => (
           <View key={i} style={styles.bulletRow}>
-            <Text style={[styles.bulletDot, { color: color + '90', fontSize: 6 * fontScale, marginTop: 5 * fontScale }]}>◆</Text>
-            <Text style={[styles.bulletText, { fontSize: 12 * fontScale, lineHeight: 17 * fontScale }]}>{bullet}</Text>
+            <Text style={[styles.bulletMark, { color: color + 'aa', fontSize: 11 * fontScale, lineHeight: 18 * fontScale }]}>
+              ›
+            </Text>
+            <Text style={[styles.bulletText, { fontSize: 12 * fontScale, lineHeight: 18 * fontScale }]}>
+              {bullet}
+            </Text>
           </View>
         ))}
       </View>
@@ -111,7 +122,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: C.bgCard,
-    borderRadius: 5,
+    borderRadius: 4,
     margin: 5,
     borderWidth: 1,
     borderColor: C.border,
@@ -120,18 +131,15 @@ const styles = StyleSheet.create({
   },
   cardPinned: {
     backgroundColor: C.bgCardPinned,
-    borderColor: C.borderMed,
   },
   topStrip: {
-    height: 4,
+    height: 3,
     width: '100%',
-    opacity: 0.85,
   },
   header: {
     paddingHorizontal: 12,
     paddingTop: 10,
-    paddingBottom: 9,
-    gap: 6,
+    paddingBottom: 10,
   },
   headerTop: {
     flexDirection: 'row',
@@ -140,71 +148,63 @@ const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
-    gap: 6,
+    gap: 5,
   },
   headerRight: {
     alignItems: 'flex-end',
     gap: 6,
   },
   portrait: {
-    width: 52,
-    height: 68,
-    borderRadius: 3,
+    width: 48,
+    height: 64,
+    borderRadius: 2,
     borderWidth: 1,
   },
   name: {
     color: C.textPrimary,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    flex: 1,
+    fontWeight: '600',
+    letterSpacing: 0.6,
     fontFamily: F.display,
+  },
+  typeLabel: {
+    fontWeight: '700',
+    letterSpacing: 2.2,
+    fontFamily: F.mono,
   },
   actions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 9,
     paddingTop: 1,
   },
   pinIcon: {
-    fontSize: 13,
+    fontSize: 12,
     color: C.textDim,
-    opacity: 0.5,
+    opacity: 0.55,
   },
   dismissIcon: {
-    fontSize: 11,
+    fontSize: 10,
     color: C.textDim,
     fontWeight: '700',
-  },
-  typePill: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderRadius: 2,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  typeText: {
-    fontWeight: '700',
-    letterSpacing: 1.4,
-    fontFamily: F.mono,
   },
   divider: {
     height: 1,
   },
   bullets: {
     padding: 12,
-    paddingTop: 10,
-    gap: 7,
+    paddingTop: 9,
+    gap: 6,
   },
   bulletRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 7,
+    gap: 5,
   },
-  bulletDot: {
-    lineHeight: 14,
+  bulletMark: {
+    fontWeight: '700',
   },
   bulletText: {
     color: C.textSecondary,
     flex: 1,
-    fontFamily: F.display,
+    fontFamily: F.body,
   },
 });

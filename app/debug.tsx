@@ -130,9 +130,9 @@ const styles = StyleSheet.create({
     color: C.textDim,
     fontSize: 9,
     fontWeight: '700',
-    letterSpacing: 2,
+    letterSpacing: 2.5,
     fontFamily: F.mono,
-    marginBottom: 6,
+    marginBottom: 7,
   },
   micRow: {
     flexDirection: 'row',

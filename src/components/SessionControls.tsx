@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSession } from '../context/session';
 import { C, F } from '../theme';
 
@@ -16,8 +16,8 @@ function PulseDot({ status }: { status: 'idle' | 'active' | 'paused' }) {
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.parallel([
-          Animated.timing(scale, { toValue: 1.6, duration: 900, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0, duration: 900, useNativeDriver: true }),
+          Animated.timing(scale, { toValue: 1.7, duration: 1000, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0, duration: 1000, useNativeDriver: true }),
         ]),
         Animated.parallel([
           Animated.timing(scale, { toValue: 1, duration: 0, useNativeDriver: true }),
@@ -45,43 +45,53 @@ const dot = StyleSheet.create({
   core: { width: 6, height: 6, borderRadius: 3 },
 });
 
+const webBarShadow = Platform.OS === 'web'
+  ? { boxShadow: '0 1px 0 #1c1610, 0 4px 16px #00000040' }
+  : {};
+
 export function SessionControls() {
   const { status, sttStatus, start, pause, stop } = useSession();
 
   const statusLabel =
-    sttStatus === 'connecting' ? 'Connecting...' :
+    sttStatus === 'connecting' ? 'Connecting' :
     sttStatus === 'error' ? 'Mic Error' :
     status === 'active' ? 'Listening' :
     status === 'paused' ? 'Paused' :
     'Ready';
 
   return (
-    <View style={styles.bar}>
-      <Text style={styles.appName}>DND{'\u2009'}REF</Text>
+    <View style={[styles.bar, webBarShadow as object]}>
+      <Text style={styles.appName}>DnD{'\u2009'}Ref</Text>
 
       <View style={styles.statusRow}>
         <PulseDot status={status} />
-        <Text style={styles.statusText}>{statusLabel}</Text>
+        <Text style={[
+          styles.statusText,
+          status === 'active' && { color: C.active },
+          status === 'paused' && { color: C.paused },
+        ]}>
+          {statusLabel}
+        </Text>
       </View>
 
       <View style={styles.buttons}>
         {status === 'idle' && (
-          <TouchableOpacity style={[styles.btn, styles.btnPrimary]} onPress={start} activeOpacity={0.7}>
-            <Text style={styles.btnTextPrimary}>Start</Text>
+          <TouchableOpacity style={[styles.btn, styles.btnStart]} onPress={start} activeOpacity={0.75}>
+            <Text style={styles.btnTextStart}>Start</Text>
           </TouchableOpacity>
         )}
         {status === 'active' && (
-          <TouchableOpacity style={[styles.btn, styles.btnGhost]} onPress={pause} activeOpacity={0.7}>
-            <Text style={styles.btnTextGhost}>Pause</Text>
+          <TouchableOpacity style={[styles.btn, styles.btnPause]} onPress={pause} activeOpacity={0.75}>
+            <Text style={styles.btnTextPause}>Pause</Text>
           </TouchableOpacity>
         )}
         {status === 'paused' && (
-          <TouchableOpacity style={[styles.btn, styles.btnPrimary]} onPress={start} activeOpacity={0.7}>
-            <Text style={styles.btnTextPrimary}>Resume</Text>
+          <TouchableOpacity style={[styles.btn, styles.btnStart]} onPress={start} activeOpacity={0.75}>
+            <Text style={styles.btnTextStart}>Resume</Text>
           </TouchableOpacity>
         )}
         {status !== 'idle' && (
-          <TouchableOpacity style={[styles.btn, styles.btnStop]} onPress={stop} activeOpacity={0.7}>
+          <TouchableOpacity style={[styles.btn, styles.btnStop]} onPress={stop} activeOpacity={0.75}>
             <Text style={styles.btnTextStop}>Stop</Text>
           </TouchableOpacity>
         )}
@@ -96,17 +106,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
-    paddingVertical: 11,
+    paddingVertical: 10,
     backgroundColor: C.bgSurface,
     borderBottomWidth: 1,
     borderBottomColor: C.border,
+    minHeight: 50,
   },
   appName: {
-    color: C.textSecondary,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 3,
-    fontFamily: F.mono,
+    color: C.textDim,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 2.5,
+    fontFamily: F.display,
     minWidth: 80,
   },
   statusRow: {
@@ -117,7 +128,7 @@ const styles = StyleSheet.create({
   statusText: {
     color: C.textSecondary,
     fontSize: 11,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
     fontFamily: F.mono,
   },
   buttons: {
@@ -128,34 +139,38 @@ const styles = StyleSheet.create({
   },
   btn: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: 3,
   },
-  btnPrimary: {
+  btnStart: {
     backgroundColor: C.active,
   },
-  btnGhost: {
+  btnPause: {
+    backgroundColor: C.paused + '20',
     borderWidth: 1,
-    borderColor: C.borderStrong,
+    borderColor: C.paused + '60',
   },
   btnStop: {
     borderWidth: 1,
-    borderColor: C.borderMed,
+    borderColor: C.borderStrong,
   },
-  btnTextPrimary: {
-    color: C.bg,
+  btnTextStart: {
+    color: '#06120a',
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.3,
+    fontFamily: F.mono,
   },
-  btnTextGhost: {
+  btnTextPause: {
+    color: C.paused,
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: F.mono,
+  },
+  btnTextStop: {
     color: C.textSecondary,
     fontSize: 12,
     fontWeight: '600',
-  },
-  btnTextStop: {
-    color: C.textDim,
-    fontSize: 12,
-    fontWeight: '600',
+    fontFamily: F.mono,
   },
 });

@@ -2,39 +2,44 @@ import { Platform } from 'react-native';
 import { EntityType } from './entities';
 
 export const C = {
-  bg: '#0b0907',
-  bgCard: '#141008',
-  bgCardPinned: '#1c1610',
-  bgSurface: '#0f0c09',
-  bgInput: '#100d0a',
+  bg: '#080706',
+  bgCard: '#0d0a07',
+  bgCardPinned: '#161009',
+  bgSurface: '#0b0907',
+  bgInput: '#0f0c09',
 
-  border: '#211a10',
-  borderMed: '#2e2418',
-  borderStrong: '#3c3020',
+  border: '#1c1610',
+  borderMed: '#28201a',
+  borderStrong: '#362c1e',
 
-  textPrimary: '#e2cfac',
-  textSecondary: '#6a5c44',
-  textMuted: '#322a1e',
-  textDim: '#483c2c',
+  textPrimary: '#dcc89a',
+  textSecondary: '#786448',
+  textMuted: '#2e2518',
+  textDim: '#4a3c2a',
 
-  location: '#4e8bbf',
-  npc: '#3da878',
-  faction: '#b84460',
-  item: '#b87228',
-  unknown: '#5e5040',
+  location: '#5a9fd4',
+  npc: '#45b882',
+  faction: '#c44d6a',
+  item: '#c47a2c',
+  unknown: '#6a5840',
 
-  active: '#34b070',
-  paused: '#b87228',
+  active: '#3fc878',
+  paused: '#c47a2c',
 };
 
 export const F = {
   display: Platform.select({
-    web: "Georgia, 'Times New Roman', serif",
+    web: "'Cinzel', Georgia, 'Times New Roman', serif",
+    ios: 'Georgia',
+    default: 'serif',
+  }),
+  body: Platform.select({
+    web: "'EB Garamond', Georgia, serif",
+    ios: 'Georgia',
     default: undefined,
   }),
-  body: undefined,
   mono: Platform.select({
-    web: "'Courier New', monospace",
+    web: "'Courier Prime', 'Courier New', monospace",
     ios: 'Menlo',
     default: 'monospace',
   }),

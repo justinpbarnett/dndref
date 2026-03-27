@@ -170,17 +170,18 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: 12,
   },
   emptyGlyph: {
-    fontSize: 28,
+    fontSize: 24,
     color: C.textMuted,
     fontFamily: F.display,
+    opacity: 0.6,
   },
   emptyLabel: {
     color: C.textMuted,
-    fontSize: 13,
-    letterSpacing: 0.5,
+    fontSize: 11,
+    letterSpacing: 1.5,
     fontFamily: F.mono,
   },
 });
