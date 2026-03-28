@@ -9,7 +9,9 @@
     "scrape:discover": "node scripts/scrape-vvd.mjs",
     "scrape:export": "node scripts/scrape-vvd.mjs --export",
     "proxy:dev": "wrangler dev --config workers/cors-proxy/wrangler.toml",
-    "proxy:deploy": "wrangler deploy --config workers/cors-proxy/wrangler.toml"
+    "proxy:deploy": "wrangler deploy --config workers/cors-proxy/wrangler.toml",
+    "lint": "eslint .",
+    "lint:check-limits": "node scripts/check-limits.js"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.0",
@@ -28,6 +30,8 @@
     "@babel/core": "^7.25.0",
     "@playwright/test": "^1.58.2",
     "@types/react": "~18.3.0",
+    "@typescript-eslint/parser": "^8.57.2",
+    "eslint": "^8.57.0",
     "playwright": "^1.58.2",
     "typescript": "~5.3.3"
   }

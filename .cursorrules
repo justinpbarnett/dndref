@@ -1,0 +1,5 @@
+# Project Rules
+
+## File Limits
+- No source files should exceed 300 lines
+- No directory should contain more than 20 flat files

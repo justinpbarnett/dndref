@@ -22,6 +22,10 @@ ios:
 check:
     npx tsc --noEmit
 
+# Lint: check file limits (max 300 lines, max 20 files per dir)
+lint:
+    npm run lint
+
 # Run Playwright screenshot tests against local dist/ build
 screenshot:
     npx playwright test e2e/screenshots.spec.ts --config playwright.config.ts
