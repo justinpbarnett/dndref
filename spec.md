@@ -1,220 +1,190 @@
 # DnD Live Reference
 
-A toy iPad app for a DM running long-form campaigns with heavy worldbuilding. Listens to the table, detects entity mentions in real time, and surfaces relevant lore so the game keeps moving.
+A toy iPad app (and web app) for a DM running long-form campaigns with heavy worldbuilding. Listens at the table, detects entity mentions in real time, and surfaces relevant lore so the game keeps moving.
 
 ## Problem
 
-The DM has built out a rich world in vvd.world -- characters, locations, factions, items, lore. Mid-session, when a player asks "wait, what's the deal with the Ironspire?" the DM either guesses, pauses to look it up, or glosses over it. All three slow the game or erode world consistency.
+The DM has built out a rich world in their notes (Notion, Google Docs, Kanka, etc.) with characters, locations, factions, items, and lore. Mid-session, when a player asks "wait, what's the deal with the Ironspire?" the DM either guesses, pauses to look it up, or glosses over it. All three slow the game or erode world consistency.
 
-The fix: a passive iPad listener that detects when known entities are mentioned and instantly shows the DM what's in the notes -- no lookup required.
+The fix: a passive listener that detects when known entities are mentioned and instantly shows the DM what's in the notes, no lookup required.
 
 ## What it does
 
-1. Loads the DM's vvd.world export at session start
-2. Listens to the table via iPad mic
-3. Transcribes speech in near-real time via a cloud STT provider
-4. Detects entity mentions (characters, locations, factions, items, lore entries)
-5. Shows entity cards in a pinnable, auto-updating stack
-6. At session end, shows an in-app summary with suggested vvd.world updates
+1. Loads world data from multiple sources at session start (SRD, Kanka, Notion, Google Docs, Homebrewery, or uploaded files)
+2. Listens to the table via device mic (Web Speech API on web, Deepgram on native)
+3. Transcribes speech in near-real time via cloud STT provider
+4. Detects entity mentions (characters, locations, factions, items, lore entries) using Fuse.js fuzzy matching
+5. Shows entity cards in a pinnable, auto-updating stack (max 6 cards)
+6. No AI in the live path, all detection is deterministic
 
 ## What it doesn't do
 
 - No inference or suggestions during the session -- just facts
-- No live vvd.world API (static export loaded at startup)
+- No live world data API updates (static data loaded at startup)
 - No player-facing output
-- No campaign state tracking (that's vvd.world's job)
-- No rules lookup (5e SRD, conditions, spells) -- possible v2
-- No character sheets or stats -- possible v2
+- No campaign state tracking
+- No end-of-session summary/analysis (not implemented)
+- No rules lookup beyond 5e SRD monsters/items
+- No character sheets or stats tracking
 
 ## Platform
 
-**React Native + Expo** -- iPad app, all on-device. No server required. Installable via TestFlight or direct Expo build.
+**React Native + Expo** with web support via Expo Router. Deployed to dndref.com via Cloudflare Pages, and iOS via TestFlight.
 
 ## Source data
 
-World data flows through a `WorldDataProvider` abstraction. The POC uses a vvd.world file export, but the interface is designed to accommodate live APIs or other tools later.
+World data flows through a `WorldDataProvider` abstraction. The app supports multiple providers simultaneously:
 
 ```
 WorldDataProvider (interface)
   load(): Promise<EntityIndex>
   getName(): string
 
-VvdWorldFileProvider implements WorldDataProvider   <- POC default
-  import via iOS Files picker, parses export format
-  index persists across sessions, re-import to refresh
-
-WorldAnvilProvider implements WorldDataProvider     <- future
-ApiProvider implements WorldDataProvider            <- future (generic REST)
+Implemented providers:
+  - SRDProvider         (Open5e API for 5e monsters/items)
+  - KankaProvider       (Kanka.io campaign data)
+  - HomebreweryProvider (Homebrewery.naturalcrit.com documents)
+  - NotionProvider      (Notion workspace pages)
+  - GoogleDocsProvider  (Google Docs exports)
+  - FileUploadProvider  (User-uploaded .md, .txt, .json files)
+  - MarkdownProvider    (Sample world data + used internally)
 ```
 
-`EntityIndex` is the shared output regardless of provider: a list of entities each with canonical name, aliases, type, and a summary body. Everything downstream (fuzzy matching, card display) works against that shape only -- no provider-specific logic leaks through.
+`EntityIndex` is the shared output regardless of provider: a list of entities each with canonical name, aliases, type, and a summary body. Everything downstream (fuzzy matching, card display) works against that shape only.
 
 ## Architecture
 
 ```
-mic input (Expo AV)
-  -> STTProvider (streaming)
-  -> rolling transcript buffer (last ~30s)
-  -> entity detector (fuse.js fuzzy match, runs every 2-3s)
-  -> card stack UI (newest first, pinnable)
-
-session end
-  -> full transcript saved
-  -> Claude API pass: flag session events worth updating in vvd.world,
-     flag unmatched entities (things mentioned with no notes)
-  -> in-app summary screen with export option
+mic input (STTProvider abstraction)
+  -> WebSpeechProvider (Chrome/Edge) or DeepgramProvider (web + native)
+  -> rolling transcript buffer
+  -> entity detector (Fuse.js fuzzy match, runs every 2 seconds)
+     - Scans 1, 2, and 3-word phrases from new transcript text
+     - Threshold 0.28, minimum 4 characters
+  -> card stack UI (newest first, pinnable, max 6 cards)
+     - Rightmost unpinned card evicted when full
+     - Pinned cards sorted to front
 ```
+
+### Context provider hierarchy
+
+```
+UISettingsProvider (theme, card size)
+  -> DataSourcesProvider (API credentials, data sources settings)
+    -> SessionProvider (STT lifecycle, entity detection, card stack)
+```
+
+On web, `UISettingsProvider` reads from `localStorage` synchronously to avoid hydration flicker. On native, it reads from `AsyncStorage` on mount.
 
 ### STT provider abstraction
 
-Cloud STT is required on iPad (no viable local option). Built as a swappable interface so the DM can use whichever provider he has a key for.
-
 ```
 STTProvider (interface)
-  connect(apiKey): void
-  start(): void
+  start(): Promise<void>
   pause(): void
+  resume(): void
   stop(): void
-  onTranscript: (text: string, isFinal: boolean) => void
+  name: string
 
-DeepgramProvider implements STTProvider   <- default
-AssemblyAIProvider implements STTProvider
-OpenAIWhisperProvider implements STTProvider
+WebSpeechProvider   - Browser Web Speech API (Chrome/Edge only)
+DeepgramProvider    - Deepgram streaming API (WebSocket on web, REST on native)
 ```
 
-Deepgram is the default -- ~300ms latency, good accuracy, ~$0.004/min (~$0.72 for a 3hr session). The DM sets up his own API key in settings.
+Deepgram is the primary provider on native iPad. On web, falls back to Web Speech if no Deepgram key is configured.
 
 ### Entity detection
 
-Not NLP -- fuzzy string matching against the known entity list from the export. Uses fuse.js. Fast, deterministic, no hallucinations.
+Not NLP -- fuzzy string matching against the known entity list. Uses Fuse.js with:
+- Threshold: 0.28 (tuned for false positive balance)
+- Minimum match length: 4 characters
+- Matches single words, 2-word phrases, and 3-word phrases
 
-- Runs every 2-3s on the last 30s of transcript
-- Confidence threshold to avoid false positives on common words
-- Recency debounce: don't re-surface an entity that matched in the last 2 minutes (unless pinned)
+Runs every 2 seconds on only the *new* transcript text since the last check (`processedUpToRef`).
 
-### Card stack
+### Card stack behavior
 
-Multiple cards visible at once, sorted newest to oldest. Each card:
-
-```
-IRONSPIRE FORTRESS          [pin] [x]
-Location - Northern Wastes
-----------------------------------
-An ancient dwarven keep seized
-by the Lich King in the Third Age.
-Now his eastern command post.
-```
-
-- New match always lands at position 1, shifting all others right then down
-- Pinning a card moves it to position 1 (animated), shifting others down
-- Unpinning moves the card to just behind the last pinned card -- if it's already there or further back, it stays put
-- Cards are auto-dismissed when pushed off the grid by new matches
+- New match always lands at position 1 (after pinned cards), shifting others right
+- Pinning a card moves it to position 1
+- Unpinning moves the card to just after the last pinned card
+- Cards are auto-dismissed when pushed off the grid by new matches (max 6 cards)
 - Force dismiss: X button on each card removes it immediately
-- Max ~6 cards visible (2x3 landscape grid) before displacement kicks in
+- Dismissed entities can reappear if mentioned again
 
-### Session controls
+## Session controls
 
-- **Start** -- begins mic capture + transcription, starts session log
-- **Pause** -- stops transcription, cards stay visible, session timer pauses
-- **Stop** -- ends session, triggers summary screen
+- **Start** -- begins mic capture + transcription
+- **Pause** -- stops transcription, cards stay visible
+- **Resume** -- continues from pause
+- **Stop** -- ends session, clears cards and transcript
 
-## End-of-session summary
-
-After tapping Stop:
-
-1. Claude API reviews the session transcript against the entity index
-2. Surfaces: entities whose notes may be out of date based on session events, unmatched entity names (things mentioned that have no notes), and notable moments worth logging
-3. Summary shows in-app with an Export option (shares transcript + suggestions as text/markdown via iOS share sheet)
-
-Claude API key entered once in app settings (same settings screen as STT key).
-
-## UI layout (iPad)
-
-Two tabs. The DM lives in the first one all session.
+## UI layout
 
 **Tab 1 -- Reference (default)**
 
-Cards displayed in a grid (2 columns on portrait, 3 on landscape). Newest card always lands at top-left, shifting all others right then down. Oldest unpinned card is displaced when the grid is full. Shift is animated so the movement reads as a flow rather than a jump.
+Cards displayed in a responsive grid based on card size setting:
+- S: 4 columns (landscape) / 3 columns (portrait)
+- M: 3 columns / 2 columns (default)
+- L: 2 columns / 2 columns
+- XL: 2 columns / 1 column
 
-```
-Landscape (3 columns):
-+----------------------------------------------------+
-|  DnD Ref    [Pause]  [Stop]          Recording...  |
-+----------------+----------------+------------------+
-| IRONSPIRE [p][x]| MALACHAR [p][x]| OBSIDIAN  [p][x] |
-|  Location      |  NPC - Wizard  |  Faction         |
-|  Ancient keep  |  Former mage,  |  Shadow guild,   |
-|  seized by...  |  betrayed...   |  12 known...     |
-+----------------+----------------+------------------+
-|  (next card    |                |                  |
-|   lands here)  |                |                  |
-+----------------+----------------+------------------+
-```
+Session controls at top: Start/Pause/Resume/Stop buttons with STT status indicator.
 
-No transcript visible. Grid fills top-left to bottom-right. Pinned cards don't move or get displaced.
+**Tab 2 -- Debug (dev builds only)**
 
-**Tab 2 -- Debug (verification only)**
+Rolling transcript feed + controls for testing. Hidden in production builds.
 
-Rolling transcript feed + a mic level indicator. Just to confirm the app is picking up audio. Not meant for use during sessions.
+**Tab 3 -- Settings**
+
+Configure data sources, STT provider, card size, and theme.
 
 ## Stack
 
 - React Native + Expo (SDK 52+)
-- Expo AV (mic capture)
-- fuse.js (fuzzy entity matching)
-- Deepgram JS SDK (default STT, streaming via WebSocket)
-- Claude API (end-of-session analysis only -- not in live path)
-- Expo FileSystem + Share (import export file, export session output)
-- AsyncStorage (persist settings, entity index)
+- Expo Router for navigation
+- Fuse.js (fuzzy entity matching)
+- Deepgram SDK (streaming STT via WebSocket on web)
+- AsyncStorage (persist settings)
+- Cloudflare Workers (CORS proxy for web API access)
 
 ## File layout
 
 ```
 dnd-ref/
-  spec.md
   app/
-    index.tsx          <- session screen (main UI)
-    settings.tsx       <- API keys, STT provider
-    summary.tsx        <- end-of-session summary
+    _layout.tsx         <- Root layout with provider hierarchy
+    index.tsx           <- Main reference screen with card grid
+    debug.tsx           <- Debug tab (dev only)
+    settings.tsx        <- Settings screen
   src/
-    stt/
-      index.ts         <- STTProvider interface
-      deepgram.ts
-      assemblyai.ts
-      openai-whisper.ts
-    entities/
-      index.ts         <- EntityIndex type + WorldDataProvider interface
-      providers/
-        vvd-world.ts   <- parse vvd.world export (POC default)
-        world-anvil.ts <- future
-      detector.ts      <- fuse.js matching against buffer
-    session/
-      log.ts           <- transcript accumulation
-      analysis.ts      <- Claude API pass at session end
-    components/
-      EntityCard.tsx
-      CardStack.tsx
-      TranscriptPane.tsx
-      SessionControls.tsx
-  sample-export/       <- anonymized vvd.world export for dev/testing
+    components/         <- CardGrid, EntityCard, SessionControls
+    context/            <- UISettingsProvider, DataSourcesProvider, SessionProvider
+    entities/           <- Entity types, detector, providers
+      providers/        <- SRD, Kanka, Homebrewery, Notion, Google Docs, File Upload
+    stt/                <- STTProvider interface, WebSpeechProvider, DeepgramProvider
+    sample-world/       <- Sample campaign data for testing
+    theme.ts            <- Colors, fonts
+    proxy.ts            <- CORS proxy configuration
+  e2e/                  <- Playwright tests
+  workers/              <- Cloudflare Workers
+    cors-proxy/         <- CORS proxy for external APIs
 ```
 
-## Open questions
+## Build commands
 
-1. What format does vvd.world export? (Waiting on sample from DM.) JSON/XML/CSV determines how `vvd-world.ts` works.
-2. Does every entity type have consistent fields, or is lore freeform?
-3. ~~Card dismiss behavior?~~ Answered: pushed off by new matches (no timer). Unpinning moves card to bottom of stack, first to be replaced.
-4. ~~Does the DM want the transcript pane at all?~~ Answered: tab 2 debug view only, not shown during sessions.
-5. ~~Internet at game night?~~ Answered: yes, internet assumed. No offline fallback needed.
+```
+just dev            # web dev server
+just start          # Expo with QR code for iPad
+just check          # TypeScript typecheck
+just build-web      # export static web build
+just ship-web       # build + deploy to Cloudflare Pages
+just proxy-dev      # run CORS proxy locally
+just screenshot     # Playwright screenshot tests
+just build-ios      # EAS build for TestFlight
+```
 
-## Build order
+## Notes
 
-1. Get sample vvd.world export, understand schema
-2. `vvd-world.ts` -- parse export into EntityIndex, verify entity coverage
-3. `detector.ts` -- fuzzy match against test phrases, tune threshold
-4. Deepgram streaming in Expo -- mic -> WebSocket -> transcript
-5. `CardStack.tsx` + `EntityCard.tsx` -- static first, then wire to detector
-6. Session controls (Start/Pause/Stop)
-7. `analysis.ts` -- Claude pass + summary screen
-8. Settings screen (API keys, provider selection)
-9. Test at a real session before adding anything else
+- AI parser available in settings for converting campaign notes to entities (uses Claude API)
+- No AI in the live detection path -- all entity matching is deterministic Fuse.js
+- Debug tab only visible in dev builds (`__DEV__` flag)
+

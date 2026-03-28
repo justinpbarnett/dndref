@@ -64,9 +64,17 @@ export function UISettingsProvider({ children }: { children: React.ReactNode }) 
         AsyncStorage.getItem(CARD_SIZE_KEY),
         AsyncStorage.getItem(COLOR_SCHEME_KEY),
       ]).then(([rawSize, rawScheme]) => {
-        if (rawSize && rawSize in CARD_SIZE_CONFIGS) setCardSizeState(rawSize as CardSize);
-        if (rawScheme === 'dark' || rawScheme === 'light' || rawScheme === 'system') {
-          setColorSchemeState(rawScheme);
+        try {
+          if (rawSize && rawSize in CARD_SIZE_CONFIGS) setCardSizeState(rawSize as CardSize);
+        } catch (e) {
+          console.warn('[dnd-ref] Failed to parse card size preference:', e);
+        }
+        try {
+          if (rawScheme === 'dark' || rawScheme === 'light' || rawScheme === 'system') {
+            setColorSchemeState(rawScheme);
+          }
+        } catch (e) {
+          console.warn('[dnd-ref] Failed to parse color scheme preference:', e);
         }
       }).catch((e: unknown) => {
         console.warn('[dnd-ref] Failed to load UI preferences:', e);

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../index';
+import { fetchAll } from '../../utils/providers';
 
 const OPEN5E = 'https://api.open5e.com/v1';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -53,8 +54,14 @@ export class SRDProvider implements WorldDataProvider {
 
     const sourceParam = this.sources.join(',');
     const [monsters, items] = await Promise.all([
-      fetchAll<any>(`${OPEN5E}/monsters/?limit=500&document__slug__in=${sourceParam}`),
-      fetchAll<any>(`${OPEN5E}/magicitems/?limit=500&document__slug__in=${sourceParam}`),
+      fetchAll<any>(
+        `${OPEN5E}/monsters/?limit=500&document__slug__in=${sourceParam}`,
+        (data) => data.next ?? null,
+      ),
+      fetchAll<any>(
+        `${OPEN5E}/magicitems/?limit=500&document__slug__in=${sourceParam}`,
+        (data) => data.next ?? null,
+      ),
     ]);
     const entities = [
       ...monsters.map(monsterToEntity),
@@ -71,7 +78,7 @@ async function loadCache(key: string): Promise<EntityIndex | null> {
   try {
     const raw = await AsyncStorage.getItem(key);
     if (!raw) return null;
-    const cache = JSON.parse(raw) as SRDCache;
+    const cache = JSON.parse(raw) as { ts: number; entities: EntityIndex };
     if (Date.now() - cache.ts > CACHE_TTL_MS) return null;
     return cache.entities;
   } catch {
@@ -85,19 +92,6 @@ async function saveCache(key: string, entities: EntityIndex): Promise<void> {
   } catch {
     // Storage full -- skip caching
   }
-}
-
-async function fetchAll<T>(url: string): Promise<T[]> {
-  const results: T[] = [];
-  let next: string | null = url;
-  while (next) {
-    const res = await fetch(next);
-    if (!res.ok) throw new Error(`SRD fetch failed: ${res.status} ${next}`);
-    const data = await res.json() as { results: T[]; next: string | null };
-    results.push(...data.results);
-    next = data.next;
-  }
-  return results;
 }
 
 function monsterToEntity(m: any): Entity {

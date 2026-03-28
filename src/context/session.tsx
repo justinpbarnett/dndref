@@ -35,6 +35,10 @@ function extractCard(cards: CardState[], instanceId: string): [CardState, CardSt
   return [card, cards.filter((c) => c.instanceId !== instanceId)];
 }
 
+function buildCardIdSet(cards: CardState[]): Set<string> {
+  return new Set(cards.map((c) => c.entity.id));
+}
+
 function insertAfterPinned(cards: CardState[], card: CardState): CardState[] {
   const lastPinnedIdx = cards.reduce((acc, c, i) => (c.pinned ? i : acc), -1);
   const result = [...cards];
@@ -43,7 +47,9 @@ function insertAfterPinned(cards: CardState[], card: CardState): CardState[] {
 }
 
 function addCard(cards: CardState[], entity: Entity): CardState[] {
-  if (cards.some((c) => c.entity.id === entity.id)) return cards;
+  // O(1) lookup using Set instead of O(n) some()
+  const existingIds = buildCardIdSet(cards);
+  if (existingIds.has(entity.id)) return cards;
 
   const newCard: CardState = { instanceId: `${entity.id}-${Date.now()}`, entity, pinned: false };
   const next = insertAfterPinned(cards, newCard);
@@ -81,7 +87,13 @@ function dismissCard(cards: CardState[], instanceId: string): CardState[] {
 async function loadSettings(): Promise<STTSettings> {
   try {
     const raw = await AsyncStorage.getItem(STT_SETTINGS_KEY);
-    if (raw) return { ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) };
+    if (raw) {
+      try {
+        return { ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) };
+      } catch (parseErr) {
+        console.warn('[dnd-ref] Failed to parse STT settings, using defaults:', parseErr);
+      }
+    }
   } catch (e) {
     console.warn('[dnd-ref] Failed to load STT settings, using defaults:', e);
   }

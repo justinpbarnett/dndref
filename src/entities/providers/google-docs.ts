@@ -1,6 +1,7 @@
 import { EntityIndex, WorldDataProvider } from '../index';
 import { MarkdownProvider } from './markdown';
 import { CORS_PROXY } from '../../proxy';
+import { handleCorsError } from '../../utils/providers';
 
 const GDOCS_BASE = CORS_PROXY ? `${CORS_PROXY}/google-docs` : 'https://docs.google.com';
 
@@ -21,10 +22,7 @@ export class GoogleDocsProvider implements WorldDataProvider {
       if (!res.ok) throw new Error(`Google Docs fetch failed: ${res.status}. Make sure the doc is shared with "Anyone with the link".`);
       text = await res.text();
     } catch (e) {
-      if (e instanceof TypeError) {
-        throw new Error('Cannot reach Google Docs from the browser (CORS). Use the iOS app or paste content via file upload.');
-      }
-      throw e;
+      throw handleCorsError(e, 'Google Docs', 'Use the iOS app or paste content via file upload.');
     }
     return new MarkdownProvider(text, 'Google Docs').load();
   }

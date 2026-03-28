@@ -81,7 +81,13 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     AsyncStorage.getItem(STT_SETTINGS_KEY).then((raw) => {
-      if (raw) setSttSettings({ ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) });
+      if (raw) {
+        try {
+          setSttSettings({ ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) });
+        } catch (parseErr) {
+          console.warn('[dnd-ref] Failed to parse STT settings:', parseErr);
+        }
+      }
     });
     refreshUploads();
     return () => {

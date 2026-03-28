@@ -1,5 +1,6 @@
 import { EntityIndex, WorldDataProvider } from '../index';
 import { MarkdownProvider } from './markdown';
+import { handleCorsError } from '../../utils/providers';
 
 export class HomebreweryProvider implements WorldDataProvider {
   readonly name = 'Homebrewery';
@@ -18,10 +19,7 @@ export class HomebreweryProvider implements WorldDataProvider {
       const data = await res.json() as { text?: string; brew?: { text?: string } };
       text = data.text ?? data.brew?.text ?? '';
     } catch (e) {
-      if (e instanceof TypeError) {
-        throw new Error('Cannot reach Homebrewery from the browser (CORS). Use the iOS app or paste content via file upload.');
-      }
-      throw e;
+      throw handleCorsError(e, 'Homebrewery', 'Use the iOS app or paste content via file upload.');
     }
     const cleaned = stripBrewSyntax(text);
     return new MarkdownProvider(cleaned, 'Homebrewery').load();

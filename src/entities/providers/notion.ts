@@ -1,6 +1,7 @@
 import { EntityIndex, WorldDataProvider } from '../index';
 import { MarkdownProvider } from './markdown';
 import { CORS_PROXY } from '../../proxy';
+import { handleCorsError } from '../../utils/providers';
 
 const NOTION_API = CORS_PROXY ? `${CORS_PROXY}/notion/v1` : 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
@@ -46,10 +47,7 @@ export class NotionProvider implements WorldDataProvider {
       try {
         res = await fetch(url, { headers });
       } catch (e) {
-        if (e instanceof TypeError) {
-          throw new Error('Cannot reach Notion API from the browser (CORS). Use the iOS app or a proxy.');
-        }
-        throw e;
+        throw handleCorsError(e, 'Notion API');
       }
       if (!res.ok) throw new Error(`Notion API error: ${res.status}`);
       const data = await res.json() as { results: any[]; has_more: boolean; next_cursor: string | null };

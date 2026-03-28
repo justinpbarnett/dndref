@@ -43,7 +43,13 @@ export function DataSourcesProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     AsyncStorage.getItem(DATA_SOURCES_KEY)
       .then((raw) => {
-        if (raw) setSettings({ ...DEFAULT, ...(JSON.parse(raw) as Partial<DataSourcesSettings>) });
+        if (raw) {
+          try {
+            setSettings({ ...DEFAULT, ...(JSON.parse(raw) as Partial<DataSourcesSettings>) });
+          } catch (parseErr) {
+            console.warn('[dnd-ref] Failed to parse data source settings:', parseErr);
+          }
+        }
       })
       .catch((e) => console.warn('[dnd-ref] Failed to load data source settings:', e));
   }, []);

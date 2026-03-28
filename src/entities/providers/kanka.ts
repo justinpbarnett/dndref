@@ -1,4 +1,5 @@
 import { Entity, EntityIndex, EntityType, WorldDataProvider, stripHtml } from '../index';
+import { fetchAll } from '../../utils/providers';
 
 const KANKA_BASE = 'https://api.kanka.io/1.0';
 
@@ -47,7 +48,10 @@ export class KankaProvider implements WorldDataProvider {
     const entityType = TYPE_MAP[resource];
     const items = await fetchAll(
       `${KANKA_BASE}/campaigns/${this.campaignId}/${resource}`,
-      this.token,
+      (data) => data.links?.next ?? null,
+      {
+        headers: { Authorization: `Bearer ${this.token}` },
+      },
     );
     return items.map((item: any): Entity => ({
       id: `kanka-${resource}-${item.id}`,
@@ -58,20 +62,5 @@ export class KankaProvider implements WorldDataProvider {
       image: item.has_custom_image ? (item.image_thumb ?? undefined) : undefined,
     }));
   }
-}
-
-async function fetchAll(url: string, token: string): Promise<any[]> {
-  const results: any[] = [];
-  let next: string | null = url;
-  while (next) {
-    const res = await fetch(next, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error(`Kanka: fetch failed (${res.status}) ${next}`);
-    const data = await res.json() as { data: any[]; links: { next: string | null } };
-    results.push(...data.data);
-    next = data.links?.next ?? null;
-  }
-  return results;
 }
 

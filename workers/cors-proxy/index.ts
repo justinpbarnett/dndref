@@ -51,7 +51,12 @@ export default {
       return new Response('Not Found', { status: 404 });
     }
 
-    const upstreamUrl = UPSTREAM[prefix] + url.pathname.slice(prefix.length) + url.search;
+    const pathname = url.pathname.slice(prefix.length);
+    // Security: prevent path traversal and null byte injection
+    if (pathname.includes('..') || pathname.includes('\x00')) {
+      return new Response('Invalid path', { status: 400 });
+    }
+    const upstreamUrl = UPSTREAM[prefix] + pathname + url.search;
 
     const headers = new Headers(request.headers);
     headers.delete('Origin');
