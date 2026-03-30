@@ -11,7 +11,8 @@
     "proxy:dev": "wrangler dev --config workers/cors-proxy/wrangler.toml",
     "proxy:deploy": "wrangler deploy --config workers/cors-proxy/wrangler.toml",
     "lint": "eslint .",
-    "lint:check-limits": "node scripts/check-limits.js"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.0",
@@ -24,6 +25,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.5",
+    "react-native-safe-area-context": "^5.7.0",
     "react-native-web": "~0.19.12"
   },
   "devDependencies": {
@@ -32,7 +34,9 @@
     "@types/react": "~18.3.0",
     "@typescript-eslint/parser": "^8.57.2",
     "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.32.0",
     "playwright": "^1.58.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "vitest": "^4.1.2"
   }
 }

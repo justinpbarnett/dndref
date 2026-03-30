@@ -1,6 +1,13 @@
 import { Entity, EntityIndex, normalizeEntityType, slugify } from './index';
 import { CORS_PROXY } from '../proxy';
 
+interface AIEntityInput {
+  name: string;
+  type?: string;
+  aliases?: string[];
+  summary?: string;
+}
+
 const ANTHROPIC_API = CORS_PROXY
   ? `${CORS_PROXY}/anthropic/v1/messages`
   : 'https://api.anthropic.com/v1/messages';
@@ -46,18 +53,27 @@ export async function parseWithAI(content: string, apiKey: string): Promise<Enti
   const data = await res.json() as { content: Array<{ text: string }> };
   const raw = data.content[0]?.text ?? '[]';
 
-  // Extract JSON array from response (model may add leading text)
   const match = raw.match(/\[[\s\S]*\]/);
   if (!match) throw new Error('AI returned no JSON array');
 
-  const items = JSON.parse(match[0]) as any[];
+  let items: unknown;
+  try {
+    items = JSON.parse(match[0]);
+  } catch {
+    throw new Error('AI returned invalid JSON');
+  }
+
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
   return items
-    .filter((item): item is Record<string, unknown> => !!item && typeof item.name === 'string')
+    .filter((item): item is AIEntityInput => !!item && typeof item.name === 'string')
     .map((item, i): Entity => ({
-      id: `ai-${slugify(item.name as string)}-${Date.now()}-${i}`,
-      name: item.name as string,
-      type: normalizeEntityType((item.type as string) ?? ''),
-      aliases: Array.isArray(item.aliases) ? (item.aliases as string[]) : [],
-      summary: (item.summary as string) ?? '',
+      id: `ai-${slugify(item.name)}-${Date.now()}-${i}`,
+      name: item.name,
+      type: normalizeEntityType(item.type ?? ''),
+      aliases: Array.isArray(item.aliases) ? item.aliases : [],
+      summary: item.summary ?? '',
     }));
 }

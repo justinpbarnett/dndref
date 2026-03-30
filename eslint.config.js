@@ -3,6 +3,7 @@ module.exports = [
   {
     plugins: {
       'project-limits': require('./eslint-plugin-project-limits.js'),
+      import: require('eslint-plugin-import'),
     },
     files: ['**/*.{ts,tsx,js,jsx}'],
     ignores: ['node_modules/**', 'dist/**', '.expo/**'],
@@ -19,6 +20,18 @@ module.exports = [
     rules: {
       'project-limits/max-lines': ['error', { max: 300 }],
       'project-limits/max-dir-files': ['error', { max: 20 }],
+      'import/order': ['warn', {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          ['parent', 'sibling'],
+          'index',
+          'object',
+        ],
+        'newlines-between': 'always',
+        alphabetize: { order: 'asc', caseInsensitive: true },
+      }],
     },
   },
 ];

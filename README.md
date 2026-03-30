@@ -10,6 +10,7 @@ iPad app and web app at [dndref.com](https://dndref.com).
 2. Tap Start and set the iPad on the table
 3. Cards appear as entities are mentioned
 4. Pin to keep a card visible; dismiss when done
+5. Toggle dark/light mode in Settings
 
 Detection runs every 2 seconds using fuzzy matching against your loaded entities. No AI in the live path, just fast deterministic string matching.
 
@@ -19,7 +20,7 @@ You can have multiple sources active at once. Mix and match as needed.
 
 | Source | What it loads | Notes |
 |---|---|---|
-| D&D 5e SRD | ~350 monsters + magic items | On by default, cached locally |
+| D&D 5e SRD | ~350 monsters + magic items | Enable per-source in Settings |
 | Kanka | Characters, locations, factions, items | Requires API token + campaign ID |
 | Homebrewery | Any public brew | Paste the share URL |
 | Notion | Pages from your workspace | Requires integration token + page URLs |
@@ -51,15 +52,18 @@ Uses [just](https://github.com/casey/just). Run `just` with no args to list ever
 
 ```bash
 just dev             # web dev server
-just ios             # iOS simulator
-just check           # typecheck
+just start           # Expo with QR code for iPad/Expo Go
+just check           # TypeScript typecheck
+just lint            # ESLint linting
 
 just build-web       # export static build to dist/
-just deploy-web      # push dist/ to Cloudflare Pages
-just ship-web        # build + deploy in one step
+just ship-web        # build + deploy to Cloudflare Pages in one step
 
 just proxy-dev       # run CORS proxy locally (localhost:8787)
 just proxy-deploy    # deploy CORS proxy to Cloudflare Workers
+
+just screenshot     # Playwright screenshot tests (requires built dist/)
+just screenshot-dark # Dark mode screenshot tests
 
 just build-ios       # EAS build for App Store (requires eas.json)
 just build-ios-dev   # EAS build for device testing

@@ -1,5 +1,7 @@
 import { Entity, EntityIndex, EntityType, WorldDataProvider, slugify } from '../index';
 
+const VALID_ENTITY_TYPES = new Set<EntityType>(['Location', 'NPC', 'Faction', 'Item', 'Unknown']);
+
 function parseMarkdown(content: string): EntityIndex {
   const blocks = content.split(/^# /m).filter(Boolean);
 
@@ -9,7 +11,6 @@ function parseMarkdown(content: string): EntityIndex {
     if (!name) return null;
 
     const id = slugify(name);
-    const VALID_TYPES = new Set<EntityType>(['Location', 'NPC', 'Faction', 'Item', 'Unknown']);
     let type: EntityType = 'Unknown';
     let aliases: string[] = [];
     const summaryLines: string[] = [];
@@ -24,7 +25,7 @@ function parseMarkdown(content: string): EntityIndex {
 
       if (!inSummary && typeMatch) {
         const raw = typeMatch[1].trim() as EntityType;
-        type = VALID_TYPES.has(raw) ? raw : 'Unknown';
+        type = VALID_ENTITY_TYPES.has(raw) ? raw : 'Unknown';
       } else if (!inSummary && aliasMatch) {
         aliases = aliasMatch[1].split(',').map((a) => a.trim()).filter(Boolean);
       } else {

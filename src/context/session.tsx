@@ -94,7 +94,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
       if (found.length === 0) return;
 
-      const detectionKey = found.map((e) => e.id).sort().join(',');
+      const detectionKey = found.map((e) => e.id).join(',');
       if (detectionKey !== prevDetectionKeyRef.current) {
         prevDetectionKeyRef.current = detectionKey;
         setRecentDetections(found);
