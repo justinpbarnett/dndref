@@ -1,9 +1,9 @@
 export interface STTProvider {
   readonly name: string;
   start(): Promise<void>;
-  pause(): void;
-  resume(): void;
-  stop(): void;
+  pause(): void | Promise<void>;
+  resume(): void | Promise<void>;
+  stop(): void | Promise<void>;
 }
 
 export interface STTSettings {

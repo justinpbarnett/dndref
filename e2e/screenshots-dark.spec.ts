@@ -28,7 +28,7 @@ test('set light mode in settings, check reference matches', async ({ page }) => 
   // Navigate to settings and click Light
   await page.goto('/settings');
   await waitForApp(page);
-  await page.getByText('Light').first().click();
+  await page.getByText('Light', { exact: true }).first().click({ force: true });
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'e2e/screenshots/dark-04-settings-light.png' });
 

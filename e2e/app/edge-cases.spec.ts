@@ -1,5 +1,9 @@
 import { test, expect, Page } from '@playwright/test';
+
 import {
+  emitSpeechEnd,
+  emitSpeechError,
+  getSpeechStartCount,
   setupTest,
   startSession,
   pauseSession,
@@ -30,10 +34,17 @@ test.describe('edge cases', () => {
     await expect(page.getByText('Valdrath the Undying')).toBeVisible();
 
     await pauseSession(page);
+    await speak(page, 'Seraphine entered while paused');
+    await page.waitForTimeout(DETECT_WAIT_MS);
+    await expect(page.getByText('Lady Seraphine Voss')).not.toBeVisible();
+
     await page.getByText('Resume', { exact: true }).click();
     await page.waitForTimeout(300);
+    await speak(page, 'Seraphine entered after resume');
+    await page.waitForTimeout(DETECT_WAIT_MS);
 
     await expect(page.getByText('Valdrath the Undying')).toBeVisible();
+    await expect(page.getByText('Lady Seraphine Voss')).toBeVisible();
   });
 
   test('entity detection works after dismiss and re-mention in same session', async ({ page }) => {
@@ -62,5 +73,22 @@ test.describe('edge cases', () => {
 
     await expect(page.getByText('Lady Seraphine Voss')).toBeVisible();
     await expect(page.getByText('Valdrath the Undying')).not.toBeVisible();
+  });
+
+  test('stale speech callbacks after stop do not mutate a reset session', async ({ page }) => {
+    await startSession(page);
+    const startCountBeforeStop = await getSpeechStartCount(page);
+    await stopSession(page);
+
+    await speak(page, 'Valdrath should not appear after stop');
+    await emitSpeechError(page);
+    await emitSpeechEnd(page);
+    await page.waitForTimeout(DETECT_WAIT_MS);
+
+    await expect(page.getByText('Ready', { exact: true })).toBeVisible();
+    await expect(page.getByText('Mic Error', { exact: true })).not.toBeVisible();
+    await expect(page.getByTestId('entity-card')).toHaveCount(0);
+    const startCountAfterCallbacks = await getSpeechStartCount(page);
+    expect(startCountAfterCallbacks).toBe(startCountBeforeStop);
   });
 });

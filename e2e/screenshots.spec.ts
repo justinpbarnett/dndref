@@ -22,7 +22,7 @@ test('settings tab - switch to light mode', async ({ page }) => {
   await page.goto('/settings');
   await waitForApp(page);
   // Click the Light button
-  await page.getByText('Light').first().click();
+  await page.getByText('Light', { exact: true }).first().click({ force: true });
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'e2e/screenshots/03-settings-after-light.png', fullPage: false });
 });
@@ -31,7 +31,7 @@ test('reference tab - after light mode set in same session', async ({ page }) =>
   // Set light mode on settings page, then navigate to reference
   await page.goto('/settings');
   await waitForApp(page);
-  await page.getByText('Light').first().click();
+  await page.getByText('Light', { exact: true }).first().click({ force: true });
   await page.waitForTimeout(500);
   // Navigate to reference tab
   await page.goto('/');

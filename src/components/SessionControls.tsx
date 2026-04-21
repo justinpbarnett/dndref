@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { useSession } from '../context/session';
 import { useColors } from '../context/ui-settings';
 import { Colors, F } from '../theme';
@@ -51,6 +52,7 @@ export function SessionControls() {
   const C = useColors();
   const { status, sttStatus, sttError, start, pause, stop } = useSession();
   const styles = useMemo(() => createStyles(C), [C]);
+  const isConnecting = sttStatus === 'connecting';
 
   const webBarShadow = Platform.OS === 'web'
     ? { boxShadow: `0 1px 0 ${C.border}, 0 4px 16px #00000030` }
@@ -80,8 +82,15 @@ export function SessionControls() {
 
       <View style={styles.buttons}>
         {(status === 'idle' || status === 'paused') && (
-          <TouchableOpacity style={[styles.btn, styles.btnStart]} onPress={start} activeOpacity={0.75}>
-            <Text style={styles.btnTextStart}>{status === 'idle' ? 'Start' : 'Resume'}</Text>
+          <TouchableOpacity
+            style={[styles.btn, styles.btnStart, isConnecting && styles.btnDisabled]}
+            onPress={start}
+            activeOpacity={0.75}
+            disabled={isConnecting}
+          >
+            <Text style={styles.btnTextStart}>
+              {isConnecting ? 'Starting' : status === 'idle' ? 'Start' : 'Resume'}
+            </Text>
           </TouchableOpacity>
         )}
         {status === 'active' && (
@@ -89,7 +98,7 @@ export function SessionControls() {
             <Text style={styles.btnTextPause}>Pause</Text>
           </TouchableOpacity>
         )}
-        {status !== 'idle' && (
+        {(status !== 'idle' || isConnecting) && (
           <TouchableOpacity style={[styles.btn, styles.btnStop]} onPress={stop} activeOpacity={0.75}>
             <Text style={styles.btnTextStop}>Stop</Text>
           </TouchableOpacity>
@@ -150,6 +159,9 @@ function createStyles(C: Colors) {
     },
     btnStart: {
       backgroundColor: C.active,
+    },
+    btnDisabled: {
+      opacity: 0.55,
     },
     btnPause: {
       backgroundColor: C.paused + '25',

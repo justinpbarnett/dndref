@@ -1,18 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+
 import { Entity, EntityIndex, WorldDataProvider } from '../entities';
-import { EntityDetector } from '../entities/detector';
-import { MarkdownProvider } from '../entities/providers/markdown';
-import { SRDProvider } from '../entities/providers/srd';
-import { KankaProvider } from '../entities/providers/kanka';
-import { HomebreweryProvider } from '../entities/providers/homebrewery';
-import { NotionProvider, extractNotionId } from '../entities/providers/notion';
-import { GoogleDocsProvider } from '../entities/providers/google-docs';
-import { FileUploadProvider } from '../entities/providers/file-upload';
-import { SAMPLE_WORLD } from '../sample-world';
-import { STTProvider } from '../stt/index';
 import { useDataSources } from './data-sources';
-import { SessionStatus, SttStatus, EntityStatus, CardState, SessionContextType } from './session-types';
-export { SessionStatus, SttStatus, EntityStatus, CardState } from './session-types';
 import {
   MAX_CARDS,
   DETECT_INTERVAL_MS,
@@ -23,6 +12,18 @@ import {
   loadSettings,
   buildProvider,
 } from './session-helpers';
+import { SessionStatus, SttStatus, EntityStatus, CardState, SessionContextType } from './session-types';
+import { EntityDetector } from '../entities/detector';
+import { FileUploadProvider } from '../entities/providers/file-upload';
+import { GoogleDocsProvider } from '../entities/providers/google-docs';
+import { HomebreweryProvider } from '../entities/providers/homebrewery';
+import { KankaProvider } from '../entities/providers/kanka';
+import { MarkdownProvider } from '../entities/providers/markdown';
+import { NotionProvider, extractNotionId } from '../entities/providers/notion';
+import { SRDProvider } from '../entities/providers/srd';
+import { SAMPLE_WORLD } from '../sample-world';
+import { STTProvider } from '../stt/index';
+export { SessionStatus, SttStatus, EntityStatus, CardState } from './session-types';
 
 const SessionContext = createContext<SessionContextType | null>(null);
 
@@ -42,6 +43,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const processedUpToRef = useRef(0);
   const prevDetectionKeyRef = useRef('');
   const sttRef = useRef<STTProvider | null>(null);
+  const sttGenerationRef = useRef(0);
+  const startInFlightRef = useRef<Promise<void> | null>(null);
+  const acceptingTranscriptRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,55 +123,110 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const start = useCallback(async () => {
+    if (startInFlightRef.current) return;
+
     if (sttRef.current) {
-      sttRef.current.resume();
-      setStatus('active');
-      setSttStatus('active');
-      processedUpToRef.current = transcriptRef.current.length;
+      const generation = sttGenerationRef.current;
+      const provider = sttRef.current;
+      const resumePromise = Promise.resolve()
+        .then(() => provider.resume())
+        .then(() => {
+          if (sttGenerationRef.current !== generation || sttRef.current !== provider) return;
+          acceptingTranscriptRef.current = true;
+          setStatus('active');
+          setSttStatus('active');
+          processedUpToRef.current = transcriptRef.current.length;
+        })
+        .catch((e) => {
+          if (sttGenerationRef.current !== generation || sttRef.current !== provider) return;
+          acceptingTranscriptRef.current = false;
+          Promise.resolve(provider.stop()).catch(() => {});
+          sttRef.current = null;
+          setSttError(`Failed to resume mic: ${e instanceof Error ? e.message : String(e)}`);
+          setSttStatus('error');
+          setStatus('paused');
+        })
+        .finally(() => {
+          if (startInFlightRef.current === resumePromise) startInFlightRef.current = null;
+        });
+      startInFlightRef.current = resumePromise;
       return;
     }
 
+    const generation = sttGenerationRef.current + 1;
+    sttGenerationRef.current = generation;
+    acceptingTranscriptRef.current = false;
     setSttStatus('connecting');
     setSttError(null);
 
-    const settings = await loadSettings();
-    const provider = buildProvider(
-      settings,
-      appendTranscript,
-      (err) => {
-        sttRef.current?.stop();
-        sttRef.current = null;
-        setSttError(err);
-        setSttStatus('error');
-        setStatus((prev) => prev === 'active' ? 'paused' : prev);
-      },
-    );
+    const startPromise = (async () => {
+      const settings = await loadSettings();
+      if (sttGenerationRef.current !== generation) return;
 
-    sttRef.current = provider;
-    setSttProviderName(provider.name);
+      const provider = buildProvider(
+        settings,
+        (text) => {
+          if (sttGenerationRef.current === generation && acceptingTranscriptRef.current) {
+            appendTranscript(text);
+          }
+        },
+        (err) => {
+          if (sttGenerationRef.current !== generation) return;
+          acceptingTranscriptRef.current = false;
+          const current = sttRef.current;
+          if (current) Promise.resolve(current.stop()).catch(() => {});
+          sttRef.current = null;
+          setSttError(err);
+          setSttStatus('error');
+          setStatus((prev) => prev === 'active' ? 'paused' : prev);
+        },
+      );
 
-    try {
+      sttRef.current = provider;
+      setSttProviderName(provider.name);
+
       await provider.start();
-    } catch (e) {
-      setSttError(`Failed to start mic: ${e instanceof Error ? e.message : String(e)}`);
-      setSttStatus('error');
-      sttRef.current = null;
-      return;
-    }
+      if (sttGenerationRef.current !== generation || sttRef.current !== provider) {
+        await provider.stop();
+        return;
+      }
 
-    setSttStatus('active');
-    setStatus('active');
-    processedUpToRef.current = transcriptRef.current.length;
+      acceptingTranscriptRef.current = true;
+      setSttStatus('active');
+      setStatus('active');
+      processedUpToRef.current = transcriptRef.current.length;
+    })()
+      .catch((e) => {
+        if (sttGenerationRef.current !== generation) return;
+        const provider = sttRef.current;
+        if (provider) Promise.resolve(provider.stop()).catch(() => {});
+        sttRef.current = null;
+        acceptingTranscriptRef.current = false;
+        setSttProviderName('');
+        setSttError(`Failed to start mic: ${e instanceof Error ? e.message : String(e)}`);
+        setSttStatus('error');
+      })
+      .finally(() => {
+        if (startInFlightRef.current === startPromise) startInFlightRef.current = null;
+      });
+
+    startInFlightRef.current = startPromise;
   }, [appendTranscript]);
 
   const pause = useCallback(() => {
-    sttRef.current?.pause();
+    acceptingTranscriptRef.current = false;
+    const provider = sttRef.current;
+    if (provider) Promise.resolve(provider.pause()).catch(() => {});
     setSttStatus('idle');
     setStatus('paused');
   }, []);
 
   const stop = useCallback(() => {
-    sttRef.current?.stop();
+    sttGenerationRef.current += 1;
+    startInFlightRef.current = null;
+    acceptingTranscriptRef.current = false;
+    const provider = sttRef.current;
+    if (provider) Promise.resolve(provider.stop()).catch(() => {});
     sttRef.current = null;
     setSttStatus('idle');
     setSttError(null);
@@ -179,6 +238,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setRecentDetections([]);
     prevDetectionKeyRef.current = '';
     processedUpToRef.current = 0;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      sttGenerationRef.current += 1;
+      acceptingTranscriptRef.current = false;
+      const provider = sttRef.current;
+      if (provider) Promise.resolve(provider.stop()).catch(() => {});
+      sttRef.current = null;
+    };
   }, []);
 
   const pin = useCallback((instanceId: string) => {
