@@ -17,7 +17,7 @@ export function FilesSection({
   const C = styles.__colors;
 
   return (
-    <View style={styles.contentInner}>
+    <View testID="settings-content" style={styles.contentInner}>
       <View style={styles.group}>
         <Text style={styles.groupLabel}>UPLOAD FILES</Text>
         <Text style={styles.groupDesc}>

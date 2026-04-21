@@ -9,13 +9,13 @@ import { DataSourcesSettings, useDataSources } from '../src/context/data-sources
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
 import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
 import { parseWithAI } from '../src/entities/ai-parser';
-import { Category, CATEGORIES } from './settings/constants';
-import { DisplaySection } from './settings/renderers/DisplaySection';
-import { VoiceSection } from './settings/renderers/VoiceSection';
-import { DataSection } from './settings/renderers/DataSection';
-import { FilesSection } from './settings/renderers/FilesSection';
-import { AISection } from './settings/renderers/AISection';
-import { createStyles } from './settings/styles';
+import { Category, CATEGORIES } from '../src/settings/constants';
+import { DisplaySection } from '../src/settings/renderers/DisplaySection';
+import { VoiceSection } from '../src/settings/renderers/VoiceSection';
+import { DataSection } from '../src/settings/renderers/DataSection';
+import { FilesSection } from '../src/settings/renderers/FilesSection';
+import { AISection } from '../src/settings/renderers/AISection';
+import { createStyles } from '../src/settings/styles';
 
 export default function SettingsScreen() {
   const C = useColors();

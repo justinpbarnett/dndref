@@ -3,7 +3,7 @@ import React from 'react';
 import { Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyLink } from '../KeyLink';
 import { DataSectionProps } from '../types';
-import { SRD_SOURCES } from '../../../src/entities/providers/srd';
+import { SRD_SOURCES } from '../../entities/providers/srd';
 
 const SRD_PUBLISHER_GROUPS = (() => {
   const map = new Map<string, { slug: string; label: string }[]>();
@@ -28,7 +28,7 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
   };
 
   return (
-    <View style={styles.contentInner}>
+    <View testID="settings-content" style={styles.contentInner}>
       <View style={styles.group}>
         <Text style={styles.groupLabel}>D&D 5E SRD</Text>
         <View style={styles.toggleRow}>

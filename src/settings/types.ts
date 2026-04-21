@@ -1,12 +1,12 @@
-import { UploadedFile } from '../../src/entities/providers/file-upload';
-import { DataSourcesSettings } from '../../src/context/data-sources';
-import { STTSettings } from '../../src/stt/index';
+import { UploadedFile } from '../entities/providers/file-upload';
+import { DataSourcesSettings } from '../context/data-sources';
+import { STTSettings } from '../stt/index';
 
 export interface DisplaySectionProps {
-  cardSize: import('../../src/context/ui-settings').CardSize;
-  setCardSize: (size: import('../../src/context/ui-settings').CardSize) => void;
-  colorScheme: import('../../src/context/ui-settings').ColorScheme;
-  setColorScheme: (scheme: import('../../src/context/ui-settings').ColorScheme) => void;
+  cardSize: import('../context/ui-settings').CardSize;
+  setCardSize: (size: import('../context/ui-settings').CardSize) => void;
+  colorScheme: import('../context/ui-settings').ColorScheme;
+  setColorScheme: (scheme: import('../context/ui-settings').ColorScheme) => void;
   styles: any;
 }
 

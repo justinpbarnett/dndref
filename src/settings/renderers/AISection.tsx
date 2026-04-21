@@ -8,7 +8,7 @@ export function AISection({ dsLocal, setDsLocal, aiContent, setAiContent, aiPars
   const C = styles.__colors;
 
   return (
-    <View style={styles.contentInner}>
+    <View testID="settings-content" style={styles.contentInner}>
       <View style={styles.group}>
         <Text style={styles.groupLabel}>ANTHROPIC API KEY</Text>
         <Text style={styles.groupDesc}>

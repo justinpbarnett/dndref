@@ -7,7 +7,7 @@ export function VoiceSection({ sttSettings, setSttSettings, saveVoice, voiceSave
   const C = styles.__colors;
 
   return (
-    <View style={styles.contentInner}>
+    <View testID="settings-content" style={styles.contentInner}>
       <View style={styles.group}>
         <Text style={styles.groupLabel}>STT PROVIDER</Text>
         {isWebSpeech && (

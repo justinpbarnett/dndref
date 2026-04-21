@@ -1,7 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Linking, Text, TouchableOpacity } from 'react-native';
-import { useColors } from '../../src/context/ui-settings';
-import { Colors, F } from '../../src/theme';
+import { useColors } from '../context/ui-settings';
+import { F } from '../theme';
 
 export function KeyLink({ label, url }: { label: string; url: string }) {
   const C = useColors();

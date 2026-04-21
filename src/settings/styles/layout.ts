@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { Colors, F } from '../../../src/theme';
+import { Colors, F } from '../../theme';
 
 export function createLayoutStyles(C: Colors, isWide: boolean) {
   return StyleSheet.create({
@@ -56,14 +56,17 @@ export function createLayoutStyles(C: Colors, isWide: boolean) {
       borderBottomColor: C.border,
     },
     tabBarContent: {
-      paddingHorizontal: 8,
+      flexGrow: 1,
+      paddingHorizontal: 0,
     },
     tab: {
       flexDirection: 'column',
       alignItems: 'center',
-      gap: 3,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
+      flex: 1,
+      minWidth: 68,
+      gap: 2,
+      paddingHorizontal: 4,
+      paddingVertical: 8,
       borderBottomWidth: 2,
       borderBottomColor: 'transparent',
     },
@@ -72,9 +75,9 @@ export function createLayoutStyles(C: Colors, isWide: boolean) {
     },
     tabLabel: {
       color: C.textSecondary,
-      fontSize: 10,
+      fontSize: 8,
       fontWeight: '700',
-      letterSpacing: 1.5,
+      letterSpacing: 1,
       fontFamily: F.mono,
     },
     tabLabelActive: {
@@ -90,6 +93,8 @@ export function createLayoutStyles(C: Colors, isWide: boolean) {
     contentInner: {
       padding: isWide ? 24 : 16,
       gap: 24,
+      width: '100%',
+      maxWidth: isWide ? 900 : undefined,
     },
   });
 }

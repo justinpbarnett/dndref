@@ -1,4 +1,4 @@
-import { Colors } from '../../../src/theme';
+import { Colors } from '../../theme';
 import { createLayoutStyles } from './layout';
 import { createGroupStyles } from './groups';
 import { createControlStyles } from './controls';

@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { Colors, F } from '../../../src/theme';
+import { Colors, F } from '../../theme';
 
 export function createFileStyles(C: Colors) {
   return StyleSheet.create({

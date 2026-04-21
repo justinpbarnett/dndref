@@ -7,6 +7,8 @@ import { EntityCard } from './EntityCard';
 
 const GRID_PAD = 5;
 const CARD_MARGIN = 5;
+const MIN_CARD_WIDTH = 230;
+const MAX_CARD_WIDTH = 380;
 
 interface CardPos { x: number; y: number }
 interface AnimPair { left: Animated.Value; top: Animated.Value }
@@ -16,6 +18,7 @@ function computePositions(
   heights: Record<string, number>,
   columns: number,
   cardWidth: number,
+  xOffset: number,
 ): { positions: Record<string, CardPos>; totalHeight: number } {
   const colWidth = cardWidth + 2 * CARD_MARGIN;
 
@@ -36,7 +39,7 @@ function computePositions(
     const col = i % columns;
     const row = Math.floor(i / columns);
     positions[cards[i].instanceId] = {
-      x: GRID_PAD + col * colWidth,
+      x: xOffset + GRID_PAD + col * colWidth,
       y: rowY[row],
     };
   }
@@ -52,8 +55,12 @@ export function CardGrid() {
   const { cardSize } = useUISettings();
   const { width, height: winHeight } = useWindowDimensions();
   const config = CARD_SIZE_CONFIGS[cardSize];
-  const columns = width > winHeight ? config.landscapeCols : config.portraitCols;
-  const cardWidth = (width - 10) / columns - 10;
+  const preferredColumns = width > winHeight ? config.landscapeCols : config.portraitCols;
+  const readableColumns = Math.max(1, Math.floor((width - 2 * GRID_PAD) / (MIN_CARD_WIDTH + 2 * CARD_MARGIN)));
+  const columns = Math.min(preferredColumns, readableColumns);
+  const gridWidth = Math.min(width, columns * (MAX_CARD_WIDTH + 2 * CARD_MARGIN) + 2 * GRID_PAD);
+  const xOffset = Math.max(0, (width - gridWidth) / 2);
+  const cardWidth = (gridWidth - 2 * GRID_PAD) / columns - 2 * CARD_MARGIN;
   const styles = useMemo(() => createStyles(C), [C]);
 
   const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
@@ -62,8 +69,8 @@ export function CardGrid() {
   const prevPos = useRef<Record<string, CardPos>>({});
 
   const { positions: targets, totalHeight } = useMemo(
-    () => computePositions(cards, cardHeights, columns, cardWidth),
-    [cards, cardHeights, columns, cardWidth],
+    () => computePositions(cards, cardHeights, columns, cardWidth, xOffset),
+    [cards, cardHeights, columns, cardWidth, xOffset],
   );
 
   for (const [id, pos] of Object.entries(targets)) {

@@ -1,4 +1,4 @@
-import { CardSize, ColorScheme } from '../../src/context/ui-settings';
+import { CardSize, ColorScheme } from '../context/ui-settings';
 
 export type Category = 'display' | 'voice' | 'data' | 'files' | 'ai';
 
@@ -13,7 +13,7 @@ export const CATEGORIES: { id: Category; label: string; icon: string; iconFocuse
 export const CARD_SIZE_LABELS: Record<CardSize, string> = { S: 'S', M: 'M', L: 'L', XL: 'XL' };
 
 export const CARD_SIZE_DESCS: Record<CardSize, string> = {
-  S: '4/3 cols', M: '3/2 cols', L: '2/2 cols', XL: '2/1 cols',
+  S: 'up to 4/3', M: 'up to 3/2', L: 'up to 2/2', XL: 'up to 2/1',
 };
 
 export const COLOR_SCHEME_LABELS: Record<ColorScheme, string> = {

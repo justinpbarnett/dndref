@@ -1,14 +1,14 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { CARD_SIZE_DESCS, CARD_SIZE_LABELS, COLOR_SCHEME_LABELS } from '../constants';
-import { CardSize, ColorScheme } from '../../../src/context/ui-settings';
+import { CardSize, ColorScheme } from '../../context/ui-settings';
 import { DisplaySectionProps } from '../types';
 
 export function DisplaySection({ cardSize, setCardSize, colorScheme, setColorScheme, styles }: DisplaySectionProps) {
   const CARD_SIZE_CONFIGS = { S: {}, M: {}, L: {}, XL: {} };
 
   return (
-    <View style={styles.contentInner}>
+    <View testID="settings-content" style={styles.contentInner}>
       <View style={styles.group}>
         <Text style={styles.groupLabel}>CARD SIZE</Text>
         <View style={styles.segmentRow}>
@@ -28,7 +28,7 @@ export function DisplaySection({ cardSize, setCardSize, colorScheme, setColorSch
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.fieldHint}>Landscape / portrait column counts.</Text>
+        <Text style={styles.fieldHint}>Maximum landscape / portrait columns.</Text>
       </View>
 
       <View style={styles.group}>
