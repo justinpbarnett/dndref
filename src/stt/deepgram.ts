@@ -1,6 +1,7 @@
-import * as FileSystem from 'expo-file-system';
 import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
+
 import { STTProvider } from './index';
 
 const DG_BASE = 'https://api.deepgram.com/v1/listen';
