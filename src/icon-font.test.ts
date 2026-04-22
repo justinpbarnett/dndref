@@ -14,6 +14,12 @@ describe('Ionicons font source', () => {
     expect(getIoniconsFontSource('android', nativeFont)).toBe(nativeFont);
   });
 
+  it('keeps the web CDN font version aligned with the installed icon glyph map', () => {
+    const pkg = JSON.parse(readFileSync(join(process.cwd(), 'node_modules/@expo/vector-icons/package.json'), 'utf8')) as { version: string };
+
+    expect(IONICONS_CDN).toContain(`@expo/vector-icons@${pkg.version}/`);
+  });
+
   it('is used by the root layout font loader', () => {
     const layout = readFileSync(join(process.cwd(), 'app/_layout.tsx'), 'utf8');
 
