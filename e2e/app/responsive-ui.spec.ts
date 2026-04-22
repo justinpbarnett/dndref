@@ -25,6 +25,20 @@ async function expectInsideViewport(page: Page, text: string) {
   expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height + 1);
 }
 
+async function expectTabLabelReadable(page: Page, text: string) {
+  await expectInsideViewport(page, text);
+
+  const item = page.getByText(text, { exact: true }).last();
+  const metrics = await item.evaluate((el) => {
+    const style = window.getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return { height: rect.height, overflow: style.overflow };
+  });
+
+  expect(metrics.height).toBeGreaterThanOrEqual(14);
+  expect(metrics.overflow).toBe('visible');
+}
+
 async function populateCards(page: Page) {
   await startSession(page);
   await speak(
@@ -42,8 +56,8 @@ test.describe('responsive UI coverage', () => {
       await setupTest(page);
 
       await expect(page.getByText('Session not started')).toBeVisible();
-      await expectInsideViewport(page, 'REFERENCE');
-      await expectInsideViewport(page, 'SETTINGS');
+      await expectTabLabelReadable(page, 'REFERENCE');
+      await expectTabLabelReadable(page, 'SETTINGS');
     }
   });
 

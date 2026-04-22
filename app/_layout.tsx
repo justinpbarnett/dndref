@@ -38,8 +38,9 @@ function ThemedTabs() {
         tabBarInactiveTintColor: C.textSecondary,
         tabBarLabelStyle: {
           fontSize: 9,
-          lineHeight: 12,
-          height: 12,
+          lineHeight: 16,
+          height: 16,
+          overflow: 'visible',
           fontWeight: '600',
           letterSpacing: 0.8,
           fontFamily: F.display,
