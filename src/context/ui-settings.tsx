@@ -1,7 +1,13 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 
+import {
+  createAppDataWriteToken,
+  getAppDataItem,
+  isAppDataWriteTokenCurrent,
+  setAppDataItem,
+} from '../storage/app-data';
+import { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
 import { Colors, DARK, LIGHT } from '../theme';
 
 export type CardSize = 'S' | 'M' | 'L' | 'XL';
@@ -20,8 +26,9 @@ export const CARD_SIZE_CONFIGS: Record<CardSize, CardSizeConfig> = {
   XL: { landscapeCols: 2, portraitCols: 1, fontScale: 1.35 },
 };
 
-const CARD_SIZE_KEY = '@dnd-ref/card-size';
-const COLOR_SCHEME_KEY = '@dnd-ref/color-scheme';
+export { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
+export const DEFAULT_CARD_SIZE: CardSize = 'M';
+export const DEFAULT_COLOR_SCHEME: ColorScheme = 'dark';
 
 // Read synchronously from localStorage on web so the first render matches
 // the stored preference -- avoids SSR/client hydration mismatch.
@@ -32,7 +39,7 @@ function readStoredColorScheme(): ColorScheme {
       if (v === 'dark' || v === 'light' || v === 'system') return v;
     } catch {}
   }
-  return 'dark'; // Dark is the designed default
+  return DEFAULT_COLOR_SCHEME;
 }
 
 function readStoredCardSize(): CardSize {
@@ -42,7 +49,7 @@ function readStoredCardSize(): CardSize {
       if (v && v in CARD_SIZE_CONFIGS) return v as CardSize;
     } catch {}
   }
-  return 'M';
+  return DEFAULT_CARD_SIZE;
 }
 
 interface UISettingsContextType {
@@ -50,6 +57,7 @@ interface UISettingsContextType {
   setCardSize: (size: CardSize) => void;
   colorScheme: ColorScheme;
   setColorScheme: (scheme: ColorScheme) => void;
+  resetUISettings: () => void;
 }
 
 const UISettingsContext = createContext<UISettingsContextType | null>(null);
@@ -61,9 +69,10 @@ export function UISettingsProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     // On native (no localStorage), still load from AsyncStorage
     if (Platform.OS !== 'web') {
+      const token = createAppDataWriteToken();
       Promise.all([
-        AsyncStorage.getItem(CARD_SIZE_KEY),
-        AsyncStorage.getItem(COLOR_SCHEME_KEY),
+        getAppDataItem(CARD_SIZE_KEY, token),
+        getAppDataItem(COLOR_SCHEME_KEY, token),
       ]).then(([rawSize, rawScheme]) => {
         try {
           if (rawSize && rawSize in CARD_SIZE_CONFIGS) setCardSizeState(rawSize as CardSize);
@@ -84,21 +93,30 @@ export function UISettingsProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const setCardSize = useCallback((size: CardSize) => {
+    const token = createAppDataWriteToken();
+    if (!isAppDataWriteTokenCurrent(token)) return;
     setCardSizeState(size);
-    AsyncStorage.setItem(CARD_SIZE_KEY, size).catch((e: unknown) => {
+    setAppDataItem(CARD_SIZE_KEY, size, { token }).catch((e: unknown) => {
       console.warn('[dnd-ref] Failed to save card size preference:', e);
     });
   }, []);
 
   const setColorScheme = useCallback((scheme: ColorScheme) => {
+    const token = createAppDataWriteToken();
+    if (!isAppDataWriteTokenCurrent(token)) return;
     setColorSchemeState(scheme);
-    AsyncStorage.setItem(COLOR_SCHEME_KEY, scheme).catch((e: unknown) => {
+    setAppDataItem(COLOR_SCHEME_KEY, scheme, { token }).catch((e: unknown) => {
       console.warn('[dnd-ref] Failed to save color scheme preference:', e);
     });
   }, []);
 
+  const resetUISettings = useCallback(() => {
+    setCardSizeState(DEFAULT_CARD_SIZE);
+    setColorSchemeState(DEFAULT_COLOR_SCHEME);
+  }, []);
+
   return (
-    <UISettingsContext.Provider value={{ cardSize, setCardSize, colorScheme, setColorScheme }}>
+    <UISettingsContext.Provider value={{ cardSize, setCardSize, colorScheme, setColorScheme, resetUISettings }}>
       {children}
     </UISettingsContext.Provider>
   );

@@ -21,5 +21,17 @@ export function createFileStyles(C: Colors) {
       fontSize: 12,
       fontFamily: F.mono,
     },
+    fileRemoveBtn: {
+      width: 28,
+      height: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 3,
+      borderWidth: 1,
+      borderColor: C.error + '70',
+    },
+    fileRemoveBtnDisabled: {
+      opacity: 0.45,
+    },
   });
 }

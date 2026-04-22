@@ -1,7 +1,15 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-const DATA_SOURCES_KEY = 'dndref:data-sources';
+import {
+  allowAppDataCacheWrites,
+  createAppDataWriteToken,
+  getAppDataItem,
+  isAppDataWriteTokenCurrent,
+  setAppDataItem,
+} from '../storage/app-data';
+import { DATA_SOURCES_KEY } from '../storage/keys';
+
+export { DATA_SOURCES_KEY } from '../storage/keys';
 
 export interface DataSourcesSettings {
   srdEnabled: boolean;
@@ -15,7 +23,7 @@ export interface DataSourcesSettings {
   aiApiKey: string;
 }
 
-const DEFAULT: DataSourcesSettings = {
+export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
   srdEnabled: true,
   srdSources: ['wotc-srd'],
   kankaToken: '',
@@ -32,20 +40,22 @@ interface DataSourcesContextType {
   uploadsVersion: number;
   update: (patch: Partial<DataSourcesSettings>) => Promise<void>;
   bumpUploads: () => void;
+  reset: () => void;
 }
 
 const DataSourcesContext = createContext<DataSourcesContextType | null>(null);
 
 export function DataSourcesProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<DataSourcesSettings>(DEFAULT);
+  const [settings, setSettings] = useState<DataSourcesSettings>(DEFAULT_DATA_SOURCES_SETTINGS);
   const [uploadsVersion, setUploadsVersion] = useState(0);
 
   useEffect(() => {
-    AsyncStorage.getItem(DATA_SOURCES_KEY)
+    const token = createAppDataWriteToken();
+    getAppDataItem(DATA_SOURCES_KEY, token)
       .then((raw) => {
         if (raw) {
           try {
-            setSettings({ ...DEFAULT, ...(JSON.parse(raw) as Partial<DataSourcesSettings>) });
+            setSettings({ ...DEFAULT_DATA_SOURCES_SETTINGS, ...(JSON.parse(raw) as Partial<DataSourcesSettings>) });
           } catch (parseErr) {
             console.warn('[dnd-ref] Failed to parse data source settings:', parseErr);
           }
@@ -55,22 +65,31 @@ export function DataSourcesProvider({ children }: { children: React.ReactNode })
   }, []);
 
   async function update(patch: Partial<DataSourcesSettings>) {
+    const token = createAppDataWriteToken();
+    if (!isAppDataWriteTokenCurrent(token)) return;
     let next!: DataSourcesSettings;
     setSettings((prev) => {
       next = { ...prev, ...patch };
       return next;
     });
-    await AsyncStorage.setItem(DATA_SOURCES_KEY, JSON.stringify(next)).catch((e) =>
-      console.warn('[dnd-ref] Failed to save data source settings:', e),
-    );
+    const saved = await setAppDataItem(DATA_SOURCES_KEY, JSON.stringify(next), { token }).catch((e) => {
+      console.warn('[dnd-ref] Failed to save data source settings:', e);
+      return false;
+    });
+    if (saved) allowAppDataCacheWrites();
   }
 
   const bumpUploads = useCallback(() => {
     setUploadsVersion((v) => v + 1);
   }, []);
 
+  const reset = useCallback(() => {
+    setSettings(DEFAULT_DATA_SOURCES_SETTINGS);
+    setUploadsVersion((v) => v + 1);
+  }, []);
+
   return (
-    <DataSourcesContext.Provider value={{ settings, uploadsVersion, update, bumpUploads }}>
+    <DataSourcesContext.Provider value={{ settings, uploadsVersion, update, bumpUploads, reset }}>
       {children}
     </DataSourcesContext.Provider>
   );

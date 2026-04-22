@@ -2,8 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { EntityIndex, WorldDataProvider, normalizeEntityType, slugify } from '../index';
 import { MarkdownProvider } from './markdown';
+import { canPersistAppData, createAppDataWriteToken } from '../../storage/app-data';
+import { UPLOADS_KEY } from '../../storage/keys';
 
-const UPLOADS_KEY = 'dndref:file-uploads';
+export { UPLOADS_KEY } from '../../storage/keys';
 let uploadMutationQueue: Promise<void> = Promise.resolve();
 
 export interface UploadedFile {
@@ -23,21 +25,29 @@ export async function getUploads(): Promise<UploadedFile[]> {
 }
 
 export async function addUpload(name: string, content: string): Promise<void> {
-  await mutateUploads((uploads) => {
+  const token = createAppDataWriteToken();
+  await mutateUploads(token, (uploads) => {
     const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     return [...uploads, { id, name, content }];
   });
 }
 
 export async function removeUpload(id: string): Promise<void> {
-  await mutateUploads((uploads) => uploads.filter((u) => u.id !== id));
+  const token = createAppDataWriteToken();
+  await mutateUploads(token, (uploads) => uploads.filter((u) => u.id !== id));
 }
 
-function mutateUploads(mutator: (uploads: UploadedFile[]) => UploadedFile[]): Promise<void> {
+export async function waitForUploadMutations(): Promise<void> {
+  await uploadMutationQueue.catch(() => undefined);
+}
+
+function mutateUploads(token: number, mutator: (uploads: UploadedFile[]) => UploadedFile[]): Promise<void> {
   const operation = uploadMutationQueue
     .catch(() => undefined)
     .then(async () => {
+      if (!canPersistAppData(token)) return;
       const uploads = await getUploads();
+      if (!canPersistAppData(token)) return;
       await AsyncStorage.setItem(UPLOADS_KEY, JSON.stringify(mutator(uploads)));
     });
 

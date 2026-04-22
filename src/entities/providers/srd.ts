@@ -1,10 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { canPersistAppDataCache, createAppDataWriteToken, setAppDataItem } from '../../storage/app-data';
+import { SRD_CACHE_KEY_PREFIX } from '../../storage/keys';
 import { fetchAll } from '../../utils/providers';
 import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../index';
 
 const OPEN5E = 'https://api.open5e.com/v1';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+export { SRD_CACHE_KEY_PREFIX } from '../../storage/keys';
 
 export interface SRDSource {
   slug: string;
@@ -49,7 +52,8 @@ export class SRDProvider implements WorldDataProvider {
 
   async load(): Promise<EntityIndex> {
     if (this.sources.length === 0) return [];
-    const cacheKey = `dndref:srd-${[...this.sources].sort().join(',')}`;
+    const cacheWriteToken = createAppDataWriteToken();
+    const cacheKey = `${SRD_CACHE_KEY_PREFIX}${[...this.sources].sort().join(',')}`;
     const cached = await loadCache(cacheKey);
     if (cached) return cached;
 
@@ -68,7 +72,7 @@ export class SRDProvider implements WorldDataProvider {
       ...monsters.map(monsterToEntity),
       ...items.map(itemToEntity),
     ];
-    await saveCache(cacheKey, entities);
+    await saveCache(cacheKey, entities, cacheWriteToken);
     return entities;
   }
 
@@ -87,9 +91,10 @@ async function loadCache(key: string): Promise<EntityIndex | null> {
   }
 }
 
-async function saveCache(key: string, entities: EntityIndex): Promise<void> {
+async function saveCache(key: string, entities: EntityIndex, token: number): Promise<void> {
+  if (!canPersistAppDataCache(token)) return;
   try {
-    await AsyncStorage.setItem(key, JSON.stringify({ ts: Date.now(), entities }));
+    await setAppDataItem(key, JSON.stringify({ ts: Date.now(), entities }), { cache: true, token });
   } catch {
     // Storage full -- skip caching
   }

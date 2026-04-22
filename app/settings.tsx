@@ -1,14 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Platform, ScrollView, Text, TouchableOpacity, View, useWindowDimensions,
+  Alert, Platform, ScrollView, Text, TouchableOpacity, View, useWindowDimensions,
 } from 'react-native';
 
-import { DataSourcesSettings, useDataSources } from '../src/context/data-sources';
+import { DEFAULT_DATA_SOURCES_SETTINGS, DataSourcesSettings, useDataSources } from '../src/context/data-sources';
+import { useSession } from '../src/context/session';
 import { useColors, useUISettings } from '../src/context/ui-settings';
 import { parseWithAI } from '../src/entities/ai-parser';
-import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
+import { UploadedFile, addUpload, getUploads, removeUpload, waitForUploadMutations } from '../src/entities/providers/file-upload';
 import { Category, CATEGORIES } from '../src/settings/constants';
 import { AISection } from '../src/settings/renderers/AISection';
 import { DataSection } from '../src/settings/renderers/DataSection';
@@ -16,7 +16,34 @@ import { DisplaySection } from '../src/settings/renderers/DisplaySection';
 import { FilesSection } from '../src/settings/renderers/FilesSection';
 import { VoiceSection } from '../src/settings/renderers/VoiceSection';
 import { createStyles } from '../src/settings/styles';
+import {
+  createAppDataWriteToken,
+  getAppDataItem,
+  isAppDataWriteTokenCurrent,
+  resetStoredAppData,
+  setAppDataItem,
+} from '../src/storage/app-data';
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
+
+function confirmDeleteAllData(): Promise<boolean> {
+  const message = 'This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.';
+
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    return Promise.resolve(window.confirm(`Delete all local app data?\n\n${message}`));
+  }
+
+  return new Promise((resolve) => {
+    Alert.alert(
+      'Delete all local app data?',
+      message,
+      [
+        { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+        { text: 'Delete All Data', style: 'destructive', onPress: () => resolve(true) },
+      ],
+      { cancelable: true, onDismiss: () => resolve(false) },
+    );
+  });
+}
 
 export default function SettingsScreen() {
   const C = useColors();
@@ -28,13 +55,17 @@ export default function SettingsScreen() {
   const [sttSettings, setSttSettings] = useState<STTSettings>(DEFAULT_STT_SETTINGS);
   const [voiceSaved, setVoiceSaved] = useState(false);
   const [dataSaved, setDataSaved] = useState(false);
-  const { cardSize, setCardSize, colorScheme, setColorScheme } = useUISettings();
-  const { settings: ds, update: updateDs, bumpUploads } = useDataSources();
+  const [deleteAllPending, setDeleteAllPending] = useState(false);
+  const [deleteAllStatus, setDeleteAllStatus] = useState('');
+  const { cardSize, setCardSize, colorScheme, setColorScheme, resetUISettings } = useUISettings();
+  const { settings: ds, update: updateDs, bumpUploads, reset: resetDataSources } = useDataSources();
+  const { stop: stopSession } = useSession();
   const [dsLocal, setDsLocal] = useState<DataSourcesSettings>(ds);
   const voiceSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dataSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [uploads, setUploads] = useState<UploadedFile[]>([]);
+  const [removingUploadId, setRemovingUploadId] = useState<string | null>(null);
   const [pasteFileName, setPasteFileName] = useState('');
   const [pasteContent, setPasteContent] = useState('');
   const [aiContent, setAiContent] = useState('');
@@ -47,7 +78,8 @@ export default function SettingsScreen() {
   }, [bumpUploads]);
 
   useEffect(() => {
-    AsyncStorage.getItem(STT_SETTINGS_KEY).then((raw) => {
+    const token = createAppDataWriteToken();
+    getAppDataItem(STT_SETTINGS_KEY, token).then((raw) => {
       if (raw) {
         try {
           setSttSettings({ ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) });
@@ -66,7 +98,9 @@ export default function SettingsScreen() {
   useEffect(() => { setDsLocal(ds); }, [ds]);
 
   const saveVoice = async () => {
-    await AsyncStorage.setItem(STT_SETTINGS_KEY, JSON.stringify(sttSettings));
+    const token = createAppDataWriteToken();
+    const saved = await setAppDataItem(STT_SETTINGS_KEY, JSON.stringify(sttSettings), { token });
+    if (!saved || !isAppDataWriteTokenCurrent(token)) return;
     setVoiceSaved(true);
     if (voiceSavedTimer.current) clearTimeout(voiceSavedTimer.current);
     voiceSavedTimer.current = setTimeout(() => setVoiceSaved(false), 2000);
@@ -103,19 +137,56 @@ export default function SettingsScreen() {
   };
 
   const handleDeleteUpload = async (id: string) => {
-    await removeUpload(id);
-    await refreshUploads();
+    setRemovingUploadId(id);
+    try {
+      await removeUpload(id);
+      await refreshUploads();
+    } finally {
+      setRemovingUploadId((current) => (current === id ? null : current));
+    }
+  };
+
+  const handleDeleteAllData = async () => {
+    const confirmed = await confirmDeleteAllData();
+    if (!confirmed) return;
+
+    setDeleteAllPending(true);
+    setDeleteAllStatus('');
+    try {
+      stopSession();
+      await resetStoredAppData({ beforeClear: waitForUploadMutations });
+      resetDataSources();
+      resetUISettings();
+      setSttSettings(DEFAULT_STT_SETTINGS);
+      setDsLocal(DEFAULT_DATA_SOURCES_SETTINGS);
+      setUploads([]);
+      setPasteFileName('');
+      setPasteContent('');
+      setAiContent('');
+      setAiResult('');
+      setVoiceSaved(false);
+      setDataSaved(false);
+      setDeleteAllStatus('All local app data was deleted.');
+    } catch (e: unknown) {
+      setDeleteAllStatus(`Delete failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setDeleteAllPending(false);
+    }
   };
 
   const handleAIParse = async () => {
     if (!aiContent.trim() || !dsLocal.aiApiKey) return;
+    const token = createAppDataWriteToken();
     setAiParsing(true);
     setAiResult('');
     try {
       const entities = await parseWithAI(aiContent, dsLocal.aiApiKey);
+      if (!isAppDataWriteTokenCurrent(token)) return;
       const name = `AI Parsed ${new Date().toLocaleDateString()}.json`;
       await addUpload(name, JSON.stringify(entities));
+      if (!isAppDataWriteTokenCurrent(token)) return;
       await refreshUploads();
+      if (!isAppDataWriteTokenCurrent(token)) return;
       setAiResult(`Found ${entities.length} entities. Saved as "${name}".`);
       setAiContent('');
     } catch (e: unknown) {
@@ -136,7 +207,23 @@ export default function SettingsScreen() {
       case 'data':
         return <DataSection dsLocal={dsLocal} setDsLocal={setDsLocal} saveData={saveData} dataSaved={dataSaved} styles={styles} />;
       case 'files':
-        return <FilesSection uploads={uploads} refreshUploads={refreshUploads} pasteFileName={pasteFileName} setPasteFileName={setPasteFileName} pasteContent={pasteContent} setPasteContent={setPasteContent} pickFilesWeb={pickFilesWeb} handlePasteAdd={handlePasteAdd} handleDeleteUpload={handleDeleteUpload} styles={styles} />;
+        return (
+          <FilesSection
+            uploads={uploads}
+            removingUploadId={removingUploadId}
+            pasteFileName={pasteFileName}
+            setPasteFileName={setPasteFileName}
+            pasteContent={pasteContent}
+            setPasteContent={setPasteContent}
+            pickFilesWeb={pickFilesWeb}
+            handlePasteAdd={handlePasteAdd}
+            handleDeleteUpload={handleDeleteUpload}
+            handleDeleteAllData={handleDeleteAllData}
+            deleteAllPending={deleteAllPending}
+            deleteAllStatus={deleteAllStatus}
+            styles={styles}
+          />
+        );
       case 'ai':
         return <AISection dsLocal={dsLocal} setDsLocal={setDsLocal} aiContent={aiContent} setAiContent={setAiContent} aiParsing={aiParsing} aiResult={aiResult} handleAIParse={handleAIParse} styles={styles} />;
     }

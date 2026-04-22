@@ -143,5 +143,24 @@ export function createControlStyles(C: Colors) {
       letterSpacing: 0.5,
       fontFamily: F.mono,
     },
+    dangerBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: C.error + '90',
+      borderRadius: 3,
+      paddingVertical: 10,
+    },
+    dangerBtnDisabled: {
+      opacity: 0.5,
+    },
+    dangerBtnText: {
+      color: C.error,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+      fontFamily: F.mono,
+    },
   });
 }

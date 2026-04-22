@@ -29,7 +29,7 @@ export interface DataSectionProps {
 
 export interface FilesSectionProps {
   uploads: UploadedFile[];
-  refreshUploads: () => Promise<void>;
+  removingUploadId: string | null;
   pasteFileName: string;
   setPasteFileName: React.Dispatch<React.SetStateAction<string>>;
   pasteContent: string;
@@ -37,6 +37,9 @@ export interface FilesSectionProps {
   pickFilesWeb: () => void;
   handlePasteAdd: () => Promise<void>;
   handleDeleteUpload: (id: string) => Promise<void>;
+  handleDeleteAllData: () => Promise<void>;
+  deleteAllPending: boolean;
+  deleteAllStatus: string;
   styles: any;
 }
 

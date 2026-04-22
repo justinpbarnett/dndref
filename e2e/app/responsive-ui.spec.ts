@@ -135,4 +135,27 @@ test.describe('responsive UI coverage', () => {
     await expect(page.getByText(/Critical Role/)).toBeVisible();
     await expectInsideViewport(page, 'SETTINGS');
   });
+
+  test('settings file uploads can be removed one at a time', async ({ page }) => {
+    await setupTest(page);
+    await page.goto('/settings');
+    await waitForSettings(page);
+    await page.getByText('Files', { exact: true }).click();
+
+    await page.getByPlaceholder('File name (e.g. my-campaign.md)').fill('keep-me.md');
+    await page.getByPlaceholder('Paste content here...').fill('Valdrath');
+    await page.getByText('Add', { exact: true }).click();
+    await expect(page.getByText('keep-me.md')).toBeVisible();
+
+    await page.getByPlaceholder('File name (e.g. my-campaign.md)').fill('remove-me.md');
+    await page.getByPlaceholder('Paste content here...').fill('Ironspire');
+    await page.getByText('Add', { exact: true }).click();
+
+    await expect(page.getByText('UPLOADED (2)')).toBeVisible();
+    await page.getByRole('button', { name: 'Remove upload remove-me.md' }).click();
+
+    await expect(page.getByText('remove-me.md')).not.toBeVisible();
+    await expect(page.getByText('keep-me.md')).toBeVisible();
+    await expect(page.getByText('UPLOADED (1)')).toBeVisible();
+  });
 });
