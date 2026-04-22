@@ -70,6 +70,21 @@ just build-ios-dev   # EAS build for device testing
 just submit-ios      # submit to App Store
 ```
 
+## Deployment
+
+Pushes to `main` run GitHub Actions checks, build the web app, and deploy `dist/`
+to Cloudflare Pages project `dnd-ref`. The CORS proxy Worker deploys from the
+same workflow only when `workers/cors-proxy/`, `package.json`, or
+`package-lock.json` changes. Manual deploy commands remain available through
+`just ship-web` and `just proxy-deploy`.
+
+Required GitHub repository secrets:
+
+```text
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
+```
+
 ## iOS build setup
 
 Requires an Apple Developer account and EAS:
