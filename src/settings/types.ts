@@ -1,5 +1,5 @@
-import { UploadedFile } from '../entities/providers/file-upload';
 import { DataSourcesSettings } from '../context/data-sources';
+import { UploadedFile } from '../entities/providers/file-upload';
 import { STTSettings } from '../stt/index';
 
 export interface DisplaySectionProps {

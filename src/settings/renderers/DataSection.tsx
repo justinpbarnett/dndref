@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { SRD_SOURCES } from '../../entities/providers/srd';
 import { KeyLink } from '../KeyLink';
 import { DataSectionProps } from '../types';
-import { SRD_SOURCES } from '../../entities/providers/srd';
 
 const SRD_PUBLISHER_GROUPS = (() => {
   const map = new Map<string, { slug: string; label: string }[]>();

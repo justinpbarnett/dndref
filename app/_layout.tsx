@@ -5,9 +5,10 @@ import Head from 'expo-router/head';
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { UISettingsProvider, useColors } from '../src/context/ui-settings';
+
 import { DataSourcesProvider } from '../src/context/data-sources';
 import { SessionProvider } from '../src/context/session';
+import { UISettingsProvider, useColors } from '../src/context/ui-settings';
 import { getIoniconsFontSource } from '../src/icon-font';
 import { F } from '../src/theme';
 

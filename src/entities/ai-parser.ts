@@ -1,5 +1,6 @@
-import { Entity, EntityIndex, normalizeEntityType, slugify } from './index';
 import { CORS_PROXY } from '../proxy';
+
+import { Entity, EntityIndex, normalizeEntityType, slugify } from './index';
 
 interface AIEntityInput {
   name: string;

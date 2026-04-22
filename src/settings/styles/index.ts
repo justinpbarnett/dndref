@@ -1,9 +1,9 @@
-import { Colors } from '../../theme';
-import { createLayoutStyles } from './layout';
-import { createGroupStyles } from './groups';
 import { createControlStyles } from './controls';
-import { createSourceStyles } from './sources';
 import { createFileStyles } from './files';
+import { createGroupStyles } from './groups';
+import { createLayoutStyles } from './layout';
+import { createSourceStyles } from './sources';
+import { Colors } from '../../theme';
 
 export function createStyles(C: Colors, isWide: boolean) {
   return {

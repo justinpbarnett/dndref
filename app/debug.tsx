@@ -1,6 +1,7 @@
 import { Redirect } from 'expo-router';
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 import { useSession } from '../src/context/session';
 import { useColors } from '../src/context/ui-settings';
 import { Colors, F, typeAccent } from '../src/theme';

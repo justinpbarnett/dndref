@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+
 import { Colors, F } from '../../theme';
 
 export function createLayoutStyles(C: Colors, isWide: boolean) {

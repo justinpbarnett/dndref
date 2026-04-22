@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { EntityIndex, WorldDataProvider, normalizeEntityType, slugify } from '../index';
 import { MarkdownProvider } from './markdown';
 

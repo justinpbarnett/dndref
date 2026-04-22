@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { test, Page } from '@playwright/test';
 
 const IONICONS_TTF = path.join(

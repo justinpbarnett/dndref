@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
-import { CardState, useSession } from '../context/session';
-import { Colors, F } from '../theme';
+
 import { EntityCard } from './EntityCard';
+import { CardState, useSession } from '../context/session';
+import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
+import { Colors, F } from '../theme';
 
 const GRID_PAD = 5;
 const CARD_MARGIN = 5;

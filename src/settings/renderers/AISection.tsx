@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 import { KeyLink } from '../KeyLink';
 import { AISectionProps } from '../types';
 

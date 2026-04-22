@@ -24,15 +24,13 @@ const nativeState = vi.hoisted(() => {
       await state.nextPrepare.promise;
     }
 
-    async startAsync(): Promise<void> {}
+    record(): void {}
 
-    async stopAndUnloadAsync(): Promise<void> {
+    async stop(): Promise<void> {
       this.stopCalls += 1;
     }
 
-    getURI(): string {
-      return this.uri;
-    }
+    release(): void {}
   }
 
   const state = {
@@ -44,13 +42,16 @@ const nativeState = vi.hoisted(() => {
 });
 
 vi.mock('react-native', () => ({ Platform: platform }));
-vi.mock('expo-av', () => ({
-  Audio: {
-    requestPermissionsAsync: vi.fn(async () => ({ granted: true })),
-    setAudioModeAsync: vi.fn(async () => undefined),
-    Recording: nativeState.MockRecording,
-    RecordingOptionsPresets: { HIGH_QUALITY: {} },
-  },
+vi.mock('expo-audio', () => ({
+  RecordingPresets: { HIGH_QUALITY: {} },
+  requestRecordingPermissionsAsync: vi.fn(async () => ({ granted: true })),
+  setAudioModeAsync: vi.fn(async () => undefined),
+}));
+vi.mock('expo-audio/build/AudioModule', () => ({
+  default: { AudioRecorder: nativeState.MockRecording },
+}));
+vi.mock('expo-audio/build/utils/options', () => ({
+  createRecordingOptions: vi.fn((options) => options),
 }));
 vi.mock('expo-file-system/legacy', () => ({
   default: {},

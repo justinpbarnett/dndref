@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
+
 import { CardState } from '../context/session';
+import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
 import { Colors, F, typeAccent } from '../theme';
 
 function parseBullets(summary: string): string[] {

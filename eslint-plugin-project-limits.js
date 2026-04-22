@@ -1,6 +1,7 @@
-const { ESLint } = require('eslint');
 const fs = require('fs');
 const path = require('path');
+
+const { ESLint } = require('eslint');
 
 module.exports = {
   rules: {

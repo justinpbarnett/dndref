@@ -1,21 +1,22 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform, ScrollView, Text, TouchableOpacity, View, useWindowDimensions,
 } from 'react-native';
-import { useColors, useUISettings } from '../src/context/ui-settings';
+
 import { DataSourcesSettings, useDataSources } from '../src/context/data-sources';
-import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
-import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
+import { useColors, useUISettings } from '../src/context/ui-settings';
 import { parseWithAI } from '../src/entities/ai-parser';
+import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
 import { Category, CATEGORIES } from '../src/settings/constants';
-import { DisplaySection } from '../src/settings/renderers/DisplaySection';
-import { VoiceSection } from '../src/settings/renderers/VoiceSection';
-import { DataSection } from '../src/settings/renderers/DataSection';
-import { FilesSection } from '../src/settings/renderers/FilesSection';
 import { AISection } from '../src/settings/renderers/AISection';
+import { DataSection } from '../src/settings/renderers/DataSection';
+import { DisplaySection } from '../src/settings/renderers/DisplaySection';
+import { FilesSection } from '../src/settings/renderers/FilesSection';
+import { VoiceSection } from '../src/settings/renderers/VoiceSection';
 import { createStyles } from '../src/settings/styles';
+import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
 
 export default function SettingsScreen() {
   const C = useColors();

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
+
 import { EntityDetector } from './detector';
+
 import { slugify, normalizeEntityType, EntityType } from './index';
 
 describe('EntityDetector', () => {

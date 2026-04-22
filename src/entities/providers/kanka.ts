@@ -1,5 +1,5 @@
-import { Entity, EntityIndex, EntityType, WorldDataProvider, stripHtml } from '../index';
 import { fetchAll } from '../../utils/providers';
+import { Entity, EntityIndex, EntityType, WorldDataProvider, stripHtml } from '../index';
 
 const KANKA_BASE = 'https://api.kanka.io/1.0';
 

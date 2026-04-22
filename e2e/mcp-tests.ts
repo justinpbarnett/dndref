@@ -1,6 +1,8 @@
-import { chromium, Browser, Page, ConsoleMessage } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { chromium, Browser, Page, ConsoleMessage } from 'playwright';
+
 import { runTest, TestContext, TestResult } from './mcp/runner';
 import { testAppLoads, testNavigateToSettings, testCardSizeSwitching, testThemeSwitching, testSttProvider, testDataSourceToggles, testSampleWorldEntities } from './mcp/tests';
 

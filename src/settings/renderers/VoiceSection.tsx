@@ -1,5 +1,6 @@
 import React from 'react';
 import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 import { KeyLink } from '../KeyLink';
 import { VoiceSectionProps } from '../types';
 

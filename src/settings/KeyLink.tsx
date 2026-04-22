@@ -1,4 +1,5 @@
 import { Linking, Text, TouchableOpacity } from 'react-native';
+
 import { useColors } from '../context/ui-settings';
 import { F } from '../theme';
 

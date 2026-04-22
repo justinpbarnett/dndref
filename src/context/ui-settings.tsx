@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
+
 import { Colors, DARK, LIGHT } from '../theme';
 
 export type CardSize = 'S' | 'M' | 'L' | 'XL';

@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTProvider, STTSettings } from '../stt/index';
+
 import { DeepgramProvider } from '../stt/deepgram';
+import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTProvider, STTSettings } from '../stt/index';
 import { WebSpeechProvider } from '../stt/web-speech';
 
 export async function loadSettings(): Promise<STTSettings> {

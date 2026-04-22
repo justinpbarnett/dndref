@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../index';
+
 import { fetchAll } from '../../utils/providers';
+import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../index';
 
 const OPEN5E = 'https://api.open5e.com/v1';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
