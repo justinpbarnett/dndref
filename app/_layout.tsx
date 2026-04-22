@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons as ExpoIonicons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { Tabs } from 'expo-router';
 import Head from 'expo-router/head';
@@ -6,10 +6,11 @@ import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Ionicon } from '../src/components/Ionicon';
 import { DataSourcesProvider } from '../src/context/data-sources';
 import { SessionProvider } from '../src/context/session';
 import { UISettingsProvider, useColors } from '../src/context/ui-settings';
-import { getIoniconsFontSource } from '../src/icon-font';
+import { IONICONS_WEB_FONT, getIoniconsFontSource } from '../src/icon-font';
 import { F } from '../src/theme';
 
 function ThemedTabs() {
@@ -53,7 +54,7 @@ function ThemedTabs() {
         options={{
           title: 'REFERENCE',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'layers' : 'layers-outline'} size={20} color={color} />
+            <Ionicon name={focused ? 'layers' : 'layers-outline'} size={20} color={color} />
           ),
         }}
       />
@@ -63,7 +64,7 @@ function ThemedTabs() {
           title: 'DEBUG',
           href: __DEV__ ? undefined : null,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'bug' : 'bug-outline'} size={20} color={color} />
+            <Ionicon name={focused ? 'bug' : 'bug-outline'} size={20} color={color} />
           ),
         }}
       />
@@ -72,7 +73,7 @@ function ThemedTabs() {
         options={{
           title: 'SETTINGS',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={20} color={color} />
+            <Ionicon name={focused ? 'settings' : 'settings-outline'} size={20} color={color} />
           ),
         }}
       />
@@ -81,9 +82,11 @@ function ThemedTabs() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    ionicons: getIoniconsFontSource(Platform.OS, Ionicons.font.ionicons),
-  });
+  const [fontsLoaded] = useFonts(
+    Platform.OS === 'web'
+      ? {}
+      : { ionicons: getIoniconsFontSource(Platform.OS, ExpoIonicons.font.ionicons) },
+  );
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -100,6 +103,14 @@ export default function RootLayout() {
     <>
       <Head>
         <title>DnD Ref</title>
+        {Platform.OS === 'web' && (
+          <>
+            <style>
+              {`@font-face{font-family:"ionicons";src:url("${IONICONS_WEB_FONT}") format("truetype");font-display:block}`}
+            </style>
+            <link rel="preload" href={IONICONS_WEB_FONT} as="font" type="font/ttf" crossOrigin="" />
+          </>
+        )}
         <meta name="description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
         <meta property="og:title" content="DnD Ref" />
         <meta property="og:description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />

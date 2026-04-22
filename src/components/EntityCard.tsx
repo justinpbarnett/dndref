@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { Ionicon } from './Ionicon';
 import { CardState } from '../context/session';
 import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
 import { Colors, F, typeAccent } from '../theme';
@@ -85,7 +85,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
                 accessibilityLabel={pinned ? 'Unpin' : 'Pin'}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 6 }}
               >
-                <Ionicons
+                <Ionicon
                   name={pinned ? 'bookmark' : 'bookmark-outline'}
                   size={15 * fontScale}
                   color={pinned ? color : C.textDim}
@@ -96,7 +96,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
                 accessibilityLabel="Dismiss"
                 hitSlop={{ top: 12, bottom: 12, left: 6, right: 12 }}
               >
-                <Ionicons name="close" size={14 * fontScale} color={C.textDim} />
+                <Ionicon name="close" size={14 * fontScale} color={C.textDim} />
               </TouchableOpacity>
             </View>
             {entity.image && (

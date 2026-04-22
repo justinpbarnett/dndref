@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { Ionicon } from '../../components/Ionicon';
 import { FilesSectionProps } from '../types';
 
 export function FilesSection({
@@ -30,7 +30,7 @@ export function FilesSection({
         </Text>
         {Platform.OS === 'web' && (
           <TouchableOpacity style={styles.outlineBtn} onPress={pickFilesWeb} activeOpacity={0.7}>
-            <Ionicons name="cloud-upload-outline" size={14} color={C.active} style={{ marginRight: 6 }} />
+            <Ionicon name="cloud-upload-outline" size={14} color={C.active} style={{ marginRight: 6 }} />
             <Text style={styles.outlineBtnText}>Choose Files</Text>
           </TouchableOpacity>
         )}
@@ -72,7 +72,7 @@ export function FilesSection({
             const removing = removingUploadId === f.id;
             return (
               <View key={f.id} style={styles.fileRow}>
-                <Ionicons name="document-text-outline" size={13} color={C.textDim} />
+                <Ionicon name="document-text-outline" size={13} color={C.textDim} />
                 <Text style={styles.fileName} numberOfLines={1}>{f.name}</Text>
                 <TouchableOpacity
                   style={[styles.fileRemoveBtn, removing && styles.fileRemoveBtnDisabled]}
@@ -83,7 +83,7 @@ export function FilesSection({
                   accessibilityLabel={`Remove upload ${f.name}`}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons name="trash-outline" size={15} color={C.error} />
+                  <Ionicon name="trash-outline" size={15} color={C.error} />
                 </TouchableOpacity>
               </View>
             );
@@ -102,7 +102,7 @@ export function FilesSection({
           activeOpacity={0.7}
           disabled={deleteAllPending}
         >
-          <Ionicons name="trash-outline" size={14} color={C.error} style={{ marginRight: 6 }} />
+          <Ionicon name="trash-outline" size={14} color={C.error} style={{ marginRight: 6 }} />
           <Text style={styles.dangerBtnText}>
             {deleteAllPending ? 'Deleting...' : 'Delete All Data'}
           </Text>

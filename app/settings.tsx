@@ -1,9 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert, Platform, ScrollView, Text, TouchableOpacity, View, useWindowDimensions,
 } from 'react-native';
 
+import { Ionicon } from '../src/components/Ionicon';
 import { DEFAULT_DATA_SOURCES_SETTINGS, DataSourcesSettings, useDataSources } from '../src/context/data-sources';
 import { useSession } from '../src/context/session';
 import { useColors, useUISettings } from '../src/context/ui-settings';
@@ -243,8 +243,8 @@ export default function SettingsScreen() {
                 onPress={() => setCategory(cat.id)}
                 activeOpacity={0.7}
               >
-                <Ionicons
-                  name={(active ? cat.iconFocused : cat.icon) as any}
+                <Ionicon
+                  name={active ? cat.iconFocused : cat.icon}
                   size={16}
                   color={active ? C.textPrimary : C.textSecondary}
                 />
@@ -271,8 +271,8 @@ export default function SettingsScreen() {
                 onPress={() => setCategory(cat.id)}
                 activeOpacity={0.7}
               >
-                <Ionicons
-                  name={(active ? cat.iconFocused : cat.icon) as any}
+                <Ionicon
+                  name={active ? cat.iconFocused : cat.icon}
                   size={16}
                   color={active ? C.textPrimary : C.textSecondary}
                 />

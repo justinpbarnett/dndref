@@ -26,9 +26,11 @@ describe('Ionicons font source', () => {
     expect(readFileSync(publicFont)).toEqual(readFileSync(packageFont));
   });
 
-  it('is used by the root layout font loader', () => {
+  it('is registered by the root layout for web and native', () => {
     const layout = readFileSync(join(process.cwd(), 'app/_layout.tsx'), 'utf8');
 
-    expect(layout).toContain('getIoniconsFontSource(Platform.OS, Ionicons.font.ionicons)');
+    expect(layout).toContain('src:url("${IONICONS_WEB_FONT}") format("truetype")');
+    expect(layout).toContain("Platform.OS === 'web'");
+    expect(layout).toContain('ExpoIonicons.font.ionicons');
   });
 });

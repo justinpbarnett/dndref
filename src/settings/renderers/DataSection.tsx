@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { Ionicon } from '../../components/Ionicon';
 import { SRD_SOURCES } from '../../entities/providers/srd';
 import { KeyLink } from '../KeyLink';
 import { DataSectionProps } from '../types';
@@ -60,7 +60,7 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
                       activeOpacity={0.7}
                     >
                       <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-                        {checked && <Ionicons name="checkmark" size={9} color={C.bg} />}
+                        {checked && <Ionicon name="checkmark" size={9} color={C.bg} />}
                       </View>
                       <Text style={[styles.checkRowLabel, checked && styles.checkRowLabelChecked]}>
                         {src.label}

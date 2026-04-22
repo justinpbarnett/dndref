@@ -1,8 +1,9 @@
+import type { IoniconName } from '../components/Ionicon';
 import { CardSize, ColorScheme } from '../context/ui-settings';
 
 export type Category = 'display' | 'voice' | 'data' | 'files' | 'ai';
 
-export const CATEGORIES: { id: Category; label: string; icon: string; iconFocused: string }[] = [
+export const CATEGORIES: { id: Category; label: string; icon: IoniconName; iconFocused: IoniconName }[] = [
   { id: 'display', label: 'Display', icon: 'grid-outline', iconFocused: 'grid' },
   { id: 'voice', label: 'Voice', icon: 'mic-outline', iconFocused: 'mic' },
   { id: 'data', label: 'Sources', icon: 'globe-outline', iconFocused: 'globe' },

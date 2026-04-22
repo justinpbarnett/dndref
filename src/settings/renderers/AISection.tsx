@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { Ionicon } from '../../components/Ionicon';
 import { KeyLink } from '../KeyLink';
 import { AISectionProps } from '../types';
 
@@ -46,7 +46,7 @@ export function AISection({ dsLocal, setDsLocal, aiContent, setAiContent, aiPars
           activeOpacity={0.7}
           disabled={!aiContent.trim() || !dsLocal.aiApiKey || aiParsing}
         >
-          <Ionicons name="sparkles-outline" size={14} color={C.active} style={{ marginRight: 6 }} />
+          <Ionicon name="sparkles-outline" size={14} color={C.active} style={{ marginRight: 6 }} />
           <Text style={styles.outlineBtnText}>{aiParsing ? 'Parsing...' : 'Parse with AI'}</Text>
         </TouchableOpacity>
         {!!aiResult && (
