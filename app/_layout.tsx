@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UISettingsProvider, useColors } from '../src/context/ui-settings';
 import { DataSourcesProvider } from '../src/context/data-sources';
 import { SessionProvider } from '../src/context/session';
+import { getIoniconsFontSource } from '../src/icon-font';
 import { F } from '../src/theme';
 
 function ThemedTabs() {
@@ -77,13 +78,10 @@ function ThemedTabs() {
   );
 }
 
-// Cloudflare Pages can't serve paths containing '@' as static assets, so the
-// bundled Ionicons TTF never loads in production. Load from CDN instead.
-const IONICONS_CDN =
-  'https://cdn.jsdelivr.net/npm/@expo/vector-icons@14.0.4/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf';
-
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Ionicons: IONICONS_CDN });
+  const [fontsLoaded] = useFonts({
+    ionicons: getIoniconsFontSource(Platform.OS, Ionicons.font.ionicons),
+  });
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;

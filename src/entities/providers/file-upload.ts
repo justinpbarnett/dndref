@@ -3,6 +3,7 @@ import { EntityIndex, WorldDataProvider, normalizeEntityType, slugify } from '..
 import { MarkdownProvider } from './markdown';
 
 const UPLOADS_KEY = 'dndref:file-uploads';
+let uploadMutationQueue: Promise<void> = Promise.resolve();
 
 export interface UploadedFile {
   id: string;
@@ -21,14 +22,26 @@ export async function getUploads(): Promise<UploadedFile[]> {
 }
 
 export async function addUpload(name: string, content: string): Promise<void> {
-  const uploads = await getUploads();
-  const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-  await AsyncStorage.setItem(UPLOADS_KEY, JSON.stringify([...uploads, { id, name, content }]));
+  await mutateUploads((uploads) => {
+    const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    return [...uploads, { id, name, content }];
+  });
 }
 
 export async function removeUpload(id: string): Promise<void> {
-  const uploads = await getUploads();
-  await AsyncStorage.setItem(UPLOADS_KEY, JSON.stringify(uploads.filter((u) => u.id !== id)));
+  await mutateUploads((uploads) => uploads.filter((u) => u.id !== id));
+}
+
+function mutateUploads(mutator: (uploads: UploadedFile[]) => UploadedFile[]): Promise<void> {
+  const operation = uploadMutationQueue
+    .catch(() => undefined)
+    .then(async () => {
+      const uploads = await getUploads();
+      await AsyncStorage.setItem(UPLOADS_KEY, JSON.stringify(mutator(uploads)));
+    });
+
+  uploadMutationQueue = operation.catch(() => undefined);
+  return operation;
 }
 
 export class FileUploadProvider implements WorldDataProvider {

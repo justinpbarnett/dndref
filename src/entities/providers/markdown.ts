@@ -1,41 +1,74 @@
-import { Entity, EntityIndex, EntityType, WorldDataProvider, slugify } from '../index';
+import { Entity, EntityIndex, WorldDataProvider, normalizeEntityType, slugify } from '../index';
 
-const VALID_ENTITY_TYPES = new Set<EntityType>(['Location', 'NPC', 'Faction', 'Item', 'Unknown']);
+interface MarkdownBlock {
+  name: string;
+  body: string;
+}
 
 function parseMarkdown(content: string): EntityIndex {
-  const blocks = content.split(/^# /m).filter(Boolean);
+  const blocks = getHeadingBlocks(content);
+  const sourceBlocks = blocks.length > 0 ? blocks : getFallbackBlock(content);
 
-  return blocks.map((block) => {
-    const lines = block.trim().split('\n');
-    const name = lines[0].trim();
+  return sourceBlocks.map((block) => {
+    const name = cleanHeading(block.name);
     if (!name) return null;
 
     const id = slugify(name);
-    let type: EntityType = 'Unknown';
+    let type = normalizeEntityType('');
     let aliases: string[] = [];
     const summaryLines: string[] = [];
-    let inSummary = false;
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-      if (line === '---') break;
+    for (const line of block.body.split('\n')) {
+      const trimmed = line.trim();
+      if (trimmed === '---') continue;
 
-      const typeMatch = line.match(/^\*\*Type:\*\*\s*(.+)/);
-      const aliasMatch = line.match(/^\*\*Aliases:\*\*\s*(.+)/);
-
-      if (!inSummary && typeMatch) {
-        const raw = typeMatch[1].trim() as EntityType;
-        type = VALID_ENTITY_TYPES.has(raw) ? raw : 'Unknown';
-      } else if (!inSummary && aliasMatch) {
-        aliases = aliasMatch[1].split(',').map((a) => a.trim()).filter(Boolean);
-      } else {
-        if (line.trim()) inSummary = true;
-        summaryLines.push(line);
+      const field = parseField(trimmed);
+      if (field?.key === 'type') {
+        type = normalizeEntityType(field.value);
+        continue;
       }
+      if (field?.key === 'aliases') {
+        aliases = field.value.split(/[,;|]/).map((a) => a.trim()).filter(Boolean);
+        continue;
+      }
+
+      if (!trimmed && summaryLines.length === 0) continue;
+      summaryLines.push(line);
     }
 
     return { id, name, type, aliases, summary: summaryLines.join('\n').trim() };
   }).filter((e): e is Entity => e !== null && e.name.length > 0);
+}
+
+function getHeadingBlocks(content: string): MarkdownBlock[] {
+  const headingRe = /^(#{1,3})\s+(.+?)\s*#*\s*$/gm;
+  const matches = Array.from(content.matchAll(headingRe));
+
+  return matches.map((match, i) => {
+    const start = (match.index ?? 0) + match[0].length;
+    const end = matches[i + 1]?.index ?? content.length;
+    return { name: match[2], body: content.slice(start, end) };
+  });
+}
+
+function getFallbackBlock(content: string): MarkdownBlock[] {
+  const lines = content.trim().split('\n');
+  const name = lines.shift()?.trim() ?? '';
+  return name ? [{ name, body: lines.join('\n') }] : [];
+}
+
+function cleanHeading(name: string): string {
+  return name.replace(/\*\*/g, '').trim();
+}
+
+function parseField(line: string): { key: string; value: string } | null {
+  const match = line.match(/^(?:[-*]\s*)?(?:\*\*)?([^:*]+):(?:\*\*)?\s*(.+)$/);
+  if (!match) return null;
+
+  return {
+    key: match[1].replace(/\*/g, '').trim().toLowerCase(),
+    value: match[2].trim(),
+  };
 }
 
 export class MarkdownProvider implements WorldDataProvider {

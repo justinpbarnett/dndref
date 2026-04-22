@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 
 import { Entity, EntityIndex, WorldDataProvider } from '../entities';
 import { useDataSources } from './data-sources';
+import { buildDetectionInput, nextDetectionContext } from './detection-window';
 import {
   MAX_CARDS,
   DETECT_INTERVAL_MS,
@@ -41,6 +42,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const detectorRef = useRef<EntityDetector | null>(null);
   const transcriptRef = useRef('');
   const processedUpToRef = useRef(0);
+  const detectionContextRef = useRef('');
   const prevDetectionKeyRef = useRef('');
   const sttRef = useRef<STTProvider | null>(null);
   const sttGenerationRef = useRef(0);
@@ -93,8 +95,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       const newText = transcriptRef.current.slice(processedUpToRef.current);
       if (!newText.trim()) return;
 
-      const found = detector.detect(newText);
+      const found = detector.detect(buildDetectionInput(detectionContextRef.current, newText));
       processedUpToRef.current = transcriptRef.current.length;
+      detectionContextRef.current = nextDetectionContext(transcriptRef.current);
 
       if (found.length === 0) return;
 
@@ -136,6 +139,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           setStatus('active');
           setSttStatus('active');
           processedUpToRef.current = transcriptRef.current.length;
+          detectionContextRef.current = '';
         })
         .catch((e) => {
           if (sttGenerationRef.current !== generation || sttRef.current !== provider) return;
@@ -156,6 +160,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const generation = sttGenerationRef.current + 1;
     sttGenerationRef.current = generation;
     acceptingTranscriptRef.current = false;
+    detectionContextRef.current = '';
     setSttStatus('connecting');
     setSttError(null);
 
@@ -195,6 +200,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setSttStatus('active');
       setStatus('active');
       processedUpToRef.current = transcriptRef.current.length;
+      detectionContextRef.current = '';
     })()
       .catch((e) => {
         if (sttGenerationRef.current !== generation) return;
@@ -215,6 +221,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const pause = useCallback(() => {
     acceptingTranscriptRef.current = false;
+    detectionContextRef.current = '';
     const provider = sttRef.current;
     if (provider) Promise.resolve(provider.pause()).catch(() => {});
     setSttStatus('idle');
@@ -238,6 +245,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setRecentDetections([]);
     prevDetectionKeyRef.current = '';
     processedUpToRef.current = 0;
+    detectionContextRef.current = '';
   }, []);
 
   useEffect(() => {
