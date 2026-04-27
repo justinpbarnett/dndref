@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import { CardState, useSession } from '../context/session';
+import { useSession } from '../context/session';
 import { useColors, useUISettings } from '../context/ui-settings';
 import { computeReferenceCardLayout, type ReferenceCardPosition } from '../reference-card-layout';
 import { Colors, F } from '../theme';

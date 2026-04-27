@@ -1,19 +1,17 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { CardSize, ColorScheme } from '../../context/ui-settings';
+import { CARD_SIZES, COLOR_SCHEMES } from '../../context/ui-settings';
 import { CARD_SIZE_DESCS, CARD_SIZE_LABELS, COLOR_SCHEME_LABELS } from '../constants';
 import { DisplaySectionProps } from '../types';
 
 export function DisplaySection({ cardSize, setCardSize, colorScheme, setColorScheme, styles }: DisplaySectionProps) {
-  const CARD_SIZE_CONFIGS = { S: {}, M: {}, L: {}, XL: {} };
-
   return (
     <View testID="settings-content" style={styles.contentInner}>
       <View style={styles.group}>
         <Text style={styles.groupLabel}>CARD SIZE</Text>
         <View style={styles.segmentRow}>
-          {(Object.keys(CARD_SIZE_CONFIGS) as CardSize[]).map((size) => (
+          {CARD_SIZES.map((size) => (
             <TouchableOpacity
               key={size}
               style={[styles.segment, cardSize === size && styles.segmentActive]}
@@ -35,7 +33,7 @@ export function DisplaySection({ cardSize, setCardSize, colorScheme, setColorSch
       <View style={styles.group}>
         <Text style={styles.groupLabel}>THEME</Text>
         <View style={styles.segmentRow}>
-          {(['system', 'dark', 'light'] as ColorScheme[]).map((scheme) => (
+          {COLOR_SCHEMES.map((scheme) => (
             <TouchableOpacity
               key={scheme}
               style={[styles.segment, colorScheme === scheme && styles.segmentActive]}

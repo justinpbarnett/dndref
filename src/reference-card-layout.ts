@@ -1,4 +1,10 @@
-export type CardSize = 'S' | 'M' | 'L' | 'XL';
+export const CARD_SIZES = ['S', 'M', 'L', 'XL'] as const;
+
+export type CardSize = (typeof CARD_SIZES)[number];
+
+export function isCardSize(value: unknown): value is CardSize {
+  return typeof value === 'string' && (CARD_SIZES as readonly string[]).includes(value);
+}
 
 export interface CardSizeLayoutConfig {
   landscapeCols: number;
@@ -56,26 +62,39 @@ export function computeReferenceCardLayout({
   viewport,
   cardSize,
 }: ComputeReferenceCardLayoutInput): ReferenceCardLayout {
-  const { gridPad, cardMargin, minCardWidth, maxCardWidth, defaultMeasuredHeight } = REFERENCE_CARD_LAYOUT;
+  const {
+    gridPad,
+    cardMargin,
+    minCardWidth,
+    maxCardWidth,
+    defaultMeasuredHeight,
+  } = REFERENCE_CARD_LAYOUT;
+  const { width: viewportWidth, height: viewportHeight } = viewport;
   const config = CARD_SIZE_LAYOUT_CONFIGS[cardSize];
-  const preferredColumns = viewport.width > viewport.height ? config.landscapeCols : config.portraitCols;
-  const readableColumns = Math.max(1, Math.floor((viewport.width - 2 * gridPad) / (minCardWidth + 2 * cardMargin)));
-  const columns = Math.min(preferredColumns, readableColumns);
-  const gridWidth = Math.min(viewport.width, columns * (maxCardWidth + 2 * cardMargin) + 2 * gridPad);
-  const xOffset = Math.max(0, (viewport.width - gridWidth) / 2);
+  const preferredColumns = viewportWidth > viewportHeight ? config.landscapeCols : config.portraitCols;
+  const maxReadableColumns = Math.max(
+    1,
+    Math.floor((viewportWidth - 2 * gridPad) / (minCardWidth + 2 * cardMargin)),
+  );
+  const columns = Math.min(preferredColumns, maxReadableColumns);
+  const gridWidth = Math.min(
+    viewportWidth,
+    columns * (maxCardWidth + 2 * cardMargin) + 2 * gridPad,
+  );
+  const xOffset = Math.max(0, (viewportWidth - gridWidth) / 2);
   const cardWidth = (gridWidth - 2 * gridPad) / columns - 2 * cardMargin;
-  const colWidth = cardWidth + 2 * cardMargin;
+  const columnWidth = cardWidth + 2 * cardMargin;
 
   const rowHeights: number[] = [];
   for (let i = 0; i < cards.length; i++) {
     const row = Math.floor(i / columns);
-    const h = measuredHeights[cards[i].instanceId] ?? defaultMeasuredHeight;
-    rowHeights[row] = Math.max(rowHeights[row] ?? 0, h);
+    const cardHeight = measuredHeights[cards[i].instanceId] ?? defaultMeasuredHeight;
+    rowHeights[row] = Math.max(rowHeights[row] ?? 0, cardHeight);
   }
 
-  const rowY: number[] = [gridPad];
+  const rowTops: number[] = [gridPad];
   for (let r = 0; r < rowHeights.length; r++) {
-    rowY[r + 1] = rowY[r] + rowHeights[r];
+    rowTops[r + 1] = rowTops[r] + rowHeights[r];
   }
 
   const positions: Record<string, ReferenceCardPosition> = {};
@@ -83,8 +102,8 @@ export function computeReferenceCardLayout({
     const col = i % columns;
     const row = Math.floor(i / columns);
     positions[cards[i].instanceId] = {
-      x: xOffset + gridPad + col * colWidth,
-      y: rowY[row],
+      x: xOffset + gridPad + col * columnWidth,
+      y: rowTops[row],
     };
   }
 
@@ -94,6 +113,6 @@ export function computeReferenceCardLayout({
     gridWidth,
     xOffset,
     positions,
-    totalHeight: rowY[rowHeights.length] + gridPad,
+    totalHeight: rowTops[rowHeights.length] + gridPad,
   };
 }

@@ -1,7 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 
-import { CARD_SIZE_LAYOUT_CONFIGS, type CardSize, type CardSizeLayoutConfig } from '../reference-card-layout';
+import {
+  CARD_SIZE_LAYOUT_CONFIGS,
+  isCardSize,
+  type CardSize,
+  type CardSizeLayoutConfig,
+} from '../reference-card-layout';
 import {
   createAppDataWriteToken,
   getAppDataItem,
@@ -11,8 +16,11 @@ import {
 import { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
 import { Colors, DARK, LIGHT } from '../theme';
 
+export { CARD_SIZES } from '../reference-card-layout';
 export type { CardSize } from '../reference-card-layout';
-export type ColorScheme = 'dark' | 'light' | 'system';
+
+export const COLOR_SCHEMES = ['system', 'dark', 'light'] as const;
+export type ColorScheme = (typeof COLOR_SCHEMES)[number];
 
 export interface CardSizeConfig extends CardSizeLayoutConfig {
   fontScale: number;
@@ -29,13 +37,17 @@ export { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
 export const DEFAULT_CARD_SIZE: CardSize = 'M';
 export const DEFAULT_COLOR_SCHEME: ColorScheme = 'dark';
 
+function isColorScheme(value: unknown): value is ColorScheme {
+  return typeof value === 'string' && (COLOR_SCHEMES as readonly string[]).includes(value);
+}
+
 // Read synchronously from localStorage on web so the first render matches
 // the stored preference -- avoids SSR/client hydration mismatch.
 function readStoredColorScheme(): ColorScheme {
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
     try {
-      const v = window.localStorage.getItem(COLOR_SCHEME_KEY);
-      if (v === 'dark' || v === 'light' || v === 'system') return v;
+      const value = window.localStorage.getItem(COLOR_SCHEME_KEY);
+      if (isColorScheme(value)) return value;
     } catch {}
   }
   return DEFAULT_COLOR_SCHEME;
@@ -44,8 +56,8 @@ function readStoredColorScheme(): ColorScheme {
 function readStoredCardSize(): CardSize {
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
     try {
-      const v = window.localStorage.getItem(CARD_SIZE_KEY);
-      if (v && v in CARD_SIZE_CONFIGS) return v as CardSize;
+      const value = window.localStorage.getItem(CARD_SIZE_KEY);
+      if (isCardSize(value)) return value;
     } catch {}
   }
   return DEFAULT_CARD_SIZE;
@@ -74,14 +86,12 @@ export function UISettingsProvider({ children }: { children: React.ReactNode }) 
         getAppDataItem(COLOR_SCHEME_KEY, token),
       ]).then(([rawSize, rawScheme]) => {
         try {
-          if (rawSize && rawSize in CARD_SIZE_CONFIGS) setCardSizeState(rawSize as CardSize);
+          if (isCardSize(rawSize)) setCardSizeState(rawSize);
         } catch (e) {
           console.warn('[dnd-ref] Failed to parse card size preference:', e);
         }
         try {
-          if (rawScheme === 'dark' || rawScheme === 'light' || rawScheme === 'system') {
-            setColorSchemeState(rawScheme);
-          }
+          if (isColorScheme(rawScheme)) setColorSchemeState(rawScheme);
         } catch (e) {
           console.warn('[dnd-ref] Failed to parse color scheme preference:', e);
         }
