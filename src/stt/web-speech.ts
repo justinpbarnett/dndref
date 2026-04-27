@@ -37,9 +37,7 @@ export class WebSpeechProvider implements STTProvider {
     return msg.includes('already started') || msg.includes('already starting') || msg.includes('recognition has already started');
   }
 
-  private actionError(e: unknown, permissionMessage: string, prefix: string): string {
-    return this.isPermissionError(e) ? permissionMessage : `${prefix}: ${e instanceof Error ? e.message : String(e)}`;
-  }
+  private actionError(e: unknown, permissionMessage: string, prefix: string): string { return this.isPermissionError(e) ? permissionMessage : `${prefix}: ${e instanceof Error ? e.message : String(e)}`; }
 
   private clearRestartTimer(): void {
     if (this.restartTimer === null) return;

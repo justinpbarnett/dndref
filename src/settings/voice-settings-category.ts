@@ -64,9 +64,7 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     this.clearSavedTimer = options.clearSavedTimer ?? clearTimeout;
   }
 
-  getSnapshot(): VoiceSettingsCategorySnapshot {
-    return this.snapshot;
-  }
+  getSnapshot(): VoiceSettingsCategorySnapshot { return this.snapshot; }
 
   subscribe(listener: VoiceSettingsListener): () => void {
     this.listeners.add(listener);

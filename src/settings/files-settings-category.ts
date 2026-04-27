@@ -82,18 +82,14 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
     this.onDeleteAllDataReset = options.onDeleteAllDataReset ?? noop;
   }
 
-  getSnapshot(): FilesSettingsCategorySnapshot {
-    return this.snapshot;
-  }
+  getSnapshot(): FilesSettingsCategorySnapshot { return this.snapshot; }
 
   subscribe(listener: FilesSettingsListener): () => void {
     this.listeners.add(listener);
     return () => { this.listeners.delete(listener); };
   }
 
-  async load(): Promise<void> {
-    await this.refreshUploads();
-  }
+  async load(): Promise<void> { await this.refreshUploads(); }
 
   setPasteFileName(update: SetStateAction<string>): void {
     this.updateSnapshot({ pasteFileName: resolveStringUpdate(update, this.snapshot.pasteFileName) });
