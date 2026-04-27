@@ -18,35 +18,8 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
-import {
-  APP_STORAGE_KEYS,
-  DEFAULT_DATA_SOURCES_SETTINGS,
-  addUploadedFile,
-  allowAppDataCacheWrites,
-  beginAppDataReset,
-  canPersistAppDataCache,
-  createAppDataCacheSession,
-  createAppDataWriteToken,
-  finishAppDataReset,
-  getAppDataItem,
-  getUploadedFiles,
-  isAppStorageKey,
-  loadDataSourceSettings,
-  loadVoiceSettings,
-  removeUploadedFile,
-  resetAppDataControlsForTests,
-  resetStoredAppData,
-  saveDataSourceSettings,
-  saveVoiceSettings,
-  setAppDataItem,
-} from './app-data';
-import {
-  CARD_SIZE_KEY,
-  COLOR_SCHEME_KEY,
-  DATA_SOURCES_KEY,
-  SRD_CACHE_KEY_PREFIX,
-  UPLOADS_KEY,
-} from './keys';
+import { APP_STORAGE_KEYS, DEFAULT_DATA_SOURCES_SETTINGS, addUploadedFile, allowAppDataCacheWrites, beginAppDataReset, canPersistAppDataCache, createAppDataCacheSession, createAppDataWriteToken, finishAppDataReset, getAppDataItem, getUploadedFiles, isAppStorageKey, loadDataSourceSettings, loadVoiceSettings, removeUploadedFile, resetAppDataControlsForTests, resetStoredAppData, saveDataSourceSettings, saveVoiceSettings, setAppDataItem } from './app-data';
+import { CARD_SIZE_KEY, COLOR_SCHEME_KEY, DATA_SOURCES_KEY, SRD_CACHE_KEY_PREFIX, UPLOADS_KEY } from './keys';
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY } from '../stt';
 
 function blockStorageOperation(operation: keyof typeof storageControls): () => void {
