@@ -81,62 +81,50 @@ export function mergeVoiceSettings(settings?: Partial<STTSettings> | null): STTS
   return normalizeVoiceSettings(settings);
 }
 
-export async function loadVoiceSettings(): Promise<STTSettings | null> {
+export function loadVoiceSettings(): Promise<STTSettings | null> {
+  return loadJsonSetting(STT_SETTINGS_KEY, normalizeVoiceSettings, 'voice settings');
+}
+
+export function saveVoiceSettings(settings: STTSettings): Promise<boolean> {
+  return saveJsonSetting(STT_SETTINGS_KEY, mergeVoiceSettings(settings), 'voice settings');
+}
+
+export function loadDataSourceSettings(): Promise<DataSourcesSettings | null> {
+  return loadJsonSetting(
+    DATA_SOURCES_KEY,
+    (value) => mergeDataSourceSettings(value as Partial<DataSourcesSettings>),
+    'data source settings',
+  );
+}
+
+export function saveDataSourceSettings(settings: DataSourcesSettings): Promise<boolean> {
+  return saveJsonSetting(DATA_SOURCES_KEY, settings, 'data source settings');
+}
+
+async function loadJsonSetting<T>(key: string, normalize: (value: unknown) => T, label: string): Promise<T | null> {
   let raw: string | null;
   try {
-    raw = await getAppDataItem(STT_SETTINGS_KEY);
+    raw = await getAppDataItem(key);
   } catch (e) {
-    console.warn('[dnd-ref] Failed to load voice settings:', e);
+    console.warn(`[dnd-ref] Failed to load ${label}:`, e);
     return null;
   }
 
   if (!raw) return null;
 
   try {
-    return normalizeVoiceSettings(JSON.parse(raw));
-  } catch (parseErr) {
-    console.warn('[dnd-ref] Failed to parse voice settings:', parseErr);
+    return normalize(JSON.parse(raw));
+  } catch (e) {
+    console.warn(`[dnd-ref] Failed to parse ${label}:`, e);
     return null;
   }
 }
 
-export async function saveVoiceSettings(settings: STTSettings): Promise<boolean> {
-  const serializedSettings = JSON.stringify(mergeVoiceSettings(settings));
-
+async function saveJsonSetting(key: string, value: unknown, label: string): Promise<boolean> {
   try {
-    return await setAppDataItem(STT_SETTINGS_KEY, serializedSettings);
+    return await setAppDataItem(key, JSON.stringify(value));
   } catch (e) {
-    console.warn('[dnd-ref] Failed to save voice settings:', e);
-    return false;
-  }
-}
-
-export async function loadDataSourceSettings(): Promise<DataSourcesSettings | null> {
-  let raw: string | null;
-  try {
-    raw = await getAppDataItem(DATA_SOURCES_KEY);
-  } catch (e) {
-    console.warn('[dnd-ref] Failed to load data source settings:', e);
-    return null;
-  }
-
-  if (!raw) return null;
-
-  try {
-    return mergeDataSourceSettings(JSON.parse(raw) as Partial<DataSourcesSettings>);
-  } catch (parseErr) {
-    console.warn('[dnd-ref] Failed to parse data source settings:', parseErr);
-    return null;
-  }
-}
-
-export async function saveDataSourceSettings(settings: DataSourcesSettings): Promise<boolean> {
-  const serializedSettings = JSON.stringify(settings);
-
-  try {
-    return await setAppDataItem(DATA_SOURCES_KEY, serializedSettings);
-  } catch (e) {
-    console.warn('[dnd-ref] Failed to save data source settings:', e);
+    console.warn(`[dnd-ref] Failed to save ${label}:`, e);
     return false;
   }
 }
