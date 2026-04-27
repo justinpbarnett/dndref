@@ -37,6 +37,10 @@ export class WebSpeechProvider implements STTProvider {
     return msg.includes('already started') || msg.includes('already starting') || msg.includes('recognition has already started');
   }
 
+  private actionError(e: unknown, permissionMessage: string, prefix: string): string {
+    return this.isPermissionError(e) ? permissionMessage : `${prefix}: ${e instanceof Error ? e.message : String(e)}`;
+  }
+
   private clearRestartTimer(): void {
     if (this.restartTimer !== null) {
       clearTimeout(this.restartTimer);
@@ -60,11 +64,7 @@ export class WebSpeechProvider implements STTProvider {
           return;
         }
         this.active = false;
-        if (this.isPermissionError(e)) {
-          this.onError('Mic paused. Tap Resume to continue listening.');
-        } else {
-          this.onError(`Failed to restart mic: ${e instanceof Error ? e.message : String(e)}`);
-        }
+        this.onError(this.actionError(e, 'Mic paused. Tap Resume to continue listening.', 'Failed to restart mic'));
       }
     }, delay);
   }
@@ -130,11 +130,7 @@ export class WebSpeechProvider implements STTProvider {
     } catch (e) {
       if (this.isAlreadyStartedError(e)) return;
       this.active = false;
-      if (this.isPermissionError(e)) {
-        this.onError('Mic permission required. Allow microphone access in browser settings.');
-      } else {
-        this.onError(`Failed to resume mic: ${e instanceof Error ? e.message : String(e)}`);
-      }
+      this.onError(this.actionError(e, 'Mic permission required. Allow microphone access in browser settings.', 'Failed to resume mic'));
     }
   }
 
