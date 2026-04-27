@@ -27,9 +27,7 @@ export function insertAfterPinned(cards: CardState[], card: CardState): CardStat
 
 function findRightmostUnpinnedIndex(cards: CardState[]): number {
   for (let index = cards.length - 1; index >= 0; index--) {
-    if (!cards[index].pinned) {
-      return index;
-    }
+    if (!cards[index].pinned) return index;
   }
 
   return -1;

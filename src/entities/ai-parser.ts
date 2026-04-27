@@ -64,9 +64,7 @@ export async function parseWithAI(content: string, apiKey: string): Promise<Enti
     throw new Error('AI returned invalid JSON');
   }
 
-  if (!Array.isArray(items)) {
-    return [];
-  }
+  if (!Array.isArray(items)) return [];
 
   return items
     .filter((item): item is AIEntityInput => !!item && typeof item.name === 'string')

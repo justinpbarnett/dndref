@@ -73,9 +73,7 @@ export class WebSpeechProvider implements STTProvider {
     const SR: (new () => AnyRecognition) | undefined =
       (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
 
-    if (!SR) {
-      throw new Error('Web Speech API not available. Firefox: enable media.webspeech.recognition.enable in about:config. Or go to Settings and configure a Deepgram API key.');
-    }
+    if (!SR) throw new Error('Web Speech API not available. Firefox: enable media.webspeech.recognition.enable in about:config. Or go to Settings and configure a Deepgram API key.');
 
     this.active = true;
     this.restartAttempts = 0;

@@ -191,9 +191,7 @@ function normalizeIngestedEntityType(value: unknown): EntityType {
 }
 
 function normalizeAliases(value: unknown): string[] {
-  if (typeof value === 'string') {
-    return splitAliasString(value);
-  }
+  if (typeof value === 'string') return splitAliasString(value);
 
   if (!Array.isArray(value)) return [];
 

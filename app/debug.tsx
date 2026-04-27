@@ -85,9 +85,7 @@ export default function DebugScreen() {
           placeholderTextColor={C.textMuted}
           editable={isEditable}
           onChangeText={(text) => {
-            if (text.length > (transcript ?? '').length) {
-              appendTranscript(text.slice((transcript ?? '').length));
-            }
+            if (text.length > (transcript ?? '').length) appendTranscript(text.slice((transcript ?? '').length));
           }}
           value={transcript}
           textAlignVertical="top"
