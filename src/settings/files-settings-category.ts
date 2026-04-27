@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { Alert, Platform } from 'react-native';
 
-import {
-  addUpload as addStoredUpload,
-  getUploads as getStoredUploads,
-  removeUpload as removeStoredUpload,
-  type UploadedFile,
-} from '../entities/providers/file-upload';
+import { addUpload as addStoredUpload, getUploads as getStoredUploads, removeUpload as removeStoredUpload, type UploadedFile } from '../entities/providers/file-upload';
 import { resetStoredAppData as resetStoredLocalAppData } from '../storage/app-data';
 
 const DELETE_ALL_MESSAGE = 'This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.';

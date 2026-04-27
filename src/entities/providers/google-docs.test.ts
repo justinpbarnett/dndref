@@ -9,11 +9,7 @@ vi.mock('react-native', () => ({ Platform: { OS: 'web' } }));
 vi.mock('../ingestion', () => ingestionMocks);
 
 import { ingestMarkdownContent } from '../ingestion';
-import {
-  buildGoogleDocsExportUrl,
-  fetchGoogleDocText,
-  GoogleDocsProvider,
-} from './google-docs';
+import { buildGoogleDocsExportUrl, fetchGoogleDocText, GoogleDocsProvider } from './google-docs';
 
 const mockedIngestMarkdownContent = vi.mocked(ingestMarkdownContent);
 

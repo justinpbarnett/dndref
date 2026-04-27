@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { Platform } from 'react-native';
 
-import {
-  createDefaultVoiceSettings,
-  loadVoiceSettings as loadStoredVoiceSettings,
-  mergeVoiceSettings,
-  saveVoiceSettings as saveStoredVoiceSettings,
-} from '../storage/app-data';
+import { createDefaultVoiceSettings, loadVoiceSettings as loadStoredVoiceSettings, mergeVoiceSettings, saveVoiceSettings as saveStoredVoiceSettings } from '../storage/app-data';
 import type { STTSettings } from '../stt';
 
 export const VOICE_SAVED_INDICATOR_MS = 2000;
