@@ -14,21 +14,10 @@ export interface UploadedFile {
 
 let uploadMutationQueue: Promise<unknown> = Promise.resolve();
 
-export async function getUploadedFiles(): Promise<UploadedFile[]> {
-  return readUploadedFiles(createAppDataWriteToken());
-}
-
-export async function addUploadedFile(name: string, content: string): Promise<boolean> {
-  return mutateUploadedFiles((uploads) => [...uploads, createUploadedFile(name, content)]);
-}
-
-export async function removeUploadedFile(id: string): Promise<boolean> {
-  return mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id));
-}
-
-export async function waitForUploadedFileMutations(): Promise<void> {
-  await uploadMutationQueue.catch(() => undefined);
-}
+export async function getUploadedFiles(): Promise<UploadedFile[]> { return readUploadedFiles(createAppDataWriteToken()); }
+export async function addUploadedFile(name: string, content: string): Promise<boolean> { return mutateUploadedFiles((uploads) => [...uploads, createUploadedFile(name, content)]); }
+export async function removeUploadedFile(id: string): Promise<boolean> { return mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id)); }
+export async function waitForUploadedFileMutations(): Promise<void> { await uploadMutationQueue.catch(() => undefined); }
 
 function createUploadedFile(name: string, content: string): UploadedFile {
   return {
