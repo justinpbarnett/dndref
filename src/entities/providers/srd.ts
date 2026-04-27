@@ -115,7 +115,7 @@ function monsterToEntity(m: any): Entity {
 }
 
 function itemToEntity(item: any): Entity {
-  const rarity = item.rarity ? capitalize(item.rarity) : '';
+  const rarity = item.rarity ? item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1) : '';
   const desc = stripHtml(item.desc ?? '');
   const details = [rarity, desc].filter(Boolean).join('. ');
   const summary = [rarity, desc.slice(0, 200)].filter(Boolean).join('. ');
@@ -129,6 +129,3 @@ function itemToEntity(item: any): Entity {
   };
 }
 
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
