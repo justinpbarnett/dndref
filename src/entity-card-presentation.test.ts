@@ -56,7 +56,7 @@ describe('extractEntityCardSummaryBullets', () => {
 });
 
 describe('deriveEntityCardPresentation', () => {
-  test('represents type, accent color, image presence, and available actions for unpinned cards', () => {
+  test('represents type, accent color, image, and actions for unpinned cards', () => {
     const card = makeCard({
       entity: {
         id: 'ironspire',
@@ -75,7 +75,6 @@ describe('deriveEntityCardPresentation', () => {
       typeLabel: 'LOCATION',
       accentColor: '#2878b0',
       pinned: false,
-      hasImage: true,
       imageUri: 'https://example.com/ironspire.png',
       bulletMarker: '>',
       summaryBullets: ['Ancient dwarven stronghold', 'Seven levels deep'],
@@ -84,13 +83,11 @@ describe('deriveEntityCardPresentation', () => {
           kind: 'pin',
           accessibilityLabel: 'Pin',
           iconName: 'bookmark-outline',
-          available: true,
         },
         dismiss: {
           kind: 'dismiss',
           accessibilityLabel: 'Dismiss',
           iconName: 'close',
-          available: true,
         },
       },
     });
@@ -105,30 +102,30 @@ describe('deriveEntityCardPresentation', () => {
         type: 'NPC',
         aliases: [],
         summary: '',
+        image: '',
       },
     });
 
-    expect(deriveEntityCardPresentation({ card, accentColor: '#45b882' })).toMatchObject({
+    expect(deriveEntityCardPresentation({ card, accentColor: '#45b882' })).toEqual({
+      instanceId: 'card-1',
       name: 'Valdrath the Undying',
       type: 'NPC',
       typeLabel: 'NPC',
       accentColor: '#45b882',
       pinned: true,
-      hasImage: false,
       imageUri: null,
+      bulletMarker: '>',
       summaryBullets: [],
       actions: {
         pinToggle: {
           kind: 'unpin',
           accessibilityLabel: 'Unpin',
           iconName: 'bookmark',
-          available: true,
         },
         dismiss: {
           kind: 'dismiss',
           accessibilityLabel: 'Dismiss',
           iconName: 'close',
-          available: true,
         },
       },
     });

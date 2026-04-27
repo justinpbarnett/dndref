@@ -5,22 +5,19 @@ export const ENTITY_CARD_MAX_SUMMARY_BULLETS = 5;
 export const ENTITY_CARD_BULLET_MARKER = '>';
 
 type EntityCardPinToggleKind = 'pin' | 'unpin';
-type EntityCardActionIconName = 'bookmark' | 'bookmark-outline' | 'close';
-
+type EntityCardPinToggleIconName = 'bookmark' | 'bookmark-outline';
 type EntityCardPinToggleLabel = 'Pin' | 'Unpin';
 
 export interface EntityCardPinTogglePresentation {
   kind: EntityCardPinToggleKind;
   accessibilityLabel: EntityCardPinToggleLabel;
-  iconName: EntityCardActionIconName;
-  available: boolean;
+  iconName: EntityCardPinToggleIconName;
 }
 
 export interface EntityCardDismissActionPresentation {
   kind: 'dismiss';
   accessibilityLabel: 'Dismiss';
-  iconName: EntityCardActionIconName;
-  available: boolean;
+  iconName: 'close';
 }
 
 export interface EntityCardActionsPresentation {
@@ -35,7 +32,6 @@ export interface EntityCardPresentation {
   typeLabel: string;
   accentColor: string;
   pinned: boolean;
-  hasImage: boolean;
   imageUri: string | null;
   bulletMarker: typeof ENTITY_CARD_BULLET_MARKER;
   summaryBullets: string[];
@@ -55,6 +51,22 @@ export function extractEntityCardSummaryBullets(summary: string): string[] {
     .slice(0, ENTITY_CARD_MAX_SUMMARY_BULLETS);
 }
 
+function derivePinTogglePresentation(pinned: boolean): EntityCardPinTogglePresentation {
+  if (pinned) {
+    return {
+      kind: 'unpin',
+      accessibilityLabel: 'Unpin',
+      iconName: 'bookmark',
+    };
+  }
+
+  return {
+    kind: 'pin',
+    accessibilityLabel: 'Pin',
+    iconName: 'bookmark-outline',
+  };
+}
+
 export function deriveEntityCardPresentation({
   card,
   accentColor,
@@ -69,29 +81,15 @@ export function deriveEntityCardPresentation({
     typeLabel: entity.type.toUpperCase(),
     accentColor,
     pinned,
-    hasImage: imageUri !== null,
     imageUri,
     bulletMarker: ENTITY_CARD_BULLET_MARKER,
     summaryBullets: extractEntityCardSummaryBullets(entity.summary),
     actions: {
-      pinToggle: pinned
-        ? {
-            kind: 'unpin',
-            accessibilityLabel: 'Unpin',
-            iconName: 'bookmark',
-            available: true,
-          }
-        : {
-            kind: 'pin',
-            accessibilityLabel: 'Pin',
-            iconName: 'bookmark-outline',
-            available: true,
-          },
+      pinToggle: derivePinTogglePresentation(pinned),
       dismiss: {
         kind: 'dismiss',
         accessibilityLabel: 'Dismiss',
         iconName: 'close',
-        available: true,
       },
     },
   };
