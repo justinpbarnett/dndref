@@ -11,9 +11,7 @@ export function extractCard(cards: CardState[], instanceId: string): [CardState,
   return [card, remainingCards];
 }
 
-export function buildCardIdSet(cards: CardState[]): Set<string> {
-  return new Set(cards.map((card) => card.entity.id));
-}
+export function buildCardIdSet(cards: CardState[]): Set<string> { return new Set(cards.map((card) => card.entity.id)); }
 
 export function insertAfterPinned(cards: CardState[], card: CardState): CardState[] {
   const lastPinnedIndex = cards.reduce((lastIndex, candidate, index) => {
@@ -63,6 +61,4 @@ export function unpinCard(cards: CardState[], instanceId: string): CardState[] {
   return insertAfterPinned(rest, { ...card, pinned: false });
 }
 
-export function dismissCard(cards: CardState[], instanceId: string): CardState[] {
-  return cards.filter((card) => card.instanceId !== instanceId);
-}
+export function dismissCard(cards: CardState[], instanceId: string): CardState[] { return cards.filter((card) => card.instanceId !== instanceId); }
