@@ -1,9 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-  computeReferenceCardLayout,
-  type CardSize,
-} from './reference-card-layout';
+import { computeReferenceCardLayout, type CardSize } from './reference-card-layout';
 
 const cards = ['a', 'b', 'c', 'd', 'e'].map((instanceId) => ({ instanceId }));
 

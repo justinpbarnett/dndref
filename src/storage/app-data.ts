@@ -43,10 +43,7 @@ import {
   resetAppDataCoreControlsForTests,
   waitForAppDataWrites,
 } from './app-data-core';
-import {
-  resetUploadedFileMutationQueueForTests,
-  waitForUploadedFileMutations,
-} from './app-data-uploads';
+import { resetUploadedFileMutationQueueForTests, waitForUploadedFileMutations } from './app-data-uploads';
 
 export async function resetStoredAppData(options: {
   beforeClear?: () => Promise<void>;

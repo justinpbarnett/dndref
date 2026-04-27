@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  buildDetectionInput,
-  nextDetectionContext,
-} from './detection-window';
+import { buildDetectionInput, nextDetectionContext } from './detection-window';
 import { EntityType } from '../entities';
 import { EntityDetector } from '../entities/detector';
 

@@ -15,10 +15,7 @@ import { FilesSection } from '../src/settings/renderers/FilesSection';
 import { VoiceSection } from '../src/settings/renderers/VoiceSection';
 import { createStyles } from '../src/settings/styles';
 import { useVoiceSettingsCategory } from '../src/settings/voice-settings-category';
-import {
-  createAppDataWriteToken,
-  isAppDataWriteTokenCurrent,
-} from '../src/storage/app-data';
+import { createAppDataWriteToken, isAppDataWriteTokenCurrent } from '../src/storage/app-data';
 
 export default function SettingsScreen() {
   const C = useColors();
