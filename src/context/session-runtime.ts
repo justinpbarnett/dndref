@@ -18,14 +18,22 @@ export interface SessionRuntimeSnapshot {
   recentDetections: Entity[];
 }
 
+type SttSettingsLoader = () => Promise<STTSettings>;
+type SttProviderBuilder = (
+  settings: STTSettings,
+  onTranscript: (text: string) => void,
+  onError: (error: string) => void,
+) => STTProvider;
+
 export interface SessionRuntimeOptions {
-  loadSttSettings?: () => Promise<STTSettings>;
-  buildSttProvider?: (settings: STTSettings, onTranscript: (text: string) => void, onError: (error: string) => void) => STTProvider;
+  loadSttSettings?: SttSettingsLoader;
+  buildSttProvider?: SttProviderBuilder;
   detectIntervalMs?: number;
 }
 
 type SessionRuntimeListener = (snapshot: SessionRuntimeSnapshot) => void;
 type DetectionInterval = ReturnType<typeof setInterval>;
+type SnapshotPatch = Partial<SessionRuntimeSnapshot>;
 
 export class SessionRuntime {
   private acceptingTranscript = false;
@@ -68,29 +76,33 @@ export class SessionRuntime {
 
   start(): Promise<void> {
     if (this.startInFlight) return this.startInFlight;
+
     const command = this.sttProvider
       ? this.resumeExistingProvider(this.sttProvider, this.sttGeneration)
       : this.startNewProvider();
+
     this.startInFlight = command;
-    const clearInFlight = () => { if (this.startInFlight === command) this.startInFlight = null; };
-    command.then(clearInFlight, clearInFlight);
+    command.then(
+      () => this.clearStartInFlight(command),
+      () => this.clearStartInFlight(command),
+    );
     return command;
   }
 
   resume(): Promise<void> { return this.start(); }
-  activate(): void { this.activateSession(); }
+  activate(): void { this.setSessionActive(); }
 
   pause(): void {
     this.acceptingTranscript = false;
     const provider = this.sttProvider;
     if (provider) void Promise.resolve(provider.pause()).catch(() => {});
-    this.pauseSession({ sttStatus: 'idle' });
+    this.setSessionPaused({ sttStatus: 'idle' });
   }
 
   stop(): void {
     const provider = this.invalidateStt();
     if (provider) void this.stopProvider(provider);
-    this.stopSession({ sttStatus: 'idle', sttError: null, sttProviderName: '' });
+    this.resetSession({ sttStatus: 'idle', sttError: null, sttProviderName: '' });
   }
 
   dispose(): void {
@@ -125,7 +137,7 @@ export class SessionRuntime {
 
     const cardsChanged = nextCards !== this.snapshot.cards;
     if (!cardsChanged && !recentDetectionsChanged) return;
-    const snapshotPatch: Partial<SessionRuntimeSnapshot> = {};
+    const snapshotPatch: SnapshotPatch = {};
     if (cardsChanged) snapshotPatch.cards = nextCards;
     if (recentDetectionsChanged) snapshotPatch.recentDetections = detectedEntities;
     this.updateSnapshot(snapshotPatch);
@@ -170,7 +182,7 @@ export class SessionRuntime {
         return;
       }
       this.acceptingTranscript = true;
-      this.activateSession({ sttStatus: 'active', sttError: null });
+      this.setSessionActive({ sttStatus: 'active', sttError: null });
     } catch (e) {
       if (this.sttGeneration !== generation) return;
       const provider = this.sttProvider;
@@ -190,13 +202,13 @@ export class SessionRuntime {
       await Promise.resolve(provider.resume());
       if (this.sttGeneration !== generation || this.sttProvider !== provider) return;
       this.acceptingTranscript = true;
-      this.activateSession({ sttStatus: 'active', sttError: null });
+      this.setSessionActive({ sttStatus: 'active', sttError: null });
     } catch (e) {
       if (this.sttGeneration !== generation || this.sttProvider !== provider) return;
       this.acceptingTranscript = false;
       await this.stopProvider(provider);
       if (this.sttProvider === provider) this.sttProvider = null;
-      this.pauseSession({
+      this.setSessionPaused({
         sttError: `Failed to resume mic: ${this.formatError(e)}`,
         sttStatus: 'error',
       });
@@ -213,25 +225,25 @@ export class SessionRuntime {
     const provider = this.sttProvider;
     if (provider) void this.stopProvider(provider);
     this.sttProvider = null;
-    const patch = { sttError: error, sttStatus: 'error' as SttStatus };
-    if (this.snapshot.status === 'active') this.pauseSession(patch);
+    const patch: SnapshotPatch = { sttError: error, sttStatus: 'error' };
+    if (this.snapshot.status === 'active') this.setSessionPaused(patch);
     else this.updateSnapshot(patch);
   }
 
-  private activateSession(patch: Partial<SessionRuntimeSnapshot> = {}): void {
+  private setSessionActive(patch: SnapshotPatch = {}): void {
     this.processedTranscriptLength = this.snapshot.transcript.length;
     this.previousDetectionContext = '';
     this.startDetectionInterval();
     this.updateSnapshot({ status: 'active', ...patch });
   }
 
-  private pauseSession(patch: Partial<SessionRuntimeSnapshot> = {}): void {
+  private setSessionPaused(patch: SnapshotPatch = {}): void {
     this.previousDetectionContext = '';
     this.clearDetectionInterval();
     this.updateSnapshot({ status: 'paused', ...patch });
   }
 
-  private stopSession(patch: Partial<SessionRuntimeSnapshot> = {}): void {
+  private resetSession(patch: SnapshotPatch = {}): void {
     this.processedTranscriptLength = 0;
     this.previousDetectionContext = '';
     this.lastDetectionKey = '';
@@ -252,6 +264,10 @@ export class SessionRuntime {
     this.detectionInterval = null;
   }
 
+  private clearStartInFlight(command: Promise<void>): void {
+    if (this.startInFlight === command) this.startInFlight = null;
+  }
+
   private invalidateStt(): STTProvider | null {
     this.sttGeneration += 1;
     this.startInFlight = null;
@@ -267,7 +283,7 @@ export class SessionRuntime {
 
   private formatError(error: unknown): string { return error instanceof Error ? error.message : String(error); }
 
-  private updateSnapshot(patch: Partial<SessionRuntimeSnapshot>): void {
+  private updateSnapshot(patch: SnapshotPatch): void {
     if (Object.keys(patch).length === 0) return;
     this.snapshot = { ...this.snapshot, ...patch };
     this.notifyListeners();

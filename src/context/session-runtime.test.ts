@@ -68,7 +68,9 @@ class FakeSTTProvider implements STTProvider {
   }
 }
 
-function makeRuntimeWithFakeStt(configure?: (provider: FakeSTTProvider) => void) {
+function makeRuntimeWithFakeStt(
+  configure?: (provider: FakeSTTProvider) => void,
+): { providers: FakeSTTProvider[]; runtime: SessionRuntime } {
   const providers: FakeSTTProvider[] = [];
   const runtime = new SessionRuntime({
     loadSttSettings: async () => TEST_STT_SETTINGS,

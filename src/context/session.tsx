@@ -30,8 +30,15 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [runtimeSnapshot, setRuntimeSnapshot] = useState(() => runtime.getSnapshot());
   const { status, sttStatus, sttError, sttProviderName, cards, transcript, recentDetections } = runtimeSnapshot;
 
-  useEffect(() => runtime.subscribe(setRuntimeSnapshot), [runtime]);
-  useEffect(() => () => runtime.dispose(), [runtime]);
+  useEffect(() => {
+    return runtime.subscribe(setRuntimeSnapshot);
+  }, [runtime]);
+
+  useEffect(() => {
+    return () => {
+      runtime.dispose();
+    };
+  }, [runtime]);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,13 +76,33 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return () => { cancelled = true; };
   }, [ds.srdEnabled, ds.srdSources.join(','), ds.kankaToken, ds.kankaCampaignId, ds.homebreweryUrl, ds.notionToken, ds.notionPageIds, ds.googleDocsUrl, uploadsVersion, runtime]);
 
-  const start = useCallback(() => { void runtime.start(); }, [runtime]);
-  const pause = useCallback(() => { runtime.pause(); }, [runtime]);
-  const stop = useCallback(() => { runtime.stop(); }, [runtime]);
-  const appendTranscript = useCallback((text: string) => { runtime.appendTranscript(text); }, [runtime]);
-  const pin = useCallback((instanceId: string) => { runtime.pin(instanceId); }, [runtime]);
-  const unpin = useCallback((instanceId: string) => { runtime.unpin(instanceId); }, [runtime]);
-  const dismiss = useCallback((instanceId: string) => { runtime.dismiss(instanceId); }, [runtime]);
+  const start = useCallback(() => {
+    void runtime.start();
+  }, [runtime]);
+
+  const pause = useCallback(() => {
+    runtime.pause();
+  }, [runtime]);
+
+  const stop = useCallback(() => {
+    runtime.stop();
+  }, [runtime]);
+
+  const appendTranscript = useCallback((text: string) => {
+    runtime.appendTranscript(text);
+  }, [runtime]);
+
+  const pin = useCallback((instanceId: string) => {
+    runtime.pin(instanceId);
+  }, [runtime]);
+
+  const unpin = useCallback((instanceId: string) => {
+    runtime.unpin(instanceId);
+  }, [runtime]);
+
+  const dismiss = useCallback((instanceId: string) => {
+    runtime.dismiss(instanceId);
+  }, [runtime]);
 
   return (
     <SessionContext.Provider value={{
