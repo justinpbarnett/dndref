@@ -1,12 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const platform = vi.hoisted(() => ({ OS: 'web' }));
 const fetchMock = vi.hoisted(() => vi.fn());
 const ingestionMocks = vi.hoisted(() => ({
   ingestMarkdownContent: vi.fn(),
 }));
 
-vi.mock('react-native', () => ({ Platform: platform }));
+vi.mock('react-native', () => ({ Platform: { OS: 'web' } }));
 vi.mock('../ingestion', () => ingestionMocks);
 
 import { ingestMarkdownContent } from '../ingestion';
@@ -20,7 +19,6 @@ const mockedIngestMarkdownContent = vi.mocked(ingestMarkdownContent);
 
 describe('GoogleDocsProvider', () => {
   beforeEach(() => {
-    platform.OS = 'web';
     fetchMock.mockReset();
     mockedIngestMarkdownContent.mockReset();
     vi.stubGlobal('fetch', fetchMock);
@@ -42,10 +40,10 @@ describe('GoogleDocsProvider', () => {
   });
 
   it('builds direct Google Docs export URLs for native callers', () => {
-    expect(buildGoogleDocsExportUrl(
-      'https://docs.google.com/document/d/doc_123/edit#heading=h.1',
-      null,
-    )).toBe('https://docs.google.com/document/d/doc_123/export?format=txt');
+    const documentUrl = 'https://docs.google.com/document/d/doc_123/edit#heading=h.1';
+
+    expect(buildGoogleDocsExportUrl(documentUrl, null))
+      .toBe('https://docs.google.com/document/d/doc_123/export?format=txt');
     expect(buildGoogleDocsExportUrl('doc_123', null))
       .toBe('https://docs.google.com/document/d/doc_123/export?format=txt');
   });
@@ -68,7 +66,9 @@ Open only under the new moon.
     fetchMock.mockResolvedValue(textResponse(documentText));
     mockedIngestMarkdownContent.mockReturnValue(ingestedEntities);
 
-    const entities = await new GoogleDocsProvider('https://docs.google.com/document/d/doc_123/edit').load();
+    const entities = await new GoogleDocsProvider(
+      'https://docs.google.com/document/d/doc_123/edit',
+    ).load();
 
     expect(mockedIngestMarkdownContent).toHaveBeenCalledOnce();
     expect(mockedIngestMarkdownContent).toHaveBeenCalledWith(documentText);
@@ -76,7 +76,7 @@ Open only under the new moon.
   });
 
   it('surfaces failed public document exports through the provider failure path', async () => {
-    fetchMock.mockResolvedValue(textResponse('', { ok: false, status: 403 }));
+    fetchMock.mockResolvedValue(textResponse('', 403));
 
     await expect(new GoogleDocsProvider('doc_123').load())
       .rejects.toThrow('Google Docs fetch failed: 403');
@@ -91,13 +91,6 @@ Open only under the new moon.
   });
 });
 
-function textResponse(
-  body: string,
-  init: { ok?: boolean; status?: number } = {},
-): Response {
-  return {
-    ok: init.ok ?? true,
-    status: init.status ?? 200,
-    text: vi.fn(async () => body),
-  } as unknown as Response;
+function textResponse(body: string, status = 200): Response {
+  return new Response(body, { status });
 }

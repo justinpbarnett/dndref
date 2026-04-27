@@ -6,10 +6,12 @@ import { ingestMarkdownContent } from '../ingestion';
 const GOOGLE_DOCS_ORIGIN = 'https://docs.google.com';
 const GOOGLE_DOCS_PROXY_PATH = '/google-docs';
 const GOOGLE_DOCS_SOURCE_NAME = 'Google Docs';
+const GOOGLE_DOCS_SHARE_HINT = 'Make sure the doc is shared with "Anyone with the link".';
+const GOOGLE_DOCS_CORS_FALLBACK = 'Use the iOS app or paste content via file upload.';
 
 export class GoogleDocsProvider implements WorldDataProvider {
-  readonly name = 'Google Docs';
-  private url: string;
+  readonly name = GOOGLE_DOCS_SOURCE_NAME;
+  private readonly url: string;
 
   constructor(url: string) {
     this.url = url;
@@ -23,25 +25,29 @@ export class GoogleDocsProvider implements WorldDataProvider {
   getName(): string { return this.name; }
 }
 
-export async function fetchGoogleDocText(url: string): Promise<string> {
-  const exportUrl = buildGoogleDocsExportUrl(url);
+export async function fetchGoogleDocText(urlOrId: string): Promise<string> {
+  const exportUrl = buildGoogleDocsExportUrl(urlOrId);
+
   try {
-    const res = await fetch(exportUrl);
-    if (!res.ok) throw new Error(`Google Docs fetch failed: ${res.status}. Make sure the doc is shared with "Anyone with the link".`);
-    return await res.text();
-  } catch (e) {
-    throw handleCorsError(e, GOOGLE_DOCS_SOURCE_NAME, 'Use the iOS app or paste content via file upload.');
+    const response = await fetch(exportUrl);
+    if (!response.ok) {
+      throw new Error(`Google Docs fetch failed: ${response.status}. ${GOOGLE_DOCS_SHARE_HINT}`);
+    }
+
+    return await response.text();
+  } catch (error) {
+    throw handleCorsError(error, GOOGLE_DOCS_SOURCE_NAME, GOOGLE_DOCS_CORS_FALLBACK);
   }
 }
 
-export function buildGoogleDocsExportUrl(url: string, corsProxy: string | null = CORS_PROXY): string {
-  const docId = extractGoogleDocId(url);
+export function buildGoogleDocsExportUrl(urlOrId: string, corsProxy: string | null = CORS_PROXY): string {
+  const docId = extractGoogleDocId(urlOrId);
   const baseUrl = corsProxy ? `${corsProxy}${GOOGLE_DOCS_PROXY_PATH}` : GOOGLE_DOCS_ORIGIN;
   return `${baseUrl}/document/d/${docId}/export?format=txt`;
 }
 
-export function extractGoogleDocId(url: string): string {
-  const match = url.match(/\/document\/d\/([a-zA-Z0-9_-]+)/);
+export function extractGoogleDocId(urlOrId: string): string {
+  const match = urlOrId.match(/\/document\/d\/([a-zA-Z0-9_-]+)/);
   if (match) return match[1];
-  return url.trim();
+  return urlOrId.trim();
 }
