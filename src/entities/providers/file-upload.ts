@@ -1,58 +1,30 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {
+  addUploadedFile,
+  getUploadedFiles,
+  removeUploadedFile,
+  waitForUploadedFileMutations,
+  type UploadedFile,
+} from '../../storage/app-data';
 import { EntityIndex, WorldDataProvider, normalizeEntityType, slugify } from '../index';
 import { MarkdownProvider } from './markdown';
-import { canPersistAppData, createAppDataWriteToken } from '../../storage/app-data';
-import { UPLOADS_KEY } from '../../storage/keys';
 
 export { UPLOADS_KEY } from '../../storage/keys';
-let uploadMutationQueue: Promise<void> = Promise.resolve();
-
-export interface UploadedFile {
-  id: string;
-  name: string;
-  content: string;
-}
+export type { UploadedFile } from '../../storage/app-data';
 
 export async function getUploads(): Promise<UploadedFile[]> {
-  try {
-    const raw = await AsyncStorage.getItem(UPLOADS_KEY);
-    return raw ? (JSON.parse(raw) as UploadedFile[]) : [];
-  } catch (e) {
-    console.warn('[dnd-ref] Failed to read uploads from storage:', e);
-    return [];
-  }
+  return getUploadedFiles();
 }
 
 export async function addUpload(name: string, content: string): Promise<void> {
-  const token = createAppDataWriteToken();
-  await mutateUploads(token, (uploads) => {
-    const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    return [...uploads, { id, name, content }];
-  });
+  await addUploadedFile(name, content);
 }
 
 export async function removeUpload(id: string): Promise<void> {
-  const token = createAppDataWriteToken();
-  await mutateUploads(token, (uploads) => uploads.filter((u) => u.id !== id));
+  await removeUploadedFile(id);
 }
 
 export async function waitForUploadMutations(): Promise<void> {
-  await uploadMutationQueue.catch(() => undefined);
-}
-
-function mutateUploads(token: number, mutator: (uploads: UploadedFile[]) => UploadedFile[]): Promise<void> {
-  const operation = uploadMutationQueue
-    .catch(() => undefined)
-    .then(async () => {
-      if (!canPersistAppData(token)) return;
-      const uploads = await getUploads();
-      if (!canPersistAppData(token)) return;
-      await AsyncStorage.setItem(UPLOADS_KEY, JSON.stringify(mutator(uploads)));
-    });
-
-  uploadMutationQueue = operation.catch(() => undefined);
-  return operation;
+  await waitForUploadedFileMutations();
 }
 
 export class FileUploadProvider implements WorldDataProvider {

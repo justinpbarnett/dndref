@@ -21,7 +21,7 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
-import { addUpload, getUploads, removeUpload, waitForUploadMutations } from './file-upload';
+import { addUpload, getUploads, removeUpload } from './file-upload';
 import { resetAppDataControlsForTests, resetStoredAppData } from '../../storage/app-data';
 
 describe('file upload storage', () => {
@@ -78,7 +78,7 @@ describe('file upload storage', () => {
     const upload = addUpload('late.md', '# Late');
     await Promise.resolve();
 
-    const reset = resetStoredAppData({ beforeClear: waitForUploadMutations });
+    const reset = resetStoredAppData();
     releaseGetItem();
 
     await Promise.all([upload, reset]);

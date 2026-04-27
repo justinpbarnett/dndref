@@ -12,6 +12,12 @@ import {
 const APP_STORAGE_PREFIXES = ['dndref:', '@dnd-ref/'];
 const INVALID_APP_DATA_TOKEN = -1;
 
+export interface UploadedFile {
+  id: string;
+  name: string;
+  content: string;
+}
+
 export interface DataSourcesSettings {
   srdEnabled: boolean;
   srdSources: string[];
@@ -40,6 +46,7 @@ let appDataResetGeneration = 0;
 let appDataResetActive = false;
 let cacheWritesBlockedForGeneration: number | null = null;
 let appDataWriteQueue: Promise<unknown> = Promise.resolve();
+let uploadMutationQueue: Promise<unknown> = Promise.resolve();
 
 export const APP_STORAGE_KEYS = [
   DATA_SOURCES_KEY,
@@ -125,13 +132,86 @@ export async function saveDataSourceSettings(settings: DataSourcesSettings): Pro
   const serializedSettings = JSON.stringify(settings);
 
   try {
-    const saved = await setAppDataItem(DATA_SOURCES_KEY, serializedSettings);
-    if (saved) allowAppDataCacheWrites();
-    return saved;
+    return await setAppDataItem(DATA_SOURCES_KEY, serializedSettings);
   } catch (e) {
     console.warn('[dnd-ref] Failed to save data source settings:', e);
     return false;
   }
+}
+
+export async function getUploadedFiles(): Promise<UploadedFile[]> {
+  return readUploadedFiles(createAppDataWriteToken());
+}
+
+export async function addUploadedFile(name: string, content: string): Promise<boolean> {
+  return mutateUploadedFiles((uploads) => [...uploads, createUploadedFile(name, content)]);
+}
+
+export async function removeUploadedFile(id: string): Promise<boolean> {
+  return mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id));
+}
+
+export async function waitForUploadedFileMutations(): Promise<void> {
+  await uploadMutationQueue.catch(() => undefined);
+}
+
+function createUploadedFile(name: string, content: string): UploadedFile {
+  return {
+    id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name,
+    content,
+  };
+}
+
+function isUploadedFile(value: unknown): value is UploadedFile {
+  if (!value || typeof value !== 'object') return false;
+
+  const file = value as Record<string, unknown>;
+  return typeof file.id === 'string' &&
+    typeof file.name === 'string' &&
+    typeof file.content === 'string';
+}
+
+async function readUploadedFiles(token: number): Promise<UploadedFile[]> {
+  try {
+    const raw = await getAppDataItem(UPLOADS_KEY, token);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.filter(isUploadedFile) : [];
+  } catch (e) {
+    console.warn('[dnd-ref] Failed to read uploads from storage:', e);
+    return [];
+  }
+}
+
+function mutateUploadedFiles(mutator: (uploads: UploadedFile[]) => UploadedFile[]): Promise<boolean> {
+  const token = createAppDataWriteToken();
+  const operation = uploadMutationQueue
+    .catch(() => undefined)
+    .then(async () => {
+      if (!canPersistAppData(token)) return false;
+      const currentUploads = await readUploadedFiles(token);
+      if (!canPersistAppData(token)) return false;
+
+      const nextUploads = mutator(currentUploads);
+      return setAppDataItem(UPLOADS_KEY, JSON.stringify(nextUploads), { token });
+    });
+
+  uploadMutationQueue = operation.catch(() => undefined);
+  return operation;
+}
+
+export interface AppDataCacheSession {
+  getItem: (key: string) => Promise<string | null>;
+  setItem: (key: string, value: string) => Promise<boolean>;
+}
+
+export function createAppDataCacheSession(): AppDataCacheSession {
+  const token = createAppDataWriteToken();
+  return {
+    getItem: (key) => getAppDataItem(key, token),
+    setItem: (key, value) => setAppDataItem(key, value, { cache: true, token }),
+  };
 }
 
 export async function getAppDataItem(key: string, token = createAppDataWriteToken()): Promise<string | null> {
@@ -144,14 +224,17 @@ export async function setAppDataItem(
   value: string,
   options: { cache?: boolean; token?: number } = {},
 ): Promise<boolean> {
-  const token = options.token ?? createAppDataWriteToken();
+  const { cache = false, token = createAppDataWriteToken() } = options;
   const operation = appDataWriteQueue
     .catch(() => undefined)
     .then(async () => {
-      const canPersist = options.cache ? canPersistAppDataCache : canPersistAppData;
+      const canPersist = cache ? canPersistAppDataCache : canPersistAppData;
       if (!canPersist(token)) return false;
+
       await AsyncStorage.setItem(key, value);
-      return canPersist(token);
+      const saved = canPersist(token);
+      if (saved && !cache) allowAppDataCacheWrites();
+      return saved;
     });
 
   appDataWriteQueue = operation.catch(() => undefined);
@@ -179,6 +262,7 @@ export async function resetStoredAppData(options: {
 } = {}): Promise<string[]> {
   const generation = beginAppDataReset();
   try {
+    await waitForUploadedFileMutations();
     await options.beforeClear?.();
     await waitForAppDataWrites();
     return await clearStoredAppData();
@@ -205,4 +289,5 @@ export function resetAppDataControlsForTests(): void {
   appDataResetActive = false;
   cacheWritesBlockedForGeneration = null;
   appDataWriteQueue = Promise.resolve();
+  uploadMutationQueue = Promise.resolve();
 }

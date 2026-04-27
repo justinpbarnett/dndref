@@ -8,7 +8,7 @@ import { createDefaultDataSourceSettings, type DataSourcesSettings, useDataSourc
 import { useSession } from '../src/context/session';
 import { useColors, useUISettings } from '../src/context/ui-settings';
 import { parseWithAI } from '../src/entities/ai-parser';
-import { UploadedFile, addUpload, getUploads, removeUpload, waitForUploadMutations } from '../src/entities/providers/file-upload';
+import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
 import { Category, CATEGORIES } from '../src/settings/constants';
 import { AISection } from '../src/settings/renderers/AISection';
 import { DataSection } from '../src/settings/renderers/DataSection';
@@ -154,7 +154,7 @@ export default function SettingsScreen() {
     setDeleteAllStatus('');
     try {
       stopSession();
-      await resetStoredAppData({ beforeClear: waitForUploadMutations });
+      await resetStoredAppData();
       resetDataSources();
       resetUISettings();
       setSttSettings(DEFAULT_STT_SETTINGS);
