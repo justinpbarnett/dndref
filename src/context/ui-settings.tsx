@@ -43,24 +43,22 @@ function isColorScheme(value: unknown): value is ColorScheme {
 
 // Read synchronously from localStorage on web so the first render matches
 // the stored preference -- avoids SSR/client hydration mismatch.
-function readStoredColorScheme(): ColorScheme {
+function readStoredSetting<T>(key: string, isValue: (value: unknown) => value is T, defaultValue: T): T {
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
     try {
-      const value = window.localStorage.getItem(COLOR_SCHEME_KEY);
-      if (isColorScheme(value)) return value;
+      const value = window.localStorage.getItem(key);
+      if (isValue(value)) return value;
     } catch {}
   }
-  return DEFAULT_COLOR_SCHEME;
+  return defaultValue;
+}
+
+function readStoredColorScheme(): ColorScheme {
+  return readStoredSetting(COLOR_SCHEME_KEY, isColorScheme, DEFAULT_COLOR_SCHEME);
 }
 
 function readStoredCardSize(): CardSize {
-  if (Platform.OS === 'web' && typeof window !== 'undefined') {
-    try {
-      const value = window.localStorage.getItem(CARD_SIZE_KEY);
-      if (isCardSize(value)) return value;
-    } catch {}
-  }
-  return DEFAULT_CARD_SIZE;
+  return readStoredSetting(CARD_SIZE_KEY, isCardSize, DEFAULT_CARD_SIZE);
 }
 
 interface UISettingsContextType {
