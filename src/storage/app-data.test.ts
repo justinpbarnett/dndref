@@ -25,15 +25,24 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 
 import {
   APP_STORAGE_KEYS,
+  DEFAULT_DATA_SOURCES_SETTINGS,
+  addUploadedFile,
   allowAppDataCacheWrites,
   beginAppDataReset,
   canPersistAppDataCache,
+  createAppDataCacheSession,
   createAppDataWriteToken,
   finishAppDataReset,
   getAppDataItem,
+  getUploadedFiles,
   isAppStorageKey,
+  loadDataSourceSettings,
+  loadVoiceSettings,
+  removeUploadedFile,
   resetAppDataControlsForTests,
   resetStoredAppData,
+  saveDataSourceSettings,
+  saveVoiceSettings,
   setAppDataItem,
 } from './app-data';
 import {
@@ -43,7 +52,15 @@ import {
   SRD_CACHE_KEY_PREFIX,
   UPLOADS_KEY,
 } from './keys';
-import { STT_SETTINGS_KEY } from '../stt';
+import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY } from '../stt';
+
+function blockStorageOperation(operation: keyof typeof storageControls): () => void {
+  let releaseGate = () => {};
+  storageControls[operation] = new Promise((resolve) => {
+    releaseGate = resolve;
+  });
+  return releaseGate;
+}
 
 describe('app data storage clearing', () => {
   beforeEach(() => {
@@ -92,6 +109,32 @@ describe('app data storage clearing', () => {
     ].sort());
   });
 
+  it('adds, removes, and reads uploaded files through the local app data seam', async () => {
+    await expect(addUploadedFile('one.md', '# One')).resolves.toBe(true);
+    await expect(addUploadedFile('two.md', '# Two')).resolves.toBe(true);
+
+    const [first] = await getUploadedFiles();
+    await expect(removeUploadedFile(first.id)).resolves.toBe(true);
+
+    expect((await getUploadedFiles()).map((u) => u.name)).toEqual(['two.md']);
+  });
+
+  it('waits for in-flight upload mutations before clearing storage', async () => {
+    const releaseGetItem = blockStorageOperation('getItemGate');
+
+    const upload = addUploadedFile('late.md', '# Late');
+    await Promise.resolve();
+
+    const reset = resetStoredAppData();
+    releaseGetItem();
+
+    await Promise.all([upload, reset]);
+    storageControls.getItemGate = null;
+
+    expect(await getUploadedFiles()).toEqual([]);
+    expect(storage.get('unrelated:other-app')).toBe('keep');
+  });
+
   it('invalidates stale async write tokens after a reset starts', () => {
     const token = createAppDataWriteToken();
     const generation = beginAppDataReset();
@@ -113,11 +156,24 @@ describe('app data storage clearing', () => {
     expect(canPersistAppDataCache(token)).toBe(true);
   });
 
+  it('routes cache writes through sessions and re-allows them after non-cache app data writes', async () => {
+    await resetStoredAppData();
+    const blockedCache = createAppDataCacheSession();
+    const blockedKey = `${SRD_CACHE_KEY_PREFIX}blocked`;
+    const allowedKey = `${SRD_CACHE_KEY_PREFIX}allowed`;
+
+    await expect(blockedCache.setItem(blockedKey, '{}')).resolves.toBe(false);
+    expect(storage.has(blockedKey)).toBe(false);
+
+    await expect(setAppDataItem(CARD_SIZE_KEY, 'L')).resolves.toBe(true);
+
+    const allowedCache = createAppDataCacheSession();
+    await expect(allowedCache.setItem(allowedKey, '{}')).resolves.toBe(true);
+    expect(storage.get(allowedKey)).toBe('{}');
+  });
+
   it('waits for in-flight settings writes before clearing storage', async () => {
-    let releaseSetItem!: () => void;
-    storageControls.setItemGate = new Promise((resolve) => {
-      releaseSetItem = resolve;
-    });
+    const releaseSetItem = blockStorageOperation('setItemGate');
 
     const write = setAppDataItem(DATA_SOURCES_KEY, '{"aiApiKey":"secret"}');
     await Promise.resolve();
@@ -132,10 +188,7 @@ describe('app data storage clearing', () => {
   });
 
   it('ignores stale hydration reads that resolve after reset starts', async () => {
-    let releaseGetItem!: () => void;
-    storageControls.getItemGate = new Promise((resolve) => {
-      releaseGetItem = resolve;
-    });
+    const releaseGetItem = blockStorageOperation('getItemGate');
 
     const read = getAppDataItem(STT_SETTINGS_KEY);
     await Promise.resolve();
@@ -145,5 +198,87 @@ describe('app data storage clearing', () => {
     releaseGetItem();
 
     expect(await read).toBeNull();
+  });
+
+  it('loads and saves voice settings through the local app data seam', async () => {
+    const settings = {
+      provider: 'deepgram' as const,
+      deepgramApiKey: 'voice-secret',
+    };
+
+    await expect(saveVoiceSettings(settings)).resolves.toBe(true);
+    expect(JSON.parse(storage.get(STT_SETTINGS_KEY)!)).toEqual(settings);
+    await expect(loadVoiceSettings()).resolves.toEqual(settings);
+  });
+
+  it('validates loaded voice settings through the local app data seam', async () => {
+    storage.set(STT_SETTINGS_KEY, JSON.stringify({
+      provider: 'bogus-provider',
+      deepgramApiKey: 42,
+    }));
+
+    await expect(loadVoiceSettings()).resolves.toEqual(DEFAULT_STT_SETTINGS);
+  });
+
+  it('loads data source settings through the local app data seam', async () => {
+    storage.set(DATA_SOURCES_KEY, JSON.stringify({
+      srdEnabled: false,
+      kankaToken: 'kanka-secret',
+      srdSources: ['kobold-press-tob'],
+    }));
+
+    await expect(loadDataSourceSettings()).resolves.toEqual({
+      ...DEFAULT_DATA_SOURCES_SETTINGS,
+      srdEnabled: false,
+      kankaToken: 'kanka-secret',
+      srdSources: ['kobold-press-tob'],
+    });
+  });
+
+  it('saves data source settings through the local app data seam', async () => {
+    await resetStoredAppData();
+    const cacheWriteToken = createAppDataWriteToken();
+    const settings = {
+      ...DEFAULT_DATA_SOURCES_SETTINGS,
+      googleDocsUrl: 'https://docs.google.com/document/d/campaign',
+    };
+
+    expect(canPersistAppDataCache(cacheWriteToken)).toBe(false);
+    await expect(saveDataSourceSettings(settings)).resolves.toBe(true);
+
+    expect(JSON.parse(storage.get(DATA_SOURCES_KEY)!)).toEqual(settings);
+    expect(canPersistAppDataCache(cacheWriteToken)).toBe(true);
+  });
+
+  it('drops stale data source settings hydration through the local app data seam', async () => {
+    storage.set(DATA_SOURCES_KEY, JSON.stringify({ aiApiKey: 'stale-secret' }));
+    const releaseGetItem = blockStorageOperation('getItemGate');
+
+    const read = loadDataSourceSettings();
+    await Promise.resolve();
+
+    const generation = beginAppDataReset();
+    finishAppDataReset(generation);
+    releaseGetItem();
+
+    await expect(read).resolves.toBeNull();
+  });
+
+  it('drops stale data source settings writes through the local app data seam', async () => {
+    const releaseSetItem = blockStorageOperation('setItemGate');
+
+    const write = saveDataSourceSettings({
+      ...DEFAULT_DATA_SOURCES_SETTINGS,
+      aiApiKey: 'secret',
+    });
+    await Promise.resolve();
+
+    const reset = resetStoredAppData();
+    releaseSetItem();
+
+    await expect(write).resolves.toBe(false);
+    await reset;
+
+    expect(storage.get(DATA_SOURCES_KEY)).toBeUndefined();
   });
 });

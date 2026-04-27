@@ -1,18 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { Ionicon } from './Ionicon';
-import { CardState } from '../context/session';
+import type { CardState } from '../context/session-types';
 import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
+import { deriveEntityCardPresentation } from '../entity-card-presentation';
 import { Colors, F, typeAccent } from '../theme';
-
-function parseBullets(summary: string): string[] {
-  return summary
-    .split(/(?<=[.!])\s+/)
-    .map((s) => s.replace(/[.!]$/, '').trim())
-    .filter((s) => s.length > 0)
-    .slice(0, 5);
-}
+import { Ionicon } from './Ionicon';
 
 interface Props {
   card: CardState;
@@ -23,9 +16,8 @@ interface Props {
 }
 
 export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
-  const { entity, pinned } = card;
   const C = useColors();
-  const color = typeAccent(entity.type, C);
+  const entityAccentColor = typeAccent(card.entity.type, C);
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(8)).current;
 
@@ -33,6 +25,21 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
   const { fontScale } = CARD_SIZE_CONFIGS[cardSize];
 
   const styles = useMemo(() => createStyles(C), [C]);
+  const presentation = useMemo(
+    () => deriveEntityCardPresentation({ card, accentColor: entityAccentColor }),
+    [card, entityAccentColor],
+  );
+  const {
+    actions: { dismiss: dismissAction, pinToggle: pinToggleAction },
+    accentColor,
+    bulletMarker,
+    imageUri,
+    name,
+    pinned,
+    summaryBullets,
+    typeLabel,
+  } = presentation;
+  const onTogglePin = pinToggleAction.kind === 'unpin' ? onUnpin : onPin;
 
   useEffect(() => {
     const anim = Animated.parallel([
@@ -43,12 +50,10 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
     return () => anim.stop();
   }, []);
 
-  const bullets = useMemo(() => parseBullets(entity.summary), [entity.summary]);
-
   const webStyles = Platform.OS === 'web'
     ? {
         boxShadow: pinned
-          ? `0 0 0 1px ${color}48, 0 6px 28px ${color}20, 0 2px 8px #00000040`
+          ? `0 0 0 1px ${accentColor}48, 0 6px 28px ${accentColor}20, 0 2px 8px #00000040`
           : '0 2px 12px #00000030',
       }
     : {};
@@ -59,50 +64,50 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
         styles.card,
         { width, opacity: fadeIn, transform: [{ translateY: slideUp }] },
         pinned && styles.cardPinned,
-        pinned && { borderColor: color + '40', borderLeftColor: color, borderLeftWidth: 3 },
+        pinned && { borderColor: accentColor + '40', borderLeftColor: accentColor, borderLeftWidth: 3 },
         webStyles as object,
       ]}
     >
-      <View style={[styles.topStrip, { backgroundColor: color }]} />
+      <View style={[styles.topStrip, { backgroundColor: accentColor }]} />
 
-      <View style={[styles.header, { backgroundColor: color + (pinned ? '12' : '0b') }]}>
+      <View style={[styles.header, { backgroundColor: accentColor + (pinned ? '12' : '0b') }]}>
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
             <Text
               style={[styles.name, { fontSize: 14 * fontScale, lineHeight: 20 * fontScale }]}
               numberOfLines={2}
             >
-              {entity.name}
+              {name}
             </Text>
-            <Text style={[styles.typeLabel, { color: color + 'b0', fontSize: 8 * fontScale }]}>
-              {entity.type.toUpperCase()}
+            <Text style={[styles.typeLabel, { color: accentColor + 'b0', fontSize: 8 * fontScale }]}>
+              {typeLabel}
             </Text>
           </View>
           <View style={styles.headerRight}>
             <View style={styles.actions}>
               <TouchableOpacity
-                onPress={pinned ? onUnpin : onPin}
-                accessibilityLabel={pinned ? 'Unpin' : 'Pin'}
+                onPress={onTogglePin}
+                accessibilityLabel={pinToggleAction.accessibilityLabel}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 6 }}
               >
                 <Ionicon
-                  name={pinned ? 'bookmark' : 'bookmark-outline'}
+                  name={pinToggleAction.iconName}
                   size={15 * fontScale}
-                  color={pinned ? color : C.textDim}
+                  color={pinned ? accentColor : C.textDim}
                 />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={onDismiss}
-                accessibilityLabel="Dismiss"
+                accessibilityLabel={dismissAction.accessibilityLabel}
                 hitSlop={{ top: 12, bottom: 12, left: 6, right: 12 }}
               >
-                <Ionicon name="close" size={14 * fontScale} color={C.textDim} />
+                <Ionicon name={dismissAction.iconName} size={14 * fontScale} color={C.textDim} />
               </TouchableOpacity>
             </View>
-            {entity.image && (
+            {imageUri && (
               <Image
-                source={{ uri: entity.image }}
-                style={[styles.portrait, { borderColor: color + '35' }]}
+                source={{ uri: imageUri }}
+                style={[styles.portrait, { borderColor: accentColor + '35' }]}
                 resizeMode="cover"
               />
             )}
@@ -110,13 +115,13 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
         </View>
       </View>
 
-      <View style={[styles.divider, { backgroundColor: color + '22' }]} />
+      <View style={[styles.divider, { backgroundColor: accentColor + '22' }]} />
 
       <View style={styles.bullets}>
-        {bullets.map((bullet, i) => (
+        {summaryBullets.map((bullet, i) => (
           <View key={i} style={styles.bulletRow}>
-            <Text style={[styles.bulletMark, { color: color + 'aa', fontSize: 11 * fontScale, lineHeight: 18 * fontScale }]}>
-              {'>'}
+            <Text style={[styles.bulletMark, { color: accentColor + 'aa', fontSize: 11 * fontScale, lineHeight: 18 * fontScale }]}>
+              {bulletMarker}
             </Text>
             <Text style={[styles.bulletText, { fontSize: 12 * fontScale, lineHeight: 18 * fontScale }]}>
               {bullet}

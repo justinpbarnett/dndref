@@ -1,19 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-import { Entity, EntityIndex, WorldDataProvider } from '../entities';
-import { useDataSources } from './data-sources';
-import { buildDetectionInput, nextDetectionContext } from './detection-window';
-import {
-  MAX_CARDS,
-  DETECT_INTERVAL_MS,
-  addCard,
-  pinCard,
-  unpinCard,
-  dismissCard,
-  loadSettings,
-  buildProvider,
-} from './session-helpers';
-import { SessionStatus, SttStatus, EntityStatus, CardState, SessionContextType } from './session-types';
+import type { EntityIndex, WorldDataProvider } from '../entities';
 import { EntityDetector } from '../entities/detector';
 import { FileUploadProvider } from '../entities/providers/file-upload';
 import { GoogleDocsProvider } from '../entities/providers/google-docs';
@@ -23,31 +10,35 @@ import { MarkdownProvider } from '../entities/providers/markdown';
 import { NotionProvider, extractNotionId } from '../entities/providers/notion';
 import { SRDProvider } from '../entities/providers/srd';
 import { SAMPLE_WORLD } from '../sample-world';
-import { STTProvider } from '../stt/index';
+import { useDataSources } from './data-sources';
+import { DETECT_INTERVAL_MS, buildProvider, loadSettings } from './session-helpers';
+import { SessionRuntime } from './session-runtime';
+import type { EntityStatus, SessionContextType } from './session-types';
 export { SessionStatus, SttStatus, EntityStatus, CardState } from './session-types';
 
 const SessionContext = createContext<SessionContextType | null>(null);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const { settings: ds, uploadsVersion } = useDataSources();
-  const [status, setStatus] = useState<SessionStatus>('idle');
-  const [sttStatus, setSttStatus] = useState<SttStatus>('idle');
-  const [sttError, setSttError] = useState<string | null>(null);
-  const [sttProviderName, setSttProviderName] = useState('');
   const [entityStatus, setEntityStatus] = useState<EntityStatus>('loading');
-  const [cards, setCards] = useState<CardState[]>([]);
   const [entities, setEntities] = useState<EntityIndex>([]);
-  const [transcript, setTranscript] = useState('');
-  const [recentDetections, setRecentDetections] = useState<Entity[]>([]);
-  const detectorRef = useRef<EntityDetector | null>(null);
-  const transcriptRef = useRef('');
-  const processedUpToRef = useRef(0);
-  const detectionContextRef = useRef('');
-  const prevDetectionKeyRef = useRef('');
-  const sttRef = useRef<STTProvider | null>(null);
-  const sttGenerationRef = useRef(0);
-  const startInFlightRef = useRef<Promise<void> | null>(null);
-  const acceptingTranscriptRef = useRef(false);
+  const [runtime] = useState(() => new SessionRuntime({
+    loadSttSettings: loadSettings,
+    buildSttProvider: buildProvider,
+    detectIntervalMs: DETECT_INTERVAL_MS,
+  }));
+  const [runtimeSnapshot, setRuntimeSnapshot] = useState(() => runtime.getSnapshot());
+  const { status, sttStatus, sttError, sttProviderName, cards, transcript, recentDetections } = runtimeSnapshot;
+
+  useEffect(() => {
+    return runtime.subscribe(setRuntimeSnapshot);
+  }, [runtime]);
+
+  useEffect(() => {
+    return () => {
+      runtime.dispose();
+    };
+  }, [runtime]);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,197 +69,40 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         });
         const combined = results.flatMap((r) => r.status === 'fulfilled' ? r.value : []);
         setEntities(combined);
-        detectorRef.current = new EntityDetector(combined);
+        runtime.setDetector(new EntityDetector(combined));
         setEntityStatus(combined.length > 0 ? 'ready' : 'error');
       });
 
     return () => { cancelled = true; };
-  }, [ds.srdEnabled, ds.srdSources.join(','), ds.kankaToken, ds.kankaCampaignId, ds.homebreweryUrl, ds.notionToken, ds.notionPageIds, ds.googleDocsUrl, uploadsVersion]);
+  }, [ds.srdEnabled, ds.srdSources.join(','), ds.kankaToken, ds.kankaCampaignId, ds.homebreweryUrl, ds.notionToken, ds.notionPageIds, ds.googleDocsUrl, uploadsVersion, runtime]);
 
-  useEffect(() => {
-    if (status !== 'active') return;
-
-    const interval = setInterval(() => {
-      const detector = detectorRef.current;
-      if (!detector) return;
-
-      const newText = transcriptRef.current.slice(processedUpToRef.current);
-      if (!newText.trim()) return;
-
-      const found = detector.detect(buildDetectionInput(detectionContextRef.current, newText));
-      processedUpToRef.current = transcriptRef.current.length;
-      detectionContextRef.current = nextDetectionContext(transcriptRef.current);
-
-      if (found.length === 0) return;
-
-      const detectionKey = found.map((e) => e.id).join(',');
-      if (detectionKey !== prevDetectionKeyRef.current) {
-        prevDetectionKeyRef.current = detectionKey;
-        setRecentDetections(found);
-      }
-
-      setCards((prev) => {
-        let next = prev;
-        found.forEach((entity) => { next = addCard(next, entity); });
-        return next;
-      });
-    }, DETECT_INTERVAL_MS);
-
-    return () => clearInterval(interval);
-  }, [status]);
-
-  const appendTranscript = useCallback((text: string) => {
-    setTranscript((prev) => {
-      const next = prev ? `${prev} ${text}` : text;
-      transcriptRef.current = next;
-      return next;
-    });
-  }, []);
-
-  const start = useCallback(async () => {
-    if (startInFlightRef.current) return;
-
-    if (sttRef.current) {
-      const generation = sttGenerationRef.current;
-      const provider = sttRef.current;
-      const resumePromise = Promise.resolve()
-        .then(() => provider.resume())
-        .then(() => {
-          if (sttGenerationRef.current !== generation || sttRef.current !== provider) return;
-          acceptingTranscriptRef.current = true;
-          setStatus('active');
-          setSttStatus('active');
-          processedUpToRef.current = transcriptRef.current.length;
-          detectionContextRef.current = '';
-        })
-        .catch((e) => {
-          if (sttGenerationRef.current !== generation || sttRef.current !== provider) return;
-          acceptingTranscriptRef.current = false;
-          Promise.resolve(provider.stop()).catch(() => {});
-          sttRef.current = null;
-          setSttError(`Failed to resume mic: ${e instanceof Error ? e.message : String(e)}`);
-          setSttStatus('error');
-          setStatus('paused');
-        })
-        .finally(() => {
-          if (startInFlightRef.current === resumePromise) startInFlightRef.current = null;
-        });
-      startInFlightRef.current = resumePromise;
-      return;
-    }
-
-    const generation = sttGenerationRef.current + 1;
-    sttGenerationRef.current = generation;
-    acceptingTranscriptRef.current = false;
-    detectionContextRef.current = '';
-    setSttStatus('connecting');
-    setSttError(null);
-
-    const startPromise = (async () => {
-      const settings = await loadSettings();
-      if (sttGenerationRef.current !== generation) return;
-
-      const provider = buildProvider(
-        settings,
-        (text) => {
-          if (sttGenerationRef.current === generation && acceptingTranscriptRef.current) {
-            appendTranscript(text);
-          }
-        },
-        (err) => {
-          if (sttGenerationRef.current !== generation) return;
-          acceptingTranscriptRef.current = false;
-          const current = sttRef.current;
-          if (current) Promise.resolve(current.stop()).catch(() => {});
-          sttRef.current = null;
-          setSttError(err);
-          setSttStatus('error');
-          setStatus((prev) => prev === 'active' ? 'paused' : prev);
-        },
-      );
-
-      sttRef.current = provider;
-      setSttProviderName(provider.name);
-
-      await provider.start();
-      if (sttGenerationRef.current !== generation || sttRef.current !== provider) {
-        await provider.stop();
-        return;
-      }
-
-      acceptingTranscriptRef.current = true;
-      setSttStatus('active');
-      setStatus('active');
-      processedUpToRef.current = transcriptRef.current.length;
-      detectionContextRef.current = '';
-    })()
-      .catch((e) => {
-        if (sttGenerationRef.current !== generation) return;
-        const provider = sttRef.current;
-        if (provider) Promise.resolve(provider.stop()).catch(() => {});
-        sttRef.current = null;
-        acceptingTranscriptRef.current = false;
-        setSttProviderName('');
-        setSttError(`Failed to start mic: ${e instanceof Error ? e.message : String(e)}`);
-        setSttStatus('error');
-      })
-      .finally(() => {
-        if (startInFlightRef.current === startPromise) startInFlightRef.current = null;
-      });
-
-    startInFlightRef.current = startPromise;
-  }, [appendTranscript]);
+  const start = useCallback(() => {
+    void runtime.start();
+  }, [runtime]);
 
   const pause = useCallback(() => {
-    acceptingTranscriptRef.current = false;
-    detectionContextRef.current = '';
-    const provider = sttRef.current;
-    if (provider) Promise.resolve(provider.pause()).catch(() => {});
-    setSttStatus('idle');
-    setStatus('paused');
-  }, []);
+    runtime.pause();
+  }, [runtime]);
 
   const stop = useCallback(() => {
-    sttGenerationRef.current += 1;
-    startInFlightRef.current = null;
-    acceptingTranscriptRef.current = false;
-    const provider = sttRef.current;
-    if (provider) Promise.resolve(provider.stop()).catch(() => {});
-    sttRef.current = null;
-    setSttStatus('idle');
-    setSttError(null);
-    setSttProviderName('');
-    setStatus('idle');
-    setCards([]);
-    setTranscript('');
-    transcriptRef.current = '';
-    setRecentDetections([]);
-    prevDetectionKeyRef.current = '';
-    processedUpToRef.current = 0;
-    detectionContextRef.current = '';
-  }, []);
+    runtime.stop();
+  }, [runtime]);
 
-  useEffect(() => {
-    return () => {
-      sttGenerationRef.current += 1;
-      acceptingTranscriptRef.current = false;
-      const provider = sttRef.current;
-      if (provider) Promise.resolve(provider.stop()).catch(() => {});
-      sttRef.current = null;
-    };
-  }, []);
+  const appendTranscript = useCallback((text: string) => {
+    runtime.appendTranscript(text);
+  }, [runtime]);
 
   const pin = useCallback((instanceId: string) => {
-    setCards((prev) => pinCard(prev, instanceId));
-  }, []);
+    runtime.pin(instanceId);
+  }, [runtime]);
 
   const unpin = useCallback((instanceId: string) => {
-    setCards((prev) => unpinCard(prev, instanceId));
-  }, []);
+    runtime.unpin(instanceId);
+  }, [runtime]);
 
   const dismiss = useCallback((instanceId: string) => {
-    setCards((prev) => dismissCard(prev, instanceId));
-  }, []);
+    runtime.dismiss(instanceId);
+  }, [runtime]);
 
   return (
     <SessionContext.Provider value={{

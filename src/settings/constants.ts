@@ -1,5 +1,5 @@
 import type { IoniconName } from '../components/Ionicon';
-import { CardSize, ColorScheme } from '../context/ui-settings';
+import type { CardSize, ColorScheme } from '../context/ui-settings';
 
 export type Category = 'display' | 'voice' | 'data' | 'files' | 'ai';
 
