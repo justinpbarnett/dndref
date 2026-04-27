@@ -102,19 +102,36 @@ export function mergeDataSourceSettings(
   };
 }
 
+type VoiceSettingsPatch = Partial<Record<keyof STTSettings, unknown>>;
+
+function isVoiceSettingsPatch(value: unknown): value is VoiceSettingsPatch {
+  return value !== null && typeof value === 'object';
+}
+
+function isVoiceProvider(value: unknown): value is STTSettings['provider'] {
+  return value === 'deepgram' || value === 'web-speech';
+}
+
 export function createDefaultVoiceSettings(): STTSettings {
   return { ...DEFAULT_STT_SETTINGS };
 }
 
-export function mergeVoiceSettings(settings?: Partial<STTSettings> | null): STTSettings {
-  const provider = settings?.provider === 'deepgram' || settings?.provider === 'web-speech'
-    ? settings.provider
-    : DEFAULT_STT_SETTINGS.provider;
-  const deepgramApiKey = typeof settings?.deepgramApiKey === 'string'
-    ? settings.deepgramApiKey
-    : DEFAULT_STT_SETTINGS.deepgramApiKey;
+function normalizeVoiceSettings(settings: unknown): STTSettings {
+  const patch = isVoiceSettingsPatch(settings) ? settings : {};
+  const defaultSettings = createDefaultVoiceSettings();
+
+  const provider = isVoiceProvider(patch.provider)
+    ? patch.provider
+    : defaultSettings.provider;
+  const deepgramApiKey = typeof patch.deepgramApiKey === 'string'
+    ? patch.deepgramApiKey
+    : defaultSettings.deepgramApiKey;
 
   return { provider, deepgramApiKey };
+}
+
+export function mergeVoiceSettings(settings?: Partial<STTSettings> | null): STTSettings {
+  return normalizeVoiceSettings(settings);
 }
 
 export async function loadVoiceSettings(): Promise<STTSettings | null> {
@@ -129,7 +146,7 @@ export async function loadVoiceSettings(): Promise<STTSettings | null> {
   if (!raw) return null;
 
   try {
-    return mergeVoiceSettings(JSON.parse(raw) as Partial<STTSettings>);
+    return normalizeVoiceSettings(JSON.parse(raw));
   } catch (parseErr) {
     console.warn('[dnd-ref] Failed to parse voice settings:', parseErr);
     return null;

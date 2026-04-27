@@ -80,10 +80,7 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     const loadedSettings = await this.loadVoiceSettings();
     if (this.disposed || generation !== this.loadGeneration || !loadedSettings) return;
 
-    this.replaceSnapshot({
-      ...this.snapshot,
-      sttSettings: mergeVoiceSettings(loadedSettings),
-    });
+    this.updateSnapshot({ sttSettings: mergeVoiceSettings(loadedSettings) });
   }
 
   setSttSettings(update: SetStateAction<STTSettings>): void {
@@ -91,18 +88,15 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
       ? update(this.snapshot.sttSettings)
       : update;
 
-    this.replaceSnapshot({
-      ...this.snapshot,
-      sttSettings: mergeVoiceSettings(nextSettings),
-    });
+    this.updateSnapshot({ sttSettings: mergeVoiceSettings(nextSettings) });
   }
 
   async save(): Promise<void> {
-    const settings = mergeVoiceSettings(this.snapshot.sttSettings);
-    const saved = await this.saveVoiceSettings(settings);
+    const settingsToSave = mergeVoiceSettings(this.snapshot.sttSettings);
+    const saved = await this.saveVoiceSettings(settingsToSave);
     if (this.disposed || !saved) return;
 
-    this.replaceSnapshot({ ...this.snapshot, sttSettings: settings, voiceSaved: true });
+    this.updateSnapshot({ voiceSaved: true });
     this.restartSavedTimer();
   }
 
@@ -127,7 +121,7 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     this.savedTimer = this.setSavedTimer(() => {
       this.savedTimer = null;
       if (this.disposed) return;
-      this.replaceSnapshot({ ...this.snapshot, voiceSaved: false });
+      this.updateSnapshot({ voiceSaved: false });
     }, VOICE_SAVED_INDICATOR_MS);
   }
 
@@ -135,6 +129,10 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     if (!this.savedTimer) return;
     this.clearSavedTimer(this.savedTimer);
     this.savedTimer = null;
+  }
+
+  private updateSnapshot(patch: Partial<VoiceSettingsCategorySnapshot>): void {
+    this.replaceSnapshot({ ...this.snapshot, ...patch });
   }
 
   private replaceSnapshot(snapshot: VoiceSettingsCategorySnapshot): void {
