@@ -51,9 +51,7 @@ describe('voice settings category controller', () => {
 
   it('keeps newer draft changes when an earlier save finishes', async () => {
     let finishSave: (saved: boolean) => void = () => {};
-    const saveVoiceSettings = vi.fn(() => new Promise<boolean>((resolve) => {
-      finishSave = resolve;
-    }));
+    const saveVoiceSettings = vi.fn(() => new Promise<boolean>((resolve) => { finishSave = resolve; }));
     const controller = createController({
       loadVoiceSettings: vi.fn(async () => DEFAULT_STT_SETTINGS),
       saveVoiceSettings,

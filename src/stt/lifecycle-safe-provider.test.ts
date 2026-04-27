@@ -11,9 +11,7 @@ type RejectablePromise = {
 
 function rejectablePromise(): RejectablePromise {
   let reject!: (error: unknown) => void;
-  const promise = new Promise<void>((_resolve, rej) => {
-    reject = rej;
-  });
+  const promise = new Promise<void>((_resolve, rej) => { reject = rej; });
   return { promise, reject };
 }
 
@@ -74,9 +72,7 @@ describe('late-event-safe STT provider', () => {
 
   it('cancels stop-during-start so startup completions cannot deliver stale events', async () => {
     const startup = rejectablePromise();
-    const { adapters, onError, onTranscript, provider } = makeProvider((adapter) => {
-      adapter.startResult = startup.promise;
-    });
+    const { adapters, onError, onTranscript, provider } = makeProvider((adapter) => { adapter.startResult = startup.promise; });
 
     const start = provider.start();
     adapters[0].emitTranscript('too early');
@@ -115,9 +111,7 @@ describe('late-event-safe STT provider', () => {
   });
 
   it('propagates current startup failures so callers can show user-facing errors', async () => {
-    const { onError, provider } = makeProvider((adapter) => {
-      adapter.startError = new Error('permission denied');
-    });
+    const { onError, provider } = makeProvider((adapter) => { adapter.startError = new Error('permission denied'); });
 
     await expect(provider.start()).rejects.toThrow('permission denied');
     expect(onError).not.toHaveBeenCalled();

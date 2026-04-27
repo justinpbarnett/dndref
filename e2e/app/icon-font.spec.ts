@@ -22,9 +22,7 @@ test('renders Ionicons from local app assets when external CDNs are blocked', as
       ),
     );
     const fontFaces: string[] = [];
-    document.fonts.forEach((font) => {
-      if (font.family.includes('ionicons')) fontFaces.push(font.status);
-    });
+    document.fonts.forEach((font) => { if (font.family.includes('ionicons')) fontFaces.push(font.status); });
     return {
       fontFaces,
       iconCount: icons.length,

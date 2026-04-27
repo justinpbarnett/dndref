@@ -51,9 +51,7 @@ import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY } from '../stt';
 
 function blockStorageOperation(operation: keyof typeof storageControls): () => void {
   let releaseGate = () => {};
-  storageControls[operation] = new Promise((resolve) => {
-    releaseGate = resolve;
-  });
+  storageControls[operation] = new Promise((resolve) => { releaseGate = resolve; });
   return releaseGate;
 }
 

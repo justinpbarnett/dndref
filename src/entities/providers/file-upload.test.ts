@@ -69,9 +69,7 @@ describe('file upload storage', () => {
 
   it('does not resurrect an upload mutation that is in flight during reset', async () => {
     let releaseGetItem!: () => void;
-    storageControls.getItemGate = new Promise((resolve) => {
-      releaseGetItem = resolve;
-    });
+    storageControls.getItemGate = new Promise((resolve) => { releaseGetItem = resolve; });
 
     const upload = addUpload('late.md', '# Late');
     await Promise.resolve();

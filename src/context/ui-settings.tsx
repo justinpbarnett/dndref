@@ -93,9 +93,7 @@ export function UISettingsProvider({ children }: { children: React.ReactNode }) 
         } catch (e) {
           console.warn('[dnd-ref] Failed to parse color scheme preference:', e);
         }
-      }).catch((e: unknown) => {
-        console.warn('[dnd-ref] Failed to load UI preferences:', e);
-      });
+      }).catch((e: unknown) => { console.warn('[dnd-ref] Failed to load UI preferences:', e); });
     }
   }, []);
 
