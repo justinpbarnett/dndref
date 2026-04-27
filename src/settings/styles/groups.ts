@@ -1,9 +1,7 @@
-import { StyleSheet } from 'react-native';
-
 import { Colors, F } from '../../theme';
 
 export function createGroupStyles(C: Colors) {
-  return StyleSheet.create({
+  return {
     group: {
       gap: 10,
     },
@@ -32,5 +30,5 @@ export function createGroupStyles(C: Colors) {
       fontSize: 11,
       fontFamily: F.mono,
     },
-  });
+  };
 }
