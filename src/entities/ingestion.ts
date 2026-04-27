@@ -176,10 +176,7 @@ function isIngestedEntityRecord(value: unknown): value is IngestedEntityRecord {
 }
 
 function normalizeNonEmptyString(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-
-  const normalized = value.trim();
-  return normalized || null;
+  return typeof value === 'string' ? value.trim() || null : null;
 }
 
 function normalizeIngestedEntityType(value: unknown): EntityType {
