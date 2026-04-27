@@ -53,33 +53,21 @@ describe('EntityDetector', () => {
 });
 
 describe('slugify', () => {
-  it('converts to lowercase', () => {
-    expect(slugify('GIMBLE')).toBe('gimble');
-  });
-
-  it('replaces spaces with hyphens', () => {
-    expect(slugify('Gimble Lock')).toBe('gimble-lock');
-  });
-
-  it('removes non-alphanumeric characters', () => {
-    expect(slugify('Test!@#$%')).toBe('test');
+  it.each([
+    ['GIMBLE', 'gimble'],
+    ['Gimble Lock', 'gimble-lock'],
+    ['Test!@#$%', 'test'],
+  ])('slugifies %s', (input, expected) => {
+    expect(slugify(input)).toBe(expected);
   });
 });
 
 describe('normalizeEntityType', () => {
-  it('recognizes NPC variations', () => {
-    expect(normalizeEntityType('npc')).toBe('NPC');
-    expect(normalizeEntityType('character')).toBe('NPC');
-    expect(normalizeEntityType('person')).toBe('NPC');
-  });
-
-  it('recognizes location variations', () => {
-    expect(normalizeEntityType('location')).toBe('Location');
-    expect(normalizeEntityType('place')).toBe('Location');
-    expect(normalizeEntityType('city')).toBe('Location');
-  });
-
-  it('defaults to Unknown for unknown types', () => {
-    expect(normalizeEntityType('xyz')).toBe('Unknown');
+  it.each([
+    ['npc', 'NPC'], ['character', 'NPC'], ['person', 'NPC'],
+    ['location', 'Location'], ['place', 'Location'], ['city', 'Location'],
+    ['xyz', 'Unknown'],
+  ] as const)('normalizes %s', (input, expected) => {
+    expect(normalizeEntityType(input)).toBe(expected);
   });
 });
