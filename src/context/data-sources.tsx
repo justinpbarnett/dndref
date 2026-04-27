@@ -1,15 +1,19 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import {
   createDefaultDataSourceSettings,
   loadDataSourceSettings,
   mergeDataSourceSettings,
   saveDataSourceSettings,
+  type DataSourcesSettings,
 } from '../storage/app-data';
-import type { DataSourcesSettings } from '../storage/app-data';
 
 export { DATA_SOURCES_KEY } from '../storage/keys';
-export { DEFAULT_DATA_SOURCES_SETTINGS, type DataSourcesSettings } from '../storage/app-data';
+export {
+  DEFAULT_DATA_SOURCES_SETTINGS,
+  createDefaultDataSourceSettings,
+  type DataSourcesSettings,
+} from '../storage/app-data';
 
 interface DataSourcesContextType {
   settings: DataSourcesSettings;
@@ -23,33 +27,41 @@ const DataSourcesContext = createContext<DataSourcesContextType | null>(null);
 
 export function DataSourcesProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<DataSourcesSettings>(() => createDefaultDataSourceSettings());
+  const latestSettings = useRef(settings);
   const [uploadsVersion, setUploadsVersion] = useState(0);
+
+  const replaceSettings = useCallback((nextSettings: DataSourcesSettings) => {
+    latestSettings.current = nextSettings;
+    setSettings(nextSettings);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
-    loadDataSourceSettings().then((loaded) => {
-      if (mounted && loaded) setSettings(loaded);
-    });
-    return () => { mounted = false; };
-  }, []);
 
-  async function update(patch: Partial<DataSourcesSettings>) {
-    let next!: DataSourcesSettings;
-    setSettings((prev) => {
-      next = mergeDataSourceSettings({ ...prev, ...patch });
-      return next;
+    loadDataSourceSettings().then((loadedSettings) => {
+      if (!mounted || !loadedSettings) return;
+      replaceSettings(loadedSettings);
     });
-    await saveDataSourceSettings(next);
-  }
+
+    return () => {
+      mounted = false;
+    };
+  }, [replaceSettings]);
+
+  const update = useCallback(async (patch: Partial<DataSourcesSettings>) => {
+    const nextSettings = mergeDataSourceSettings({ ...latestSettings.current, ...patch });
+    replaceSettings(nextSettings);
+    await saveDataSourceSettings(nextSettings);
+  }, [replaceSettings]);
 
   const bumpUploads = useCallback(() => {
     setUploadsVersion((v) => v + 1);
   }, []);
 
   const reset = useCallback(() => {
-    setSettings(createDefaultDataSourceSettings());
+    replaceSettings(createDefaultDataSourceSettings());
     setUploadsVersion((v) => v + 1);
-  }, []);
+  }, [replaceSettings]);
 
   return (
     <DataSourcesContext.Provider value={{ settings, uploadsVersion, update, bumpUploads, reset }}>

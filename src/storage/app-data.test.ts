@@ -48,6 +48,14 @@ import {
 } from './keys';
 import { STT_SETTINGS_KEY } from '../stt';
 
+function blockStorageOperation(operation: keyof typeof storageControls): () => void {
+  let releaseGate = () => {};
+  storageControls[operation] = new Promise((resolve) => {
+    releaseGate = resolve;
+  });
+  return releaseGate;
+}
+
 describe('app data storage clearing', () => {
   beforeEach(() => {
     resetAppDataControlsForTests();
@@ -117,10 +125,7 @@ describe('app data storage clearing', () => {
   });
 
   it('waits for in-flight settings writes before clearing storage', async () => {
-    let releaseSetItem!: () => void;
-    storageControls.setItemGate = new Promise((resolve) => {
-      releaseSetItem = resolve;
-    });
+    const releaseSetItem = blockStorageOperation('setItemGate');
 
     const write = setAppDataItem(DATA_SOURCES_KEY, '{"aiApiKey":"secret"}');
     await Promise.resolve();
@@ -135,10 +140,7 @@ describe('app data storage clearing', () => {
   });
 
   it('ignores stale hydration reads that resolve after reset starts', async () => {
-    let releaseGetItem!: () => void;
-    storageControls.getItemGate = new Promise((resolve) => {
-      releaseGetItem = resolve;
-    });
+    const releaseGetItem = blockStorageOperation('getItemGate');
 
     const read = getAppDataItem(STT_SETTINGS_KEY);
     await Promise.resolve();
@@ -182,10 +184,7 @@ describe('app data storage clearing', () => {
 
   it('drops stale data source settings hydration through the local app data seam', async () => {
     storage.set(DATA_SOURCES_KEY, JSON.stringify({ aiApiKey: 'stale-secret' }));
-    let releaseGetItem!: () => void;
-    storageControls.getItemGate = new Promise((resolve) => {
-      releaseGetItem = resolve;
-    });
+    const releaseGetItem = blockStorageOperation('getItemGate');
 
     const read = loadDataSourceSettings();
     await Promise.resolve();
@@ -198,10 +197,7 @@ describe('app data storage clearing', () => {
   });
 
   it('drops stale data source settings writes through the local app data seam', async () => {
-    let releaseSetItem!: () => void;
-    storageControls.setItemGate = new Promise((resolve) => {
-      releaseSetItem = resolve;
-    });
+    const releaseSetItem = blockStorageOperation('setItemGate');
 
     const write = saveDataSourceSettings({
       ...DEFAULT_DATA_SOURCES_SETTINGS,

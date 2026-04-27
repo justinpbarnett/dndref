@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 
 import { Ionicon } from '../src/components/Ionicon';
-import { DEFAULT_DATA_SOURCES_SETTINGS, DataSourcesSettings, useDataSources } from '../src/context/data-sources';
+import { createDefaultDataSourceSettings, type DataSourcesSettings, useDataSources } from '../src/context/data-sources';
 import { useSession } from '../src/context/session';
 import { useColors, useUISettings } from '../src/context/ui-settings';
 import { parseWithAI } from '../src/entities/ai-parser';
@@ -158,7 +158,7 @@ export default function SettingsScreen() {
       resetDataSources();
       resetUISettings();
       setSttSettings(DEFAULT_STT_SETTINGS);
-      setDsLocal(DEFAULT_DATA_SOURCES_SETTINGS);
+      setDsLocal(createDefaultDataSourceSettings());
       setUploads([]);
       setPasteFileName('');
       setPasteContent('');

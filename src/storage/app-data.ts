@@ -87,15 +87,18 @@ export function createDefaultDataSourceSettings(): DataSourcesSettings {
 }
 
 export function mergeDataSourceSettings(
-  settings: Partial<DataSourcesSettings> | null = {},
+  settings?: Partial<DataSourcesSettings> | null,
 ): DataSourcesSettings {
   const patch = settings ?? {};
+  const defaultSettings = createDefaultDataSourceSettings();
+  const srdSources = Array.isArray(patch.srdSources)
+    ? [...patch.srdSources]
+    : defaultSettings.srdSources;
+
   return {
-    ...createDefaultDataSourceSettings(),
+    ...defaultSettings,
     ...patch,
-    srdSources: Array.isArray(patch.srdSources)
-      ? [...patch.srdSources]
-      : [...DEFAULT_DATA_SOURCES_SETTINGS.srdSources],
+    srdSources,
   };
 }
 
@@ -119,12 +122,16 @@ export async function loadDataSourceSettings(): Promise<DataSourcesSettings | nu
 }
 
 export async function saveDataSourceSettings(settings: DataSourcesSettings): Promise<boolean> {
-  const saved = await setAppDataItem(DATA_SOURCES_KEY, JSON.stringify(settings)).catch((e) => {
+  const serializedSettings = JSON.stringify(settings);
+
+  try {
+    const saved = await setAppDataItem(DATA_SOURCES_KEY, serializedSettings);
+    if (saved) allowAppDataCacheWrites();
+    return saved;
+  } catch (e) {
     console.warn('[dnd-ref] Failed to save data source settings:', e);
     return false;
-  });
-  if (saved) allowAppDataCacheWrites();
-  return saved;
+  }
 }
 
 export async function getAppDataItem(key: string, token = createAppDataWriteToken()): Promise<string | null> {
