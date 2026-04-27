@@ -11,8 +11,6 @@ export function extractCard(cards: CardState[], instanceId: string): [CardState,
   return [card, remainingCards];
 }
 
-export function buildCardIdSet(cards: CardState[]): Set<string> { return new Set(cards.map((card) => card.entity.id)); }
-
 export function insertAfterPinned(cards: CardState[], card: CardState): CardState[] {
   const lastPinnedIndex = cards.reduce((lastIndex, candidate, index) => {
     if (!candidate.pinned) return lastIndex;
@@ -32,8 +30,7 @@ function findRightmostUnpinnedIndex(cards: CardState[]): number {
 }
 
 export function addCard(cards: CardState[], entity: Entity): CardState[] {
-  const existingIds = buildCardIdSet(cards);
-  if (existingIds.has(entity.id)) return cards;
+  if (cards.some((card) => card.entity.id === entity.id)) return cards;
 
   const newCard: CardState = { instanceId: `${entity.id}-${Date.now()}`, entity, pinned: false };
   const nextCards = insertAfterPinned(cards, newCard);
