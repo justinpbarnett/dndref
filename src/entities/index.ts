@@ -19,13 +19,8 @@ export interface WorldDataProvider {
   getName(): string;
 }
 
-export function slugify(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-}
-
-export function stripHtml(s: string): string {
-  return s.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim();
-}
+export function slugify(name: string): string { return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''); }
+export function stripHtml(s: string): string { return s.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim(); }
 
 export function normalizeEntityType(raw: string): EntityType {
   const s = String(raw).toLowerCase();

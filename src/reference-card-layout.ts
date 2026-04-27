@@ -2,9 +2,7 @@ export const CARD_SIZES = ['S', 'M', 'L', 'XL'] as const;
 
 export type CardSize = (typeof CARD_SIZES)[number];
 
-export function isCardSize(value: unknown): value is CardSize {
-  return typeof value === 'string' && (CARD_SIZES as readonly string[]).includes(value);
-}
+export function isCardSize(value: unknown): value is CardSize { return typeof value === 'string' && (CARD_SIZES as readonly string[]).includes(value); }
 
 export interface CardSizeLayoutConfig {
   landscapeCols: number;

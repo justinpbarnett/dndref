@@ -21,9 +21,7 @@ export function isAppStorageKey(key: string): boolean {
   );
 }
 
-export function createAppDataWriteToken(): number {
-  return appDataResetActive ? INVALID_APP_DATA_TOKEN : appDataResetGeneration;
-}
+export function createAppDataWriteToken(): number { return appDataResetActive ? INVALID_APP_DATA_TOKEN : appDataResetGeneration; }
 
 export function isAppDataWriteTokenCurrent(token: number): boolean {
   return token !== INVALID_APP_DATA_TOKEN &&
