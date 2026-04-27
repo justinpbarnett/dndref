@@ -14,7 +14,6 @@ import { useDataSources } from './data-sources';
 import { DETECT_INTERVAL_MS, buildProvider, loadSettings } from './session-helpers';
 import { SessionRuntime } from './session-runtime';
 import type { EntityStatus, SessionContextType } from './session-types';
-export { SessionStatus, SttStatus, EntityStatus, CardState } from './session-types';
 
 const SessionContext = createContext<SessionContextType | null>(null);
 

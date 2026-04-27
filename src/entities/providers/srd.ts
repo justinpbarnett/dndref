@@ -6,7 +6,6 @@ import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../i
 const OPEN5E = 'https://api.open5e.com/v1';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const SRD_CACHE_SCHEMA_VERSION = 'v3';
-export { SRD_CACHE_KEY_PREFIX } from '../../storage/keys';
 
 export interface SRDSource {
   slug: string;
