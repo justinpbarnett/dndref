@@ -1,18 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
-import {
-  createDefaultDataSourceSettings,
-  loadDataSourceSettings,
-  mergeDataSourceSettings,
-  saveDataSourceSettings,
-  type DataSourcesSettings,
-} from '../storage/app-data';
+import { createDefaultDataSourceSettings, loadDataSourceSettings, mergeDataSourceSettings, saveDataSourceSettings, type DataSourcesSettings } from '../storage/app-data';
 
-export {
-  DEFAULT_DATA_SOURCES_SETTINGS,
-  createDefaultDataSourceSettings,
-  type DataSourcesSettings,
-} from '../storage/app-data';
+export { DEFAULT_DATA_SOURCES_SETTINGS, createDefaultDataSourceSettings, type DataSourcesSettings } from '../storage/app-data';
 
 interface DataSourcesContextType {
   settings: DataSourcesSettings;

@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  ingestJsonContent,
-  ingestMarkdownContent,
-  normalizeIngestedEntity,
-} from './ingestion';
+import { ingestJsonContent, ingestMarkdownContent, normalizeIngestedEntity } from './ingestion';
 
 describe('world data ingestion', () => {
   it('normalizes entity type, ids, aliases, and summaries for shared ingested records', () => {

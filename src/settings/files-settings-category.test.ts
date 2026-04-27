@@ -5,11 +5,7 @@ vi.mock('react-native', () => ({
   Platform: { OS: 'web' },
 }));
 
-import {
-  createFilesSettingsCategoryController,
-  type FilesSettingsCategoryController,
-  type FilesSettingsCategoryControllerOptions,
-} from './files-settings-category';
+import { createFilesSettingsCategoryController, type FilesSettingsCategoryController, type FilesSettingsCategoryControllerOptions } from './files-settings-category';
 import type { UploadedFile } from '../entities/providers/file-upload';
 
 const controllers: FilesSettingsCategoryController[] = [];
