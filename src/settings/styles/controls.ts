@@ -1,9 +1,7 @@
-import { StyleSheet } from 'react-native';
-
 import { Colors, F } from '../../theme';
 
 export function createControlStyles(C: Colors) {
-  return StyleSheet.create({
+  return {
     segmentRow: {
       flexDirection: 'row',
       gap: 6,
@@ -162,5 +160,5 @@ export function createControlStyles(C: Colors) {
       letterSpacing: 0.5,
       fontFamily: F.mono,
     },
-  });
+  } as const;
 }

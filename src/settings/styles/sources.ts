@@ -1,9 +1,7 @@
-import { StyleSheet } from 'react-native';
-
 import { Colors, F } from '../../theme';
 
 export function createSourceStyles(C: Colors) {
-  return StyleSheet.create({
+  return {
     sourcesList: {
       gap: 6,
     },
@@ -61,5 +59,5 @@ export function createSourceStyles(C: Colors) {
     checkRowLabelChecked: {
       color: C.textPrimary,
     },
-  });
+  } as const;
 }

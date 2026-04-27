@@ -1,9 +1,7 @@
-import { StyleSheet } from 'react-native';
-
 import { Colors, F } from '../../theme';
 
 export function createLayoutStyles(C: Colors, isWide: boolean) {
-  return StyleSheet.create({
+  return {
     root: {
       flex: 1,
       flexDirection: isWide ? 'row' : 'column',
@@ -97,5 +95,5 @@ export function createLayoutStyles(C: Colors, isWide: boolean) {
       width: '100%',
       maxWidth: isWide ? 900 : undefined,
     },
-  });
+  } as const;
 }
