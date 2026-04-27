@@ -101,16 +101,9 @@ async function saveCache(key: string, entities: EntityIndex, cacheSession: AppDa
 }
 
 function monsterToEntity(m: any): Entity {
-  const cr = m.challenge_rating ?? '?';
-  const ac = m.armor_class ?? '?';
-  const hp = m.hit_points ?? '?';
-  const str = m.strength ?? '?';
-  const dex = m.dexterity ?? '?';
-  const con = m.constitution ?? '?';
-  const int_ = m.intelligence ?? '?';
-  const wis = m.wisdom ?? '?';
-  const cha = m.charisma ?? '?';
-  const summary = `CR ${cr} · ${m.size ?? ''} ${m.type ?? ''}. AC ${ac}, HP ${hp}. STR ${str} DEX ${dex} CON ${con} INT ${int_} WIS ${wis} CHA ${cha}.`;
+  const statSummary = [['STR', m.strength], ['DEX', m.dexterity], ['CON', m.constitution], ['INT', m.intelligence], ['WIS', m.wisdom], ['CHA', m.charisma]]
+    .map(([label, value]) => `${label} ${value ?? '?'}`).join(' ');
+  const summary = `CR ${m.challenge_rating ?? '?'} · ${m.size ?? ''} ${m.type ?? ''}. AC ${m.armor_class ?? '?'}, HP ${m.hit_points ?? '?'}. ${statSummary}.`;
   return {
     id: `srd-monster-${m.slug ?? slugify(m.name)}`,
     name: m.name,
