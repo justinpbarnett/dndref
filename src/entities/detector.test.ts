@@ -10,48 +10,42 @@ describe('EntityDetector', () => {
     { id: 'iron-fist', name: 'Iron Fist', type: 'NPC' as EntityType, aliases: [], summary: 'A fighter', image: undefined },
     { id: 'tavern', name: 'The Prancing Pony', type: 'Location' as EntityType, aliases: ['pony', 'tavern'], summary: 'A tavern', image: undefined },
   ];
+  const detector = new EntityDetector(entities);
 
   it('detects entities by exact name match', () => {
-    const detector = new EntityDetector(entities);
     const found = detector.detect('Gimble');
     expect(found.length).toBeGreaterThan(0);
     expect(found.some(e => e.name === 'Gimble Lock')).toBe(true);
   });
 
   it('detects entities by alias', () => {
-    const detector = new EntityDetector(entities);
     const found = detector.detect('the bard');
     expect(found.length).toBeGreaterThan(0);
     expect(found.some(e => e.name === 'Gimble Lock')).toBe(true);
   });
 
   it('detects multi-word entity names', () => {
-    const detector = new EntityDetector(entities);
     const found = detector.detect('The Prancing Pony');
     expect(found.length).toBeGreaterThan(0);
     expect(found.some(e => e.name === 'The Prancing Pony')).toBe(true);
   });
 
   it('does not detect short words (< 4 chars)', () => {
-    const detector = new EntityDetector(entities);
     const found = detector.detect('the');
     expect(found.length).toBe(0);
   });
 
   it('returns empty for unknown words', () => {
-    const detector = new EntityDetector(entities);
     const found = detector.detect('xyzzyplugh');
     expect(found.length).toBe(0);
   });
 
   it('handles empty transcript', () => {
-    const detector = new EntityDetector(entities);
     const found = detector.detect('');
     expect(found.length).toBe(0);
   });
 
   it('deduplicates multiple matches to same entity', () => {
-    const detector = new EntityDetector(entities);
     const found = detector.detect('Gimble Lock is the bard');
     expect(found.length).toBe(1);
     expect(found[0].name).toBe('Gimble Lock');
