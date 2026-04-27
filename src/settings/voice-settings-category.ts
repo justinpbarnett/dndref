@@ -70,9 +70,7 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
 
   subscribe(listener: VoiceSettingsListener): () => void {
     this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
+    return () => { this.listeners.delete(listener); };
   }
 
   async load(): Promise<void> {
@@ -160,9 +158,7 @@ export function useVoiceSettingsCategory() {
     return () => controller.dispose();
   }, [controller]);
 
-  const setSttSettings = useCallback<Dispatch<SetStateAction<STTSettings>>>((update) => {
-    controller.setSttSettings(update);
-  }, [controller]);
+  const setSttSettings = useCallback<Dispatch<SetStateAction<STTSettings>>>((update) => controller.setSttSettings(update), [controller]);
 
   const saveVoice = useCallback(() => controller.save(), [controller]);
   const resetVoiceSettings = useCallback(() => controller.reset(), [controller]);

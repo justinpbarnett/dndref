@@ -89,9 +89,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
 
   subscribe(listener: FilesSettingsListener): () => void {
     this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
+    return () => { this.listeners.delete(listener); };
   }
 
   async load(): Promise<void> {
@@ -113,9 +111,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
 
   async pickFilesWeb(): Promise<void> {
     const files = await this.pickFiles();
-    await Promise.all(files.map(async (file) => {
-      await this.addUpload(file.name, await file.text());
-    }));
+    await Promise.all(files.map(async (file) => this.addUpload(file.name, await file.text())));
     await this.refreshUploads();
   }
 
@@ -272,12 +268,8 @@ export function useFilesSettingsCategory(options: FilesSettingsCategoryControlle
     return () => controller.dispose();
   }, [controller]);
 
-  const setPasteFileName = useCallback<Dispatch<SetStateAction<string>>>((update) => {
-    controller.setPasteFileName(update);
-  }, [controller]);
-  const setPasteContent = useCallback<Dispatch<SetStateAction<string>>>((update) => {
-    controller.setPasteContent(update);
-  }, [controller]);
+  const setPasteFileName = useCallback<Dispatch<SetStateAction<string>>>((update) => controller.setPasteFileName(update), [controller]);
+  const setPasteContent = useCallback<Dispatch<SetStateAction<string>>>((update) => controller.setPasteContent(update), [controller]);
 
   return {
     uploads: snapshot.uploads,

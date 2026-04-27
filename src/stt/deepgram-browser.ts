@@ -124,9 +124,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
         }
       };
 
-      const timeout = setTimeout(() => {
-        settle(new Error('Deepgram connection timed out. Check your API key and network.'));
-      }, DEEPGRAM_CONNECTION_TIMEOUT_MS);
+      const timeout = setTimeout(() => settle(new Error('Deepgram connection timed out. Check your API key and network.')), DEEPGRAM_CONNECTION_TIMEOUT_MS);
 
       ws.onopen = () => {
         if (!this.active || !this.stream) {
@@ -154,9 +152,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
         }
       };
 
-      ws.onmessage = (event) => {
-        this.handleDeepgramMessage(event.data as string);
-      };
+      ws.onmessage = (event) => { this.handleDeepgramMessage(event.data as string); };
 
       ws.onerror = () => {
         const err = new Error('Deepgram connection error. Check your API key and network.');

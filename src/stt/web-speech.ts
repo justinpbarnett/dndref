@@ -101,9 +101,7 @@ export class WebSpeechProvider implements STTProvider {
     };
 
     // Chrome stops recognition after silence -- restart automatically
-    this.recognition.onend = () => {
-      this.scheduleRestart();
-    };
+    this.recognition.onend = () => { this.scheduleRestart(); };
 
     try {
       this.recognition.start();
