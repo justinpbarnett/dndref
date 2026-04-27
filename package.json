@@ -11,6 +11,7 @@
     "proxy:dev": "wrangler dev --config workers/cors-proxy/wrangler.toml",
     "proxy:deploy": "wrangler deploy --config workers/cors-proxy/wrangler.toml",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },

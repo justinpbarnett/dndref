@@ -1,52 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import { EntityCard } from './EntityCard';
 import { CardState, useSession } from '../context/session';
-import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
+import { useColors, useUISettings } from '../context/ui-settings';
+import { computeReferenceCardLayout, type ReferenceCardPosition } from '../reference-card-layout';
 import { Colors, F } from '../theme';
+import { EntityCard } from './EntityCard';
 
-const GRID_PAD = 5;
-const CARD_MARGIN = 5;
-const MIN_CARD_WIDTH = 230;
-const MAX_CARD_WIDTH = 380;
-
-interface CardPos { x: number; y: number }
 interface AnimPair { left: Animated.Value; top: Animated.Value }
-
-function computePositions(
-  cards: CardState[],
-  heights: Record<string, number>,
-  columns: number,
-  cardWidth: number,
-  xOffset: number,
-): { positions: Record<string, CardPos>; totalHeight: number } {
-  const colWidth = cardWidth + 2 * CARD_MARGIN;
-
-  const rowHeights: number[] = [];
-  for (let i = 0; i < cards.length; i++) {
-    const row = Math.floor(i / columns);
-    const h = heights[cards[i].instanceId] ?? 200;
-    rowHeights[row] = Math.max(rowHeights[row] ?? 0, h);
-  }
-
-  const rowY: number[] = [GRID_PAD];
-  for (let r = 0; r < rowHeights.length; r++) {
-    rowY[r + 1] = rowY[r] + rowHeights[r];
-  }
-
-  const positions: Record<string, CardPos> = {};
-  for (let i = 0; i < cards.length; i++) {
-    const col = i % columns;
-    const row = Math.floor(i / columns);
-    positions[cards[i].instanceId] = {
-      x: xOffset + GRID_PAD + col * colWidth,
-      y: rowY[row],
-    };
-  }
-
-  return { positions, totalHeight: rowY[rowHeights.length] + GRID_PAD };
-}
 
 const SPRING_CONFIG = { friction: 22, tension: 55, useNativeDriver: false } as const;
 
@@ -55,23 +16,25 @@ export function CardGrid() {
   const { cards, status, pin, unpin, dismiss } = useSession();
   const { cardSize } = useUISettings();
   const { width, height: winHeight } = useWindowDimensions();
-  const config = CARD_SIZE_CONFIGS[cardSize];
-  const preferredColumns = width > winHeight ? config.landscapeCols : config.portraitCols;
-  const readableColumns = Math.max(1, Math.floor((width - 2 * GRID_PAD) / (MIN_CARD_WIDTH + 2 * CARD_MARGIN)));
-  const columns = Math.min(preferredColumns, readableColumns);
-  const gridWidth = Math.min(width, columns * (MAX_CARD_WIDTH + 2 * CARD_MARGIN) + 2 * GRID_PAD);
-  const xOffset = Math.max(0, (width - gridWidth) / 2);
-  const cardWidth = (gridWidth - 2 * GRID_PAD) / columns - 2 * CARD_MARGIN;
   const styles = useMemo(() => createStyles(C), [C]);
 
   const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
 
   const animRef = useRef<Record<string, AnimPair>>({});
-  const prevPos = useRef<Record<string, CardPos>>({});
+  const prevPos = useRef<Record<string, ReferenceCardPosition>>({});
 
-  const { positions: targets, totalHeight } = useMemo(
-    () => computePositions(cards, cardHeights, columns, cardWidth, xOffset),
-    [cards, cardHeights, columns, cardWidth, xOffset],
+  const {
+    cardWidth,
+    positions: targets,
+    totalHeight,
+  } = useMemo(
+    () => computeReferenceCardLayout({
+      cards,
+      measuredHeights: cardHeights,
+      viewport: { width, height: winHeight },
+      cardSize,
+    }),
+    [cards, cardHeights, width, winHeight, cardSize],
   );
 
   for (const [id, pos] of Object.entries(targets)) {

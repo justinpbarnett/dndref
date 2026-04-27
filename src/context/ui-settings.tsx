@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 
+import { CARD_SIZE_LAYOUT_CONFIGS, type CardSize, type CardSizeLayoutConfig } from '../reference-card-layout';
 import {
   createAppDataWriteToken,
   getAppDataItem,
@@ -10,20 +11,18 @@ import {
 import { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
 import { Colors, DARK, LIGHT } from '../theme';
 
-export type CardSize = 'S' | 'M' | 'L' | 'XL';
+export type { CardSize } from '../reference-card-layout';
 export type ColorScheme = 'dark' | 'light' | 'system';
 
-export interface CardSizeConfig {
-  landscapeCols: number;
-  portraitCols: number;
+export interface CardSizeConfig extends CardSizeLayoutConfig {
   fontScale: number;
 }
 
 export const CARD_SIZE_CONFIGS: Record<CardSize, CardSizeConfig> = {
-  S:  { landscapeCols: 4, portraitCols: 3, fontScale: 0.85 },
-  M:  { landscapeCols: 3, portraitCols: 2, fontScale: 1.0 },
-  L:  { landscapeCols: 2, portraitCols: 2, fontScale: 1.15 },
-  XL: { landscapeCols: 2, portraitCols: 1, fontScale: 1.35 },
+  S:  { ...CARD_SIZE_LAYOUT_CONFIGS.S, fontScale: 0.85 },
+  M:  { ...CARD_SIZE_LAYOUT_CONFIGS.M, fontScale: 1.0 },
+  L:  { ...CARD_SIZE_LAYOUT_CONFIGS.L, fontScale: 1.15 },
+  XL: { ...CARD_SIZE_LAYOUT_CONFIGS.XL, fontScale: 1.35 },
 };
 
 export { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
