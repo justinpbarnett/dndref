@@ -6,6 +6,7 @@ import { useColors, useUISettings } from '../context/ui-settings';
 import { computeReferenceCardLayout, type ReferenceCardPosition } from '../reference-card-layout';
 import { Colors, F } from '../theme';
 import { EntityCard } from './EntityCard';
+import { EntityDetailsModal } from './EntityDetailsModal';
 
 interface AnimPair { left: Animated.Value; top: Animated.Value }
 
@@ -19,6 +20,7 @@ export function CardGrid() {
   const styles = useMemo(() => createStyles(C), [C]);
 
   const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const animRef = useRef<Record<string, AnimPair>>({});
   const prevPos = useRef<Record<string, ReferenceCardPosition>>({});
@@ -89,6 +91,8 @@ export function CardGrid() {
     });
   }, []);
 
+  const selectedCard = cards.find((card) => card.instanceId === selectedCardId) ?? null;
+
   if (cards.length === 0) {
     return (
       <View style={styles.empty}>
@@ -104,30 +108,38 @@ export function CardGrid() {
   }
 
   return (
-    <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-      <View style={{ height: totalHeight }}>
-        {cards.map((card) => {
-          const anim = animRef.current[card.instanceId];
-          if (!anim) return null;
-          return (
-            <Animated.View
-              key={card.instanceId}
-              testID="entity-card"
-              style={[styles.cardWrapper, { left: anim.left, top: anim.top }]}
-              onLayout={(e) => onCardLayout(card.instanceId, e.nativeEvent.layout.height)}
-            >
-              <EntityCard
-                card={card}
-                width={cardWidth}
-                onPin={() => pin(card.instanceId)}
-                onUnpin={() => unpin(card.instanceId)}
-                onDismiss={() => dismiss(card.instanceId)}
-              />
-            </Animated.View>
-          );
-        })}
-      </View>
-    </ScrollView>
+    <>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={{ height: totalHeight }}>
+          {cards.map((card) => {
+            const anim = animRef.current[card.instanceId];
+            if (!anim) return null;
+            return (
+              <Animated.View
+                key={card.instanceId}
+                testID="entity-card"
+                style={[styles.cardWrapper, { left: anim.left, top: anim.top }]}
+                onLayout={(e) => onCardLayout(card.instanceId, e.nativeEvent.layout.height)}
+              >
+                <EntityCard
+                  card={card}
+                  width={cardWidth}
+                  onPin={() => pin(card.instanceId)}
+                  onUnpin={() => unpin(card.instanceId)}
+                  onDismiss={() => dismiss(card.instanceId)}
+                  onOpenDetails={() => setSelectedCardId(card.instanceId)}
+                />
+              </Animated.View>
+            );
+          })}
+        </View>
+      </ScrollView>
+      <EntityDetailsModal
+        card={selectedCard}
+        visible={selectedCard !== null}
+        onClose={() => setSelectedCardId(null)}
+      />
+    </>
   );
 }
 

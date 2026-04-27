@@ -13,9 +13,10 @@ interface Props {
   onPin: () => void;
   onUnpin: () => void;
   onDismiss: () => void;
+  onOpenDetails: () => void;
 }
 
-export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
+export function EntityCard({ card, width, onPin, onUnpin, onDismiss, onOpenDetails }: Props) {
   const C = useColors();
   const entityAccentColor = typeAccent(card.entity.type, C);
   const fadeIn = useRef(new Animated.Value(0)).current;
@@ -72,7 +73,12 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
 
       <View style={[styles.header, { backgroundColor: accentColor + (pinned ? '12' : '0b') }]}>
         <View style={styles.headerTop}>
-          <View style={styles.headerLeft}>
+          <TouchableOpacity
+            style={styles.headerLeft}
+            onPress={onOpenDetails}
+            accessibilityLabel={`Open ${name} details`}
+            activeOpacity={0.85}
+          >
             <Text
               style={[styles.name, { fontSize: 14 * fontScale, lineHeight: 20 * fontScale }]}
               numberOfLines={2}
@@ -82,7 +88,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
             <Text style={[styles.typeLabel, { color: accentColor + 'b0', fontSize: 8 * fontScale }]}>
               {typeLabel}
             </Text>
-          </View>
+          </TouchableOpacity>
           <View style={styles.headerRight}>
             <View style={styles.actions}>
               <TouchableOpacity
@@ -117,7 +123,12 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
 
       <View style={[styles.divider, { backgroundColor: accentColor + '22' }]} />
 
-      <View style={styles.bullets}>
+      <TouchableOpacity
+        style={styles.bullets}
+        onPress={onOpenDetails}
+        accessibilityLabel={`Open ${name} details`}
+        activeOpacity={0.85}
+      >
         {summaryBullets.map((bullet, i) => (
           <View key={i} style={styles.bulletRow}>
             <Text style={[styles.bulletMark, { color: accentColor + 'aa', fontSize: 11 * fontScale, lineHeight: 18 * fontScale }]}>
@@ -128,7 +139,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
             </Text>
           </View>
         ))}
-      </View>
+      </TouchableOpacity>
     </Animated.View>
   );
 }

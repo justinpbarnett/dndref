@@ -78,6 +78,7 @@ describe('deriveEntityCardPresentation', () => {
       imageUri: 'https://example.com/ironspire.png',
       bulletMarker: '>',
       summaryBullets: ['Ancient dwarven stronghold', 'Seven levels deep'],
+      details: 'Ancient dwarven stronghold. Seven levels deep.',
       actions: {
         pinToggle: {
           kind: 'pin',
@@ -102,6 +103,7 @@ describe('deriveEntityCardPresentation', () => {
         type: 'NPC',
         aliases: [],
         summary: '',
+        details: 'Full lich details.',
         image: '',
       },
     });
@@ -116,6 +118,7 @@ describe('deriveEntityCardPresentation', () => {
       imageUri: null,
       bulletMarker: '>',
       summaryBullets: [],
+      details: 'Full lich details.',
       actions: {
         pinToggle: {
           kind: 'unpin',

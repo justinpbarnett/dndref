@@ -5,6 +5,7 @@ import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../i
 
 const OPEN5E = 'https://api.open5e.com/v1';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const SRD_CACHE_SCHEMA_VERSION = 'v2';
 export { SRD_CACHE_KEY_PREFIX } from '../../storage/keys';
 
 export interface SRDSource {
@@ -51,7 +52,7 @@ export class SRDProvider implements WorldDataProvider {
   async load(): Promise<EntityIndex> {
     if (this.sources.length === 0) return [];
     const cacheSession = createAppDataCacheSession();
-    const cacheKey = `${SRD_CACHE_KEY_PREFIX}${[...this.sources].sort().join(',')}`;
+    const cacheKey = `${SRD_CACHE_KEY_PREFIX}${SRD_CACHE_SCHEMA_VERSION}-${[...this.sources].sort().join(',')}`;
     const cached = await loadCache(cacheKey, cacheSession);
     if (cached) return cached;
 
@@ -122,13 +123,15 @@ function monsterToEntity(m: any): Entity {
 
 function itemToEntity(item: any): Entity {
   const rarity = item.rarity ? capitalize(item.rarity) : '';
-  const desc = stripHtml(item.desc ?? '').slice(0, 200);
+  const details = stripHtml(item.desc ?? '');
+  const summary = [rarity, details.slice(0, 200)].filter(Boolean).join('. ');
   return {
     id: `srd-item-${item.slug ?? slugify(item.name)}`,
     name: item.name,
     type: 'Item',
     aliases: [],
-    summary: [rarity, desc].filter(Boolean).join('. '),
+    summary,
+    details,
   };
 }
 

@@ -8,6 +8,7 @@ export interface Entity {
   type: EntityType;
   aliases: string[];
   summary: string;
+  details?: string;
   image?: string;
 }
 

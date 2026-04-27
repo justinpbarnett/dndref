@@ -35,6 +35,7 @@ export interface EntityCardPresentation {
   imageUri: string | null;
   bulletMarker: typeof ENTITY_CARD_BULLET_MARKER;
   summaryBullets: string[];
+  details: string;
   actions: EntityCardActionsPresentation;
 }
 
@@ -84,6 +85,7 @@ export function deriveEntityCardPresentation({
     imageUri,
     bulletMarker: ENTITY_CARD_BULLET_MARKER,
     summaryBullets: extractEntityCardSummaryBullets(entity.summary),
+    details: entity.details || entity.summary,
     actions: {
       pinToggle: derivePinTogglePresentation(pinned),
       dismiss: {
