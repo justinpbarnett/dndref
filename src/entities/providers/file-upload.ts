@@ -2,7 +2,6 @@ import {
   addUploadedFile,
   getUploadedFiles,
   removeUploadedFile,
-  waitForUploadedFileMutations,
   type UploadedFile,
 } from '../../storage/app-data';
 import { EntityIndex, WorldDataProvider } from '../index';
@@ -14,7 +13,6 @@ export type { UploadedFile } from '../../storage/app-data';
 export async function getUploads(): Promise<UploadedFile[]> { return getUploadedFiles(); }
 export async function addUpload(name: string, content: string): Promise<void> { await addUploadedFile(name, content); }
 export async function removeUpload(id: string): Promise<void> { await removeUploadedFile(id); }
-export async function waitForUploadMutations(): Promise<void> { await waitForUploadedFileMutations(); }
 
 export class FileUploadProvider implements WorldDataProvider {
   readonly name = 'Uploaded Files';
