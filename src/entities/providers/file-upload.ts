@@ -5,8 +5,8 @@ import {
   waitForUploadedFileMutations,
   type UploadedFile,
 } from '../../storage/app-data';
-import { EntityIndex, WorldDataProvider, normalizeEntityType, slugify } from '../index';
-import { MarkdownProvider } from './markdown';
+import { EntityIndex, WorldDataProvider } from '../index';
+import { ingestUploadedFile } from '../ingestion';
 
 export { UPLOADS_KEY } from '../../storage/keys';
 export type { UploadedFile } from '../../storage/app-data';
@@ -40,26 +40,9 @@ export class FileUploadProvider implements WorldDataProvider {
 }
 
 async function parseUpload(upload: UploadedFile): Promise<EntityIndex> {
-  if (upload.name.endsWith('.json')) {
-    try {
-      return parseJSON(upload.content);
-    } catch {
+  return ingestUploadedFile(upload, {
+    onJsonParseError: () => {
       console.warn(`[dnd-ref] Failed to parse JSON upload: ${upload.name}`);
-    }
-  }
-  return new MarkdownProvider(upload.content, upload.name).load();
-}
-
-function parseJSON(content: string): EntityIndex {
-  const data = JSON.parse(content) as unknown;
-  const items = Array.isArray(data) ? data : [];
-  return items
-    .filter((item): item is Record<string, unknown> => !!item && typeof (item as any).name === 'string')
-    .map((item, i) => ({
-      id: `upload-${slugify(item.name as string)}-${Date.now()}-${i}`,
-      name: item.name as string,
-      type: normalizeEntityType((item.type as string) ?? ''),
-      aliases: Array.isArray(item.aliases) ? (item.aliases as string[]) : [],
-      summary: ((item.summary ?? item.description ?? '') as string),
-    }));
+    },
+  });
 }

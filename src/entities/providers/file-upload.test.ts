@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const storage = vi.hoisted(() => new Map<string, string>());
 const storageControls = vi.hoisted(() => ({
@@ -21,7 +21,7 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
-import { addUpload, getUploads, removeUpload } from './file-upload';
+import { addUpload, FileUploadProvider, getUploads, removeUpload } from './file-upload';
 import { resetAppDataControlsForTests, resetStoredAppData } from '../../storage/app-data';
 
 describe('file upload storage', () => {
@@ -29,6 +29,10 @@ describe('file upload storage', () => {
     storage.clear();
     storageControls.getItemGate = null;
     resetAppDataControlsForTests();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('preserves every file when uploads are added concurrently', async () => {
@@ -85,5 +89,75 @@ describe('file upload storage', () => {
     storageControls.getItemGate = null;
 
     expect(await getUploads()).toEqual([]);
+  });
+
+  it('loads markdown, text, and JSON uploads through world data ingestion', async () => {
+    await addUpload('bazaar.md', `
+## Moonlit Bazaar
+Type: place
+Aliases: Night Market; Bazaar
+
+Open only under the new moon.
+`);
+    await addUpload('captain.txt', `Captain Aria
+Type: character
+Aliases: Aria | the captain
+
+Commands the east watch.`);
+    await addUpload('items.json', JSON.stringify([
+      {
+        name: 'The Sundering Blade',
+        type: 'artifact',
+        aliases: ['Sundering Blade', 'the blade'],
+        description: 'Can destroy a lich phylactery.',
+      },
+    ]));
+
+    const entities = await new FileUploadProvider().load();
+
+    expect(entities.map(({ name, type, aliases, summary }) => ({ name, type, aliases, summary }))).toEqual([
+      {
+        name: 'Moonlit Bazaar',
+        type: 'Location',
+        aliases: ['Night Market', 'Bazaar'],
+        summary: 'Open only under the new moon.',
+      },
+      {
+        name: 'Captain Aria',
+        type: 'NPC',
+        aliases: ['Aria', 'the captain'],
+        summary: 'Commands the east watch.',
+      },
+      {
+        name: 'The Sundering Blade',
+        type: 'Item',
+        aliases: ['Sundering Blade', 'the blade'],
+        summary: 'Can destroy a lich phylactery.',
+      },
+    ]);
+    expect(entities[2].id).toMatch(/^upload-the-sundering-blade-\d+-0$/);
+  });
+
+  it('falls back to markdown ingestion for invalid JSON uploads', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await addUpload('fallback.json', `
+# Lord Ember
+Type: npc
+Aliases: Ember
+
+Rules the cinder court.
+`);
+
+    const entities = await new FileUploadProvider().load();
+
+    expect(warn).toHaveBeenCalledWith('[dnd-ref] Failed to parse JSON upload: fallback.json');
+    expect(entities.map(({ name, type, aliases, summary }) => ({ name, type, aliases, summary }))).toEqual([
+      {
+        name: 'Lord Ember',
+        type: 'NPC',
+        aliases: ['Ember'],
+        summary: 'Rules the cinder court.',
+      },
+    ]);
   });
 });
