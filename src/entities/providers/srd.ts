@@ -1,6 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import { canPersistAppDataCache, createAppDataWriteToken, setAppDataItem } from '../../storage/app-data';
+import { createAppDataCacheSession, type AppDataCacheSession } from '../../storage/app-data';
 import { SRD_CACHE_KEY_PREFIX } from '../../storage/keys';
 import { fetchAll } from '../../utils/providers';
 import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../index';
@@ -52,9 +50,9 @@ export class SRDProvider implements WorldDataProvider {
 
   async load(): Promise<EntityIndex> {
     if (this.sources.length === 0) return [];
-    const cacheWriteToken = createAppDataWriteToken();
+    const cacheSession = createAppDataCacheSession();
     const cacheKey = `${SRD_CACHE_KEY_PREFIX}${[...this.sources].sort().join(',')}`;
-    const cached = await loadCache(cacheKey);
+    const cached = await loadCache(cacheKey, cacheSession);
     if (cached) return cached;
 
     const sourceParam = this.sources.join(',');
@@ -72,16 +70,16 @@ export class SRDProvider implements WorldDataProvider {
       ...monsters.map(monsterToEntity),
       ...items.map(itemToEntity),
     ];
-    await saveCache(cacheKey, entities, cacheWriteToken);
+    await saveCache(cacheKey, entities, cacheSession);
     return entities;
   }
 
   getName(): string { return this.name; }
 }
 
-async function loadCache(key: string): Promise<EntityIndex | null> {
+async function loadCache(key: string, cacheSession: AppDataCacheSession): Promise<EntityIndex | null> {
   try {
-    const raw = await AsyncStorage.getItem(key);
+    const raw = await cacheSession.getItem(key);
     if (!raw) return null;
     const cache = JSON.parse(raw) as { ts: number; entities: EntityIndex };
     if (Date.now() - cache.ts > CACHE_TTL_MS) return null;
@@ -91,10 +89,9 @@ async function loadCache(key: string): Promise<EntityIndex | null> {
   }
 }
 
-async function saveCache(key: string, entities: EntityIndex, token: number): Promise<void> {
-  if (!canPersistAppDataCache(token)) return;
+async function saveCache(key: string, entities: EntityIndex, cacheSession: AppDataCacheSession): Promise<void> {
   try {
-    await setAppDataItem(key, JSON.stringify({ ts: Date.now(), entities }), { cache: true, token });
+    await cacheSession.setItem(key, JSON.stringify({ ts: Date.now(), entities }));
   } catch {
     // Storage full -- skip caching
   }

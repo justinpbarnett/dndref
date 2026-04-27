@@ -26,14 +26,18 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 import {
   APP_STORAGE_KEYS,
   DEFAULT_DATA_SOURCES_SETTINGS,
+  addUploadedFile,
   allowAppDataCacheWrites,
   beginAppDataReset,
   canPersistAppDataCache,
+  createAppDataCacheSession,
   createAppDataWriteToken,
   finishAppDataReset,
   getAppDataItem,
+  getUploadedFiles,
   isAppStorageKey,
   loadDataSourceSettings,
+  removeUploadedFile,
   resetAppDataControlsForTests,
   resetStoredAppData,
   saveDataSourceSettings,
@@ -103,6 +107,32 @@ describe('app data storage clearing', () => {
     ].sort());
   });
 
+  it('adds, removes, and reads uploaded files through the local app data seam', async () => {
+    await expect(addUploadedFile('one.md', '# One')).resolves.toBe(true);
+    await expect(addUploadedFile('two.md', '# Two')).resolves.toBe(true);
+
+    const [first] = await getUploadedFiles();
+    await expect(removeUploadedFile(first.id)).resolves.toBe(true);
+
+    expect((await getUploadedFiles()).map((u) => u.name)).toEqual(['two.md']);
+  });
+
+  it('waits for in-flight upload mutations before clearing storage', async () => {
+    const releaseGetItem = blockStorageOperation('getItemGate');
+
+    const upload = addUploadedFile('late.md', '# Late');
+    await Promise.resolve();
+
+    const reset = resetStoredAppData();
+    releaseGetItem();
+
+    await Promise.all([upload, reset]);
+    storageControls.getItemGate = null;
+
+    expect(await getUploadedFiles()).toEqual([]);
+    expect(storage.get('unrelated:other-app')).toBe('keep');
+  });
+
   it('invalidates stale async write tokens after a reset starts', () => {
     const token = createAppDataWriteToken();
     const generation = beginAppDataReset();
@@ -122,6 +152,22 @@ describe('app data storage clearing', () => {
 
     allowAppDataCacheWrites();
     expect(canPersistAppDataCache(token)).toBe(true);
+  });
+
+  it('routes cache writes through sessions and re-allows them after non-cache app data writes', async () => {
+    await resetStoredAppData();
+    const blockedCache = createAppDataCacheSession();
+    const blockedKey = `${SRD_CACHE_KEY_PREFIX}blocked`;
+    const allowedKey = `${SRD_CACHE_KEY_PREFIX}allowed`;
+
+    await expect(blockedCache.setItem(blockedKey, '{}')).resolves.toBe(false);
+    expect(storage.has(blockedKey)).toBe(false);
+
+    await expect(setAppDataItem(CARD_SIZE_KEY, 'L')).resolves.toBe(true);
+
+    const allowedCache = createAppDataCacheSession();
+    await expect(allowedCache.setItem(allowedKey, '{}')).resolves.toBe(true);
+    expect(storage.get(allowedKey)).toBe('{}');
   });
 
   it('waits for in-flight settings writes before clearing storage', async () => {
