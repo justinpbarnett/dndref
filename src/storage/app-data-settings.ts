@@ -39,11 +39,7 @@ export function mergeDataSourceSettings(
     ? [...patch.srdSources]
     : defaultSettings.srdSources;
 
-  return {
-    ...defaultSettings,
-    ...patch,
-    srdSources,
-  };
+  return { ...defaultSettings, ...patch, srdSources };
 }
 
 type VoiceSettingsPatch = Partial<Record<keyof STTSettings, unknown>>;
