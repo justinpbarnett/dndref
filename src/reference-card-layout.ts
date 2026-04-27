@@ -62,13 +62,7 @@ export function computeReferenceCardLayout({
   viewport,
   cardSize,
 }: ComputeReferenceCardLayoutInput): ReferenceCardLayout {
-  const {
-    gridPad,
-    cardMargin,
-    minCardWidth,
-    maxCardWidth,
-    defaultMeasuredHeight,
-  } = REFERENCE_CARD_LAYOUT;
+  const { gridPad, cardMargin, minCardWidth, maxCardWidth, defaultMeasuredHeight } = REFERENCE_CARD_LAYOUT;
   const { width: viewportWidth, height: viewportHeight } = viewport;
   const config = CARD_SIZE_LAYOUT_CONFIGS[cardSize];
   const preferredColumns = viewportWidth > viewportHeight ? config.landscapeCols : config.portraitCols;
