@@ -1,0 +1,1 @@
+{"type":"config","name":"Minimize project LOC by reducing repeated code and simplifying while preserving functionality","metricName":"loc","metricUnit":"","bestDirection":"lower"}
