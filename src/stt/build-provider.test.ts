@@ -36,10 +36,7 @@ vi.mock('./deepgram', () => ({
       sttMocks.deepgramInstances.push(this);
     }
 
-    async start(): Promise<void> {
-      if (sttMocks.deepgramStartError) throw sttMocks.deepgramStartError;
-    }
-
+    async start(): Promise<void> { if (sttMocks.deepgramStartError) throw sttMocks.deepgramStartError; }
     pause(): void {}
     resume(): void {}
     stop(): void {}
@@ -59,10 +56,7 @@ vi.mock('./web-speech', () => ({
       sttMocks.webSpeechInstances.push(this);
     }
 
-    async start(): Promise<void> {
-      if (sttMocks.webSpeechStartError) throw sttMocks.webSpeechStartError;
-    }
-
+    async start(): Promise<void> { if (sttMocks.webSpeechStartError) throw sttMocks.webSpeechStartError; }
     pause(): void {}
     resume(): void {}
     stop(): void {}
