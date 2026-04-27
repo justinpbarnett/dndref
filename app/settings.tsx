@@ -1,15 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Alert, Platform, ScrollView, Text, TouchableOpacity, View, useWindowDimensions,
-} from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
 import { Ionicon } from '../src/components/Ionicon';
 import { createDefaultDataSourceSettings, type DataSourcesSettings, useDataSources } from '../src/context/data-sources';
 import { useSession } from '../src/context/session';
 import { useColors, useUISettings } from '../src/context/ui-settings';
 import { parseWithAI } from '../src/entities/ai-parser';
-import { UploadedFile, addUpload, getUploads, removeUpload } from '../src/entities/providers/file-upload';
 import { Category, CATEGORIES } from '../src/settings/constants';
+import { useFilesSettingsCategory } from '../src/settings/files-settings-category';
 import { AISection } from '../src/settings/renderers/AISection';
 import { DataSection } from '../src/settings/renderers/DataSection';
 import { DisplaySection } from '../src/settings/renderers/DisplaySection';
@@ -20,28 +18,7 @@ import { useVoiceSettingsCategory } from '../src/settings/voice-settings-categor
 import {
   createAppDataWriteToken,
   isAppDataWriteTokenCurrent,
-  resetStoredAppData,
 } from '../src/storage/app-data';
-
-function confirmDeleteAllData(): Promise<boolean> {
-  const message = 'This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.';
-
-  if (Platform.OS === 'web' && typeof window !== 'undefined') {
-    return Promise.resolve(window.confirm(`Delete all local app data?\n\n${message}`));
-  }
-
-  return new Promise((resolve) => {
-    Alert.alert(
-      'Delete all local app data?',
-      message,
-      [
-        { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-        { text: 'Delete All Data', style: 'destructive', onPress: () => resolve(true) },
-      ],
-      { cancelable: true, onDismiss: () => resolve(false) },
-    );
-  });
-}
 
 export default function SettingsScreen() {
   const C = useColors();
@@ -51,8 +28,6 @@ export default function SettingsScreen() {
 
   const [category, setCategory] = useState<Category>('display');
   const [dataSaved, setDataSaved] = useState(false);
-  const [deleteAllPending, setDeleteAllPending] = useState(false);
-  const [deleteAllStatus, setDeleteAllStatus] = useState('');
   const { cardSize, setCardSize, colorScheme, setColorScheme, resetUISettings } = useUISettings();
   const { settings: ds, update: updateDs, bumpUploads, reset: resetDataSources } = useDataSources();
   const { stop: stopSession } = useSession();
@@ -66,26 +41,29 @@ export default function SettingsScreen() {
   } = useVoiceSettingsCategory();
   const [dsLocal, setDsLocal] = useState<DataSourcesSettings>(ds);
   const dataSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const [uploads, setUploads] = useState<UploadedFile[]>([]);
-  const [removingUploadId, setRemovingUploadId] = useState<string | null>(null);
-  const [pasteFileName, setPasteFileName] = useState('');
-  const [pasteContent, setPasteContent] = useState('');
   const [aiContent, setAiContent] = useState('');
   const [aiParsing, setAiParsing] = useState(false);
   const [aiResult, setAiResult] = useState('');
 
-  const refreshUploads = useCallback(async () => {
-    setUploads(await getUploads());
-    bumpUploads();
-  }, [bumpUploads]);
+  const resetAfterDeleteAll = useCallback(() => {
+    resetDataSources();
+    resetUISettings();
+    resetVoiceSettings();
+    setDsLocal(createDefaultDataSourceSettings());
+    setAiContent('');
+    setAiResult('');
+    setDataSaved(false);
+  }, [resetDataSources, resetUISettings, resetVoiceSettings]);
 
-  useEffect(() => {
-    refreshUploads();
-    return () => {
-      if (dataSavedTimer.current) clearTimeout(dataSavedTimer.current);
-    };
-  }, [refreshUploads]);
+  const filesCategory = useFilesSettingsCategory({
+    bumpUploads,
+    stopSession,
+    onDeleteAllDataReset: resetAfterDeleteAll,
+  });
+
+  useEffect(() => () => {
+    if (dataSavedTimer.current) clearTimeout(dataSavedTimer.current);
+  }, []);
 
   useEffect(() => { setDsLocal(ds); }, [ds]);
 
@@ -94,66 +72,6 @@ export default function SettingsScreen() {
     setDataSaved(true);
     if (dataSavedTimer.current) clearTimeout(dataSavedTimer.current);
     dataSavedTimer.current = setTimeout(() => setDataSaved(false), 2000);
-  };
-
-  const pickFilesWeb = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.accept = '.md,.txt,.json';
-    input.onchange = async () => {
-      const files = Array.from(input.files ?? []);
-      input.onchange = null;
-      await Promise.all(files.map((f) => f.text().then((text) => addUpload(f.name, text))));
-      await refreshUploads();
-    };
-    input.click();
-  };
-
-  const handlePasteAdd = async () => {
-    const name = pasteFileName.trim() || 'Pasted Content.md';
-    if (!pasteContent.trim()) return;
-    await addUpload(name, pasteContent);
-    setPasteFileName('');
-    setPasteContent('');
-    await refreshUploads();
-  };
-
-  const handleDeleteUpload = async (id: string) => {
-    setRemovingUploadId(id);
-    try {
-      await removeUpload(id);
-      await refreshUploads();
-    } finally {
-      setRemovingUploadId((current) => (current === id ? null : current));
-    }
-  };
-
-  const handleDeleteAllData = async () => {
-    const confirmed = await confirmDeleteAllData();
-    if (!confirmed) return;
-
-    setDeleteAllPending(true);
-    setDeleteAllStatus('');
-    try {
-      stopSession();
-      await resetStoredAppData();
-      resetDataSources();
-      resetUISettings();
-      resetVoiceSettings();
-      setDsLocal(createDefaultDataSourceSettings());
-      setUploads([]);
-      setPasteFileName('');
-      setPasteContent('');
-      setAiContent('');
-      setAiResult('');
-      setDataSaved(false);
-      setDeleteAllStatus('All local app data was deleted.');
-    } catch (e: unknown) {
-      setDeleteAllStatus(`Delete failed: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setDeleteAllPending(false);
-    }
   };
 
   const handleAIParse = async () => {
@@ -165,9 +83,7 @@ export default function SettingsScreen() {
       const entities = await parseWithAI(aiContent, dsLocal.aiApiKey);
       if (!isAppDataWriteTokenCurrent(token)) return;
       const name = `AI Parsed ${new Date().toLocaleDateString()}.json`;
-      await addUpload(name, JSON.stringify(entities));
-      if (!isAppDataWriteTokenCurrent(token)) return;
-      await refreshUploads();
+      await filesCategory.saveUpload(name, JSON.stringify(entities));
       if (!isAppDataWriteTokenCurrent(token)) return;
       setAiResult(`Found ${entities.length} entities. Saved as "${name}".`);
       setAiContent('');
@@ -189,18 +105,18 @@ export default function SettingsScreen() {
       case 'files':
         return (
           <FilesSection
-            uploads={uploads}
-            removingUploadId={removingUploadId}
-            pasteFileName={pasteFileName}
-            setPasteFileName={setPasteFileName}
-            pasteContent={pasteContent}
-            setPasteContent={setPasteContent}
-            pickFilesWeb={pickFilesWeb}
-            handlePasteAdd={handlePasteAdd}
-            handleDeleteUpload={handleDeleteUpload}
-            handleDeleteAllData={handleDeleteAllData}
-            deleteAllPending={deleteAllPending}
-            deleteAllStatus={deleteAllStatus}
+            uploads={filesCategory.uploads}
+            removingUploadId={filesCategory.removingUploadId}
+            pasteFileName={filesCategory.pasteFileName}
+            setPasteFileName={filesCategory.setPasteFileName}
+            pasteContent={filesCategory.pasteContent}
+            setPasteContent={filesCategory.setPasteContent}
+            pickFilesWeb={filesCategory.pickFilesWeb}
+            handlePasteAdd={filesCategory.handlePasteAdd}
+            handleDeleteUpload={filesCategory.handleDeleteUpload}
+            handleDeleteAllData={filesCategory.handleDeleteAllData}
+            deleteAllPending={filesCategory.deleteAllPending}
+            deleteAllStatus={filesCategory.deleteAllStatus}
             styles={styles}
           />
         );
