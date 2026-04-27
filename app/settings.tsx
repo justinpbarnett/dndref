@@ -16,14 +16,12 @@ import { DisplaySection } from '../src/settings/renderers/DisplaySection';
 import { FilesSection } from '../src/settings/renderers/FilesSection';
 import { VoiceSection } from '../src/settings/renderers/VoiceSection';
 import { createStyles } from '../src/settings/styles';
+import { useVoiceSettingsCategory } from '../src/settings/voice-settings-category';
 import {
   createAppDataWriteToken,
-  getAppDataItem,
   isAppDataWriteTokenCurrent,
   resetStoredAppData,
-  setAppDataItem,
 } from '../src/storage/app-data';
-import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTSettings } from '../src/stt/index';
 
 function confirmDeleteAllData(): Promise<boolean> {
   const message = 'This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.';
@@ -52,16 +50,21 @@ export default function SettingsScreen() {
   const styles = useMemo(() => createStyles(C, isWide), [C, isWide]);
 
   const [category, setCategory] = useState<Category>('display');
-  const [sttSettings, setSttSettings] = useState<STTSettings>(DEFAULT_STT_SETTINGS);
-  const [voiceSaved, setVoiceSaved] = useState(false);
   const [dataSaved, setDataSaved] = useState(false);
   const [deleteAllPending, setDeleteAllPending] = useState(false);
   const [deleteAllStatus, setDeleteAllStatus] = useState('');
   const { cardSize, setCardSize, colorScheme, setColorScheme, resetUISettings } = useUISettings();
   const { settings: ds, update: updateDs, bumpUploads, reset: resetDataSources } = useDataSources();
   const { stop: stopSession } = useSession();
+  const {
+    sttSettings,
+    setSttSettings,
+    saveVoice,
+    voiceSaved,
+    isWebSpeech,
+    resetVoiceSettings,
+  } = useVoiceSettingsCategory();
   const [dsLocal, setDsLocal] = useState<DataSourcesSettings>(ds);
-  const voiceSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dataSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [uploads, setUploads] = useState<UploadedFile[]>([]);
@@ -78,33 +81,13 @@ export default function SettingsScreen() {
   }, [bumpUploads]);
 
   useEffect(() => {
-    const token = createAppDataWriteToken();
-    getAppDataItem(STT_SETTINGS_KEY, token).then((raw) => {
-      if (raw) {
-        try {
-          setSttSettings({ ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) });
-        } catch (parseErr) {
-          console.warn('[dnd-ref] Failed to parse STT settings:', parseErr);
-        }
-      }
-    });
     refreshUploads();
     return () => {
-      if (voiceSavedTimer.current) clearTimeout(voiceSavedTimer.current);
       if (dataSavedTimer.current) clearTimeout(dataSavedTimer.current);
     };
   }, [refreshUploads]);
 
   useEffect(() => { setDsLocal(ds); }, [ds]);
-
-  const saveVoice = async () => {
-    const token = createAppDataWriteToken();
-    const saved = await setAppDataItem(STT_SETTINGS_KEY, JSON.stringify(sttSettings), { token });
-    if (!saved || !isAppDataWriteTokenCurrent(token)) return;
-    setVoiceSaved(true);
-    if (voiceSavedTimer.current) clearTimeout(voiceSavedTimer.current);
-    voiceSavedTimer.current = setTimeout(() => setVoiceSaved(false), 2000);
-  };
 
   const saveData = async () => {
     await updateDs(dsLocal);
@@ -157,14 +140,13 @@ export default function SettingsScreen() {
       await resetStoredAppData({ beforeClear: waitForUploadMutations });
       resetDataSources();
       resetUISettings();
-      setSttSettings(DEFAULT_STT_SETTINGS);
+      resetVoiceSettings();
       setDsLocal(createDefaultDataSourceSettings());
       setUploads([]);
       setPasteFileName('');
       setPasteContent('');
       setAiContent('');
       setAiResult('');
-      setVoiceSaved(false);
       setDataSaved(false);
       setDeleteAllStatus('All local app data was deleted.');
     } catch (e: unknown) {
@@ -195,8 +177,6 @@ export default function SettingsScreen() {
       setAiParsing(false);
     }
   };
-
-  const isWebSpeech = Platform.OS === 'web';
 
   const renderContent = () => {
     switch (category) {

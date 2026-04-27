@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { STT_SETTINGS_KEY } from '../stt';
+import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, type STTSettings } from '../stt';
 import {
   CARD_SIZE_KEY,
   COLOR_SCHEME_KEY,
@@ -100,6 +100,51 @@ export function mergeDataSourceSettings(
     ...patch,
     srdSources,
   };
+}
+
+export function createDefaultVoiceSettings(): STTSettings {
+  return { ...DEFAULT_STT_SETTINGS };
+}
+
+export function mergeVoiceSettings(settings?: Partial<STTSettings> | null): STTSettings {
+  const provider = settings?.provider === 'deepgram' || settings?.provider === 'web-speech'
+    ? settings.provider
+    : DEFAULT_STT_SETTINGS.provider;
+  const deepgramApiKey = typeof settings?.deepgramApiKey === 'string'
+    ? settings.deepgramApiKey
+    : DEFAULT_STT_SETTINGS.deepgramApiKey;
+
+  return { provider, deepgramApiKey };
+}
+
+export async function loadVoiceSettings(): Promise<STTSettings | null> {
+  let raw: string | null;
+  try {
+    raw = await getAppDataItem(STT_SETTINGS_KEY);
+  } catch (e) {
+    console.warn('[dnd-ref] Failed to load voice settings:', e);
+    return null;
+  }
+
+  if (!raw) return null;
+
+  try {
+    return mergeVoiceSettings(JSON.parse(raw) as Partial<STTSettings>);
+  } catch (parseErr) {
+    console.warn('[dnd-ref] Failed to parse voice settings:', parseErr);
+    return null;
+  }
+}
+
+export async function saveVoiceSettings(settings: STTSettings): Promise<boolean> {
+  const serializedSettings = JSON.stringify(mergeVoiceSettings(settings));
+
+  try {
+    return await setAppDataItem(STT_SETTINGS_KEY, serializedSettings);
+  } catch (e) {
+    console.warn('[dnd-ref] Failed to save voice settings:', e);
+    return false;
+  }
 }
 
 export async function loadDataSourceSettings(): Promise<DataSourcesSettings | null> {
