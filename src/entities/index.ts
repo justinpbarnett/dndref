@@ -2,22 +2,11 @@ export const MAX_SUMMARY_LENGTH_DEFAULT = 300;
 
 export type EntityType = 'Location' | 'NPC' | 'Faction' | 'Item' | 'Unknown';
 
-export interface Entity {
-  id: string;
-  name: string;
-  type: EntityType;
-  aliases: string[];
-  summary: string;
-  details?: string;
-  image?: string;
-}
+export interface Entity { id: string; name: string; type: EntityType; aliases: string[]; summary: string; details?: string; image?: string }
 
 export type EntityIndex = Entity[];
 
-export interface WorldDataProvider {
-  load(): Promise<EntityIndex>;
-  getName(): string;
-}
+export interface WorldDataProvider { load(): Promise<EntityIndex>; getName(): string }
 
 export function slugify(name: string): string { return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''); }
 export function stripHtml(s: string): string { return s.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim(); }

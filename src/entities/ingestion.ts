@@ -8,30 +8,10 @@ interface MarkdownBlock {
   body: string;
 }
 
-export interface IngestedEntityRecord {
-  name?: unknown;
-  type?: unknown;
-  aliases?: unknown;
-  summary?: unknown;
-  description?: unknown;
-  image?: unknown;
-}
-
-export interface NormalizeIngestedEntityOptions {
-  idPrefix?: string;
-  idNamespace?: string | number;
-  index?: number;
-}
-
-export interface UploadedWorldData {
-  name: string;
-  content: string;
-}
-
-export interface UploadedWorldDataIngestionOptions {
-  idNamespace?: string | number;
-  onJsonParseError?: (error: unknown) => void;
-}
+export interface IngestedEntityRecord { name?: unknown; type?: unknown; aliases?: unknown; summary?: unknown; description?: unknown; image?: unknown }
+export interface NormalizeIngestedEntityOptions { idPrefix?: string; idNamespace?: string | number; index?: number }
+export interface UploadedWorldData { name: string; content: string }
+export interface UploadedWorldDataIngestionOptions { idNamespace?: string | number; onJsonParseError?: (error: unknown) => void }
 
 export function normalizeIngestedEntity(
   record: IngestedEntityRecord,
