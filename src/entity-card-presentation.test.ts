@@ -28,9 +28,7 @@ describe('extractEntityCardSummaryBullets', () => {
     ]);
   });
 
-  test.each(['', '   \n  '])('returns no bullets for empty summary %#', (summary) => {
-    expect(extractEntityCardSummaryBullets(summary)).toEqual([]);
-  });
+  test.each(['', '   \n  '])('returns no bullets for empty summary %#', (summary) => expect(extractEntityCardSummaryBullets(summary)).toEqual([]));
 
   test('limits long summaries to five bullets', () => {
     const summary = 'One. Two. Three. Four. Five. Six. Seven.';
