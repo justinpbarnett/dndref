@@ -2,32 +2,31 @@ import { DataSourcesSettings } from '../context/data-sources';
 import { UploadedFile } from '../entities/providers/file-upload';
 import { STTSettings } from '../stt/index';
 
-export interface DisplaySectionProps {
+interface StyledSectionProps { styles: any }
+
+export interface DisplaySectionProps extends StyledSectionProps {
   cardSize: import('../context/ui-settings').CardSize;
   setCardSize: (size: import('../context/ui-settings').CardSize) => void;
   colorScheme: import('../context/ui-settings').ColorScheme;
   setColorScheme: (scheme: import('../context/ui-settings').ColorScheme) => void;
-  styles: any;
 }
 
-export interface VoiceSectionProps {
+export interface VoiceSectionProps extends StyledSectionProps {
   sttSettings: STTSettings;
   setSttSettings: React.Dispatch<React.SetStateAction<STTSettings>>;
   saveVoice: () => Promise<void>;
   voiceSaved: boolean;
   isWebSpeech: boolean;
-  styles: any;
 }
 
-export interface DataSectionProps {
+export interface DataSectionProps extends StyledSectionProps {
   dsLocal: DataSourcesSettings;
   setDsLocal: React.Dispatch<React.SetStateAction<DataSourcesSettings>>;
   saveData: () => Promise<void>;
   dataSaved: boolean;
-  styles: any;
 }
 
-export interface FilesSectionProps {
+export interface FilesSectionProps extends StyledSectionProps {
   uploads: UploadedFile[];
   removingUploadId: string | null;
   pasteFileName: string;
@@ -40,10 +39,9 @@ export interface FilesSectionProps {
   handleDeleteAllData: () => Promise<void>;
   deleteAllPending: boolean;
   deleteAllStatus: string;
-  styles: any;
 }
 
-export interface AISectionProps {
+export interface AISectionProps extends StyledSectionProps {
   dsLocal: DataSourcesSettings;
   setDsLocal: React.Dispatch<React.SetStateAction<DataSourcesSettings>>;
   aiContent: string;
@@ -51,5 +49,4 @@ export interface AISectionProps {
   aiParsing: boolean;
   aiResult: string;
   handleAIParse: () => Promise<void>;
-  styles: any;
 }
