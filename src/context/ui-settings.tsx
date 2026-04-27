@@ -105,18 +105,14 @@ export function UISettingsProvider({ children }: { children: React.ReactNode }) 
     const token = createAppDataWriteToken();
     if (!isAppDataWriteTokenCurrent(token)) return;
     setCardSizeState(size);
-    setAppDataItem(CARD_SIZE_KEY, size, { token }).catch((e: unknown) => {
-      console.warn('[dnd-ref] Failed to save card size preference:', e);
-    });
+    saveUISetting(CARD_SIZE_KEY, size, 'card size', token);
   }, []);
 
   const setColorScheme = useCallback((scheme: ColorScheme) => {
     const token = createAppDataWriteToken();
     if (!isAppDataWriteTokenCurrent(token)) return;
     setColorSchemeState(scheme);
-    setAppDataItem(COLOR_SCHEME_KEY, scheme, { token }).catch((e: unknown) => {
-      console.warn('[dnd-ref] Failed to save color scheme preference:', e);
-    });
+    saveUISetting(COLOR_SCHEME_KEY, scheme, 'color scheme', token);
   }, []);
 
   const resetUISettings = useCallback(() => {
@@ -129,6 +125,10 @@ export function UISettingsProvider({ children }: { children: React.ReactNode }) 
       {children}
     </UISettingsContext.Provider>
   );
+}
+
+function saveUISetting(key: string, value: string, label: string, token: number): void {
+  setAppDataItem(key, value, { token }).catch((e: unknown) => { console.warn(`[dnd-ref] Failed to save ${label} preference:`, e); });
 }
 
 export function useUISettings() {

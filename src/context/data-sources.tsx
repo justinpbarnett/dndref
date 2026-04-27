@@ -43,9 +43,7 @@ export function DataSourcesProvider({ children }: { children: React.ReactNode })
       replaceSettings(loadedSettings);
     });
 
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [replaceSettings]);
 
   const update = useCallback(async (patch: Partial<DataSourcesSettings>) => {
@@ -54,9 +52,7 @@ export function DataSourcesProvider({ children }: { children: React.ReactNode })
     await saveDataSourceSettings(nextSettings);
   }, [replaceSettings]);
 
-  const bumpUploads = useCallback(() => {
-    setUploadsVersion((v) => v + 1);
-  }, []);
+  const bumpUploads = useCallback(() => { setUploadsVersion((v) => v + 1); }, []);
 
   const reset = useCallback(() => {
     replaceSettings(createDefaultDataSourceSettings());
