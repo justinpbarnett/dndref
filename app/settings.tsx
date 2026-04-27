@@ -103,26 +103,27 @@ export default function SettingsScreen() {
       case 'data':
         return <DataSection dsLocal={dsLocal} setDsLocal={setDsLocal} saveData={saveData} dataSaved={dataSaved} styles={styles} />;
       case 'files':
-        return (
-          <FilesSection
-            uploads={filesCategory.uploads}
-            removingUploadId={filesCategory.removingUploadId}
-            pasteFileName={filesCategory.pasteFileName}
-            setPasteFileName={filesCategory.setPasteFileName}
-            pasteContent={filesCategory.pasteContent}
-            setPasteContent={filesCategory.setPasteContent}
-            pickFilesWeb={filesCategory.pickFilesWeb}
-            handlePasteAdd={filesCategory.handlePasteAdd}
-            handleDeleteUpload={filesCategory.handleDeleteUpload}
-            handleDeleteAllData={filesCategory.handleDeleteAllData}
-            deleteAllPending={filesCategory.deleteAllPending}
-            deleteAllStatus={filesCategory.deleteAllStatus}
-            styles={styles}
-          />
-        );
+        return <FilesSection {...filesCategory} styles={styles} />;
       case 'ai':
         return <AISection dsLocal={dsLocal} setDsLocal={setDsLocal} aiContent={aiContent} setAiContent={setAiContent} aiParsing={aiParsing} aiResult={aiResult} handleAIParse={handleAIParse} styles={styles} />;
     }
+  };
+
+  const renderCategory = (cat: (typeof CATEGORIES)[number], mobile = false) => {
+    const active = category === cat.id;
+    return (
+      <TouchableOpacity
+        key={cat.id}
+        style={[mobile ? styles.tab : styles.sidebarItem, active && (mobile ? styles.tabActive : styles.sidebarItemActive)]}
+        onPress={() => setCategory(cat.id)}
+        activeOpacity={0.7}
+      >
+        <Ionicon name={active ? cat.iconFocused : cat.icon} size={16} color={active ? C.textPrimary : C.textSecondary} />
+        <Text style={[mobile ? styles.tabLabel : styles.sidebarLabel, active && (mobile ? styles.tabLabelActive : styles.sidebarLabelActive)]}>
+          {mobile ? cat.label.toUpperCase() : cat.label}
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -130,26 +131,7 @@ export default function SettingsScreen() {
       {isWide ? (
         <View style={styles.sidebar}>
           <Text style={styles.sidebarTitle}>SETTINGS</Text>
-          {CATEGORIES.map((cat) => {
-            const active = category === cat.id;
-            return (
-              <TouchableOpacity
-                key={cat.id}
-                style={[styles.sidebarItem, active && styles.sidebarItemActive]}
-                onPress={() => setCategory(cat.id)}
-                activeOpacity={0.7}
-              >
-                <Ionicon
-                  name={active ? cat.iconFocused : cat.icon}
-                  size={16}
-                  color={active ? C.textPrimary : C.textSecondary}
-                />
-                <Text style={[styles.sidebarLabel, active && styles.sidebarLabelActive]}>
-                  {cat.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          {CATEGORIES.map((cat) => renderCategory(cat))}
         </View>
       ) : (
         <ScrollView
@@ -158,26 +140,7 @@ export default function SettingsScreen() {
           style={styles.tabBar}
           contentContainerStyle={styles.tabBarContent}
         >
-          {CATEGORIES.map((cat) => {
-            const active = category === cat.id;
-            return (
-              <TouchableOpacity
-                key={cat.id}
-                style={[styles.tab, active && styles.tabActive]}
-                onPress={() => setCategory(cat.id)}
-                activeOpacity={0.7}
-              >
-                <Ionicon
-                  name={active ? cat.iconFocused : cat.icon}
-                  size={16}
-                  color={active ? C.textPrimary : C.textSecondary}
-                />
-                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
-                  {cat.label.toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          {CATEGORIES.map((cat) => renderCategory(cat, true))}
         </ScrollView>
       )}
 
