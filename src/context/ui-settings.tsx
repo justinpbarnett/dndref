@@ -1,18 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 
-import {
-  CARD_SIZE_LAYOUT_CONFIGS,
-  isCardSize,
-  type CardSize,
-  type CardSizeLayoutConfig,
-} from '../reference-card-layout';
-import {
-  createAppDataWriteToken,
-  getAppDataItem,
-  isAppDataWriteTokenCurrent,
-  setAppDataItem,
-} from '../storage/app-data';
+import { CARD_SIZE_LAYOUT_CONFIGS, isCardSize, type CardSize, type CardSizeLayoutConfig } from '../reference-card-layout';
+import { createAppDataWriteToken, getAppDataItem, isAppDataWriteTokenCurrent, setAppDataItem } from '../storage/app-data';
 import { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
 import { Colors, DARK, LIGHT } from '../theme';
 

@@ -1,9 +1,4 @@
-import {
-  addUploadedFile,
-  getUploadedFiles,
-  removeUploadedFile,
-  type UploadedFile,
-} from '../../storage/app-data';
+import { addUploadedFile, getUploadedFiles, removeUploadedFile, type UploadedFile } from '../../storage/app-data';
 import { EntityIndex, WorldDataProvider } from '../index';
 import { ingestUploadedFile } from '../ingestion';
 

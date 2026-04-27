@@ -1,10 +1,4 @@
-import {
-  Entity,
-  EntityIndex,
-  EntityType,
-  normalizeEntityType,
-  slugify,
-} from './index';
+import { Entity, EntityIndex, EntityType, normalizeEntityType, slugify } from './index';
 
 const JSON_UPLOAD_EXTENSION = '.json';
 const UPLOAD_ENTITY_ID_PREFIX = 'upload';
