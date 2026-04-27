@@ -95,7 +95,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
   }
 
   async load(): Promise<void> {
-    await this.refreshUploads(true);
+    await this.refreshUploads();
   }
 
   setPasteFileName(update: SetStateAction<string>): void {
@@ -108,7 +108,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
 
   async saveUpload(name: string, content: string): Promise<void> {
     await this.addUpload(name, content);
-    await this.refreshUploads(true);
+    await this.refreshUploads();
   }
 
   async pickFilesWeb(): Promise<void> {
@@ -116,7 +116,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
     await Promise.all(files.map(async (file) => {
       await this.addUpload(file.name, await file.text());
     }));
-    await this.refreshUploads(true);
+    await this.refreshUploads();
   }
 
   async addPastedContent(): Promise<void> {
@@ -126,14 +126,14 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
     const name = this.snapshot.pasteFileName.trim() || PASTED_CONTENT_FILE_NAME;
     await this.addUpload(name, content);
     this.updateSnapshot({ pasteFileName: '', pasteContent: '' });
-    await this.refreshUploads(true);
+    await this.refreshUploads();
   }
 
   async deleteUpload(id: string): Promise<void> {
     this.updateSnapshot({ removingUploadId: id });
     try {
       await this.removeUpload(id);
-      await this.refreshUploads(true);
+      await this.refreshUploads();
     } finally {
       if (!this.disposed && this.snapshot.removingUploadId === id) {
         this.updateSnapshot({ removingUploadId: null });
@@ -180,13 +180,13 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
     this.listeners.clear();
   }
 
-  private async refreshUploads(shouldBumpUploads: boolean): Promise<void> {
+  private async refreshUploads(): Promise<void> {
     const generation = ++this.refreshGeneration;
     const uploads = await this.getUploads();
     if (this.disposed || generation !== this.refreshGeneration) return;
 
     this.updateSnapshot({ uploads });
-    if (shouldBumpUploads) this.bumpUploads();
+    this.bumpUploads();
   }
 
   private updateSnapshot(patch: Partial<FilesSettingsCategorySnapshot>): void {
@@ -225,7 +225,9 @@ function pickFilesWithWebInput(): Promise<PickedTextFile[]> {
     input.multiple = true;
     input.accept = '.md,.txt,.json';
     input.onchange = () => {
-      const files = Array.from(input.files ?? []) as PickedTextFile[];
+      const files = Array.from(input.files ?? [], (file) => ({
+        name: file.name, text: () => file.text(),
+      }));
       input.onchange = null;
       resolve(files);
     };
