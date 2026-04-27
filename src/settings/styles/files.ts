@@ -1,9 +1,7 @@
-import { StyleSheet } from 'react-native';
-
 import { Colors, F } from '../../theme';
 
 export function createFileStyles(C: Colors) {
-  return StyleSheet.create({
+  return {
     fileRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -33,5 +31,5 @@ export function createFileStyles(C: Colors) {
     fileRemoveBtnDisabled: {
       opacity: 0.45,
     },
-  });
+  };
 }
