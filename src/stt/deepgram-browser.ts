@@ -134,9 +134,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
         try {
           const recorder = new MediaRecorder(this.stream, this.getRecorderOptions());
           this.recorder = recorder;
-          recorder.ondataavailable = (e) => {
-            if (e.data.size > 0 && this.ws?.readyState === WebSocket.OPEN) this.ws.send(e.data);
-          };
+          recorder.ondataavailable = (e) => { if (e.data.size > 0 && this.ws?.readyState === WebSocket.OPEN) this.ws.send(e.data); };
           recorder.onerror = (event) => {
             const err = event instanceof ErrorEvent ? event.message : 'Unknown recording error';
             if (!settled) {

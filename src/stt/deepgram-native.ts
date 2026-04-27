@@ -145,9 +145,7 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
   }
 
   private transcribeCompletedChunk(uri: string): void {
-    void this.transcribeChunk(uri).then((text) => {
-      if (text && this.active) this.onTranscript(text);
-    }).catch((e: unknown) => {
+    void this.transcribeChunk(uri).then((text) => { if (text && this.active) this.onTranscript(text); }).catch((e: unknown) => {
       if (this.active) this.onError(`Transcription failed: ${e instanceof Error ? e.message : String(e)}`);
     });
   }
