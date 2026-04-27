@@ -30,16 +30,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss, onOpenDetai
     () => deriveEntityCardPresentation({ card, accentColor: entityAccentColor }),
     [card, entityAccentColor],
   );
-  const {
-    actions: { dismiss: dismissAction, pinToggle: pinToggleAction },
-    accentColor,
-    bulletMarker,
-    imageUri,
-    name,
-    pinned,
-    summaryBullets,
-    typeLabel,
-  } = presentation;
+  const { actions: { dismiss: dismissAction, pinToggle: pinToggleAction }, accentColor, bulletMarker, imageUri, name, pinned, summaryBullets, typeLabel } = presentation;
   const onTogglePin = pinToggleAction.kind === 'unpin' ? onUnpin : onPin;
 
   useEffect(() => {

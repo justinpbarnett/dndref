@@ -25,11 +25,7 @@ export function CardGrid() {
   const animRef = useRef<Record<string, AnimPair>>({});
   const prevPos = useRef<Record<string, ReferenceCardPosition>>({});
 
-  const {
-    cardWidth,
-    positions: targets,
-    totalHeight,
-  } = useMemo(
+  const { cardWidth, positions: targets, totalHeight } = useMemo(
     () => computeReferenceCardLayout({
       cards,
       measuredHeights: cardHeights,

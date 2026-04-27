@@ -28,14 +28,7 @@ export default function SettingsScreen() {
   const { cardSize, setCardSize, colorScheme, setColorScheme, resetUISettings } = useUISettings();
   const { settings: ds, update: updateDs, bumpUploads, reset: resetDataSources } = useDataSources();
   const { stop: stopSession } = useSession();
-  const {
-    sttSettings,
-    setSttSettings,
-    saveVoice,
-    voiceSaved,
-    isWebSpeech,
-    resetVoiceSettings,
-  } = useVoiceSettingsCategory();
+  const { sttSettings, setSttSettings, saveVoice, voiceSaved, isWebSpeech, resetVoiceSettings } = useVoiceSettingsCategory();
   const [dsLocal, setDsLocal] = useState<DataSourcesSettings>(ds);
   const dataSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [aiContent, setAiContent] = useState('');
