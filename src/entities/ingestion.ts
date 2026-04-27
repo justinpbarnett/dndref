@@ -150,8 +150,7 @@ function getHeadingBlocks(content: string): MarkdownBlock[] {
 
   return matches.map((match, i) => {
     const start = (match.index ?? 0) + match[0].length;
-    const end = matches[i + 1]?.index ?? content.length;
-    return { name: match[2], body: content.slice(start, end) };
+    return { name: match[2], body: content.slice(start, matches[i + 1]?.index ?? content.length) };
   });
 }
 
