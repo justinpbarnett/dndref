@@ -42,10 +42,9 @@ export class WebSpeechProvider implements STTProvider {
   }
 
   private clearRestartTimer(): void {
-    if (this.restartTimer !== null) {
-      clearTimeout(this.restartTimer);
-      this.restartTimer = null;
-    }
+    if (this.restartTimer === null) return;
+    clearTimeout(this.restartTimer);
+    this.restartTimer = null;
   }
 
   private scheduleRestart(): void {
