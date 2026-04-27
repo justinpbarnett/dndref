@@ -169,10 +169,7 @@ function parseField(line: string): { key: string; value: string } | null {
   const match = line.match(/^(?:[-*]\s*)?(?:\*\*)?([^:*]+):(?:\*\*)?\s*(.+)$/);
   if (!match) return null;
 
-  return {
-    key: match[1].replace(/\*/g, '').trim().toLowerCase(),
-    value: match[2].trim(),
-  };
+  return { key: match[1].replace(/\*/g, '').trim().toLowerCase(), value: match[2].trim() };
 }
 
 function isIngestedEntityRecord(value: unknown): value is IngestedEntityRecord {
