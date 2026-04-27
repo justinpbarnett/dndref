@@ -5,7 +5,7 @@ import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from '../i
 
 const OPEN5E = 'https://api.open5e.com/v1';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const SRD_CACHE_SCHEMA_VERSION = 'v2';
+const SRD_CACHE_SCHEMA_VERSION = 'v3';
 export { SRD_CACHE_KEY_PREFIX } from '../../storage/keys';
 
 export interface SRDSource {
@@ -123,8 +123,9 @@ function monsterToEntity(m: any): Entity {
 
 function itemToEntity(item: any): Entity {
   const rarity = item.rarity ? capitalize(item.rarity) : '';
-  const details = stripHtml(item.desc ?? '');
-  const summary = [rarity, details.slice(0, 200)].filter(Boolean).join('. ');
+  const desc = stripHtml(item.desc ?? '');
+  const details = [rarity, desc].filter(Boolean).join('. ');
+  const summary = [rarity, desc.slice(0, 200)].filter(Boolean).join('. ');
   return {
     id: `srd-item-${item.slug ?? slugify(item.name)}`,
     name: item.name,
