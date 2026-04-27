@@ -1,17 +1,13 @@
 import { test, expect } from '@playwright/test';
 
 import {
-  setupTest,
-  startSession,
+  setupTestWithSession,
   speak,
   DETECT_WAIT_MS,
 } from '../helpers';
 
 test.describe('card eviction', () => {
-  test.beforeEach(async ({ page }) => {
-    await setupTest(page);
-    await startSession(page);
-  });
+  test.beforeEach(async ({ page }) => { await setupTestWithSession(page); });
 
   test('all 5 sample entities fit within the 6-card limit', async ({ page }) => {
     for (const phrase of [

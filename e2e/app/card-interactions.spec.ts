@@ -1,16 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 import {
-  setupTest,
-  startSession,
+  setupTestWithSession,
   speak,
   DETECT_WAIT_MS,
 } from '../helpers';
 
 test.describe('card interactions', () => {
   test.beforeEach(async ({ page }) => {
-    await setupTest(page);
-    await startSession(page);
+    await setupTestWithSession(page);
     await speak(page, 'Valdrath the Undying speaks');
     await page.waitForTimeout(DETECT_WAIT_MS);
     await expect(page.getByTestId('entity-card')).toHaveCount(1);
