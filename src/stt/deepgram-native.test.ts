@@ -86,9 +86,7 @@ describe('Deepgram native capture adapter', () => {
     });
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
+  afterEach(() => { vi.useRealTimers(); });
 
   it('unloads native recording if stop happens during first chunk startup', async () => {
     nativeState.nextPrepare = deferred();

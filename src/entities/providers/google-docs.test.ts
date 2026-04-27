@@ -24,9 +24,7 @@ describe('GoogleDocsProvider', () => {
     vi.stubGlobal('fetch', fetchMock);
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+  afterEach(() => { vi.unstubAllGlobals(); });
 
   it('fetches the exported document text through the browser CORS proxy', async () => {
     fetchMock.mockResolvedValue(textResponse('# Moonlit Bazaar'));

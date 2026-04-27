@@ -25,9 +25,7 @@ function createController(options: FilesSettingsCategoryControllerOptions) {
 }
 
 describe('files settings category controller', () => {
-  afterEach(() => {
-    controllers.splice(0).forEach((controller) => controller.dispose());
-  });
+  afterEach(() => { controllers.splice(0).forEach((controller) => controller.dispose()); });
 
   it('stores pasted content, refreshes uploads, and bumps the uploads version', async () => {
     const events: string[] = [];
@@ -58,9 +56,7 @@ describe('files settings category controller', () => {
 
   it('chooses web files through the picker and stores every selected file', async () => {
     let uploads: UploadedFile[] = [];
-    const addUpload = vi.fn(async (name: string, content: string) => {
-      uploads = [...uploads, makeUpload(name, name, content)];
-    });
+    const addUpload = vi.fn(async (name: string, content: string) => { uploads = [...uploads, makeUpload(name, name, content)]; });
     const getUploads = vi.fn(async () => uploads);
     const bumpUploads = vi.fn();
     const controller = createController({
@@ -86,9 +82,7 @@ describe('files settings category controller', () => {
     const bumpUploads = vi.fn();
     const controller = createController({
       getUploads: vi.fn(async () => uploads),
-      removeUpload: vi.fn(async (id: string) => {
-        uploads = uploads.filter((upload) => upload.id !== id);
-      }),
+      removeUpload: vi.fn(async (id: string) => { uploads = uploads.filter((upload) => upload.id !== id); }),
       bumpUploads,
     });
 
