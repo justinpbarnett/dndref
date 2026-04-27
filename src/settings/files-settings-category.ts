@@ -52,7 +52,6 @@ export interface FilesSettingsCategoryController {
   addPastedContent(): Promise<void>;
   deleteUpload(id: string): Promise<void>;
   deleteAllData(): Promise<void>;
-  reset(): void;
   dispose(): void;
 }
 
@@ -163,11 +162,6 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
     } finally {
       if (!this.disposed) this.updateSnapshot({ deleteAllPending: false });
     }
-  }
-
-  reset(): void {
-    this.refreshGeneration += 1;
-    this.replaceSnapshot(createDefaultSnapshot());
   }
 
   dispose(): void {
