@@ -160,11 +160,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
     }
   }
 
-  dispose(): void {
-    this.disposed = true;
-    this.refreshGeneration += 1;
-    this.listeners.clear();
-  }
+  dispose(): void { this.disposed = true; this.refreshGeneration += 1; this.listeners.clear(); }
 
   private async refreshUploads(): Promise<void> {
     const generation = ++this.refreshGeneration;
@@ -175,9 +171,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
     this.bumpUploads();
   }
 
-  private updateSnapshot(patch: Partial<FilesSettingsCategorySnapshot>): void {
-    this.replaceSnapshot({ ...this.snapshot, ...patch });
-  }
+  private updateSnapshot(patch: Partial<FilesSettingsCategorySnapshot>): void { this.replaceSnapshot({ ...this.snapshot, ...patch }); }
 
   private replaceSnapshot(snapshot: FilesSettingsCategorySnapshot): void {
     this.snapshot = snapshot;
@@ -186,14 +180,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
 }
 
 function createDefaultSnapshot(): FilesSettingsCategorySnapshot {
-  return {
-    uploads: [],
-    removingUploadId: null,
-    pasteFileName: '',
-    pasteContent: '',
-    deleteAllPending: false,
-    deleteAllStatus: '',
-  };
+  return { uploads: [], removingUploadId: null, pasteFileName: '', pasteContent: '', deleteAllPending: false, deleteAllStatus: '' };
 }
 
 function noop(): void {}
@@ -220,9 +207,7 @@ function pickFilesWithWebInput(): Promise<PickedTextFile[]> {
 }
 
 function confirmDeleteAllData(): Promise<boolean> {
-  if (Platform.OS === 'web' && typeof window !== 'undefined') {
-    return Promise.resolve(window.confirm(`Delete all local app data?\n\n${DELETE_ALL_MESSAGE}`));
-  }
+  if (Platform.OS === 'web' && typeof window !== 'undefined') return Promise.resolve(window.confirm(`Delete all local app data?\n\n${DELETE_ALL_MESSAGE}`));
 
   return new Promise((resolve) => {
     Alert.alert(
@@ -237,9 +222,7 @@ function confirmDeleteAllData(): Promise<boolean> {
   });
 }
 
-export function createFilesSettingsCategoryController(
-  options: FilesSettingsCategoryControllerOptions = {},
-): FilesSettingsCategoryController {
+export function createFilesSettingsCategoryController(options: FilesSettingsCategoryControllerOptions = {}): FilesSettingsCategoryController {
   return new DefaultFilesSettingsCategoryController(options);
 }
 
