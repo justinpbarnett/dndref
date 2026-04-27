@@ -7,7 +7,6 @@ import {
 import { EntityIndex, WorldDataProvider } from '../index';
 import { ingestUploadedFile } from '../ingestion';
 
-export { UPLOADS_KEY } from '../../storage/keys';
 export type { UploadedFile } from '../../storage/app-data';
 
 export async function getUploads(): Promise<UploadedFile[]> { return getUploadedFiles(); }

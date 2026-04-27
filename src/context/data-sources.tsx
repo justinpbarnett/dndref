@@ -8,7 +8,6 @@ import {
   type DataSourcesSettings,
 } from '../storage/app-data';
 
-export { DATA_SOURCES_KEY } from '../storage/keys';
 export {
   DEFAULT_DATA_SOURCES_SETTINGS,
   createDefaultDataSourceSettings,

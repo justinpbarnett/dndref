@@ -33,7 +33,6 @@ export const CARD_SIZE_CONFIGS: Record<CardSize, CardSizeConfig> = {
   XL: { ...CARD_SIZE_LAYOUT_CONFIGS.XL, fontScale: 1.35 },
 };
 
-export { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
 export const DEFAULT_CARD_SIZE: CardSize = 'M';
 export const DEFAULT_COLOR_SCHEME: ColorScheme = 'dark';
 
