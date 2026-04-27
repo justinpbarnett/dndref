@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from 'react';
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { Platform } from 'react-native';
 
 import {
@@ -99,18 +92,10 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
   reset(): void {
     this.loadGeneration += 1;
     this.clearSavedIndicatorTimer();
-    this.replaceSnapshot({
-      sttSettings: createDefaultVoiceSettings(),
-      voiceSaved: false,
-    });
+    this.replaceSnapshot({ sttSettings: createDefaultVoiceSettings(), voiceSaved: false });
   }
 
-  dispose(): void {
-    this.disposed = true;
-    this.loadGeneration += 1;
-    this.clearSavedIndicatorTimer();
-    this.listeners.clear();
-  }
+  dispose(): void { this.disposed = true; this.loadGeneration += 1; this.clearSavedIndicatorTimer(); this.listeners.clear(); }
 
   private restartSavedTimer(): void {
     this.clearSavedIndicatorTimer();
@@ -127,9 +112,7 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     this.savedTimer = null;
   }
 
-  private updateSnapshot(patch: Partial<VoiceSettingsCategorySnapshot>): void {
-    this.replaceSnapshot({ ...this.snapshot, ...patch });
-  }
+  private updateSnapshot(patch: Partial<VoiceSettingsCategorySnapshot>): void { this.replaceSnapshot({ ...this.snapshot, ...patch }); }
 
   private replaceSnapshot(snapshot: VoiceSettingsCategorySnapshot): void {
     this.snapshot = snapshot;
@@ -137,9 +120,7 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
   }
 }
 
-export function createVoiceSettingsCategoryController(
-  options: VoiceSettingsCategoryControllerOptions = {},
-): VoiceSettingsCategoryController {
+export function createVoiceSettingsCategoryController(options: VoiceSettingsCategoryControllerOptions = {}): VoiceSettingsCategoryController {
   return new DefaultVoiceSettingsCategoryController(options);
 }
 
