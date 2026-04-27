@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { createDefaultVoiceSettings, loadVoiceSettings } from '../storage/app-data';
 import { DeepgramProvider } from '../stt/deepgram';
 import { STTProvider, STTSettings } from '../stt/index';
+import { createLateEventSafeSTTProvider } from '../stt/lifecycle-safe-provider';
 import { WebSpeechProvider } from '../stt/web-speech';
 
 export async function loadSettings(): Promise<STTSettings> {
@@ -15,10 +16,22 @@ export function buildProvider(
   onError: (error: string) => void,
 ): STTProvider {
   if (Platform.OS !== 'web') {
-    return new DeepgramProvider(settings.deepgramApiKey, onTranscript, onError);
+    return createLateEventSafeSTTProvider(
+      (safeTranscript, safeError) => new DeepgramProvider(settings.deepgramApiKey, safeTranscript, safeError),
+      onTranscript,
+      onError,
+    );
   }
   if (settings.provider === 'deepgram' && settings.deepgramApiKey) {
-    return new DeepgramProvider(settings.deepgramApiKey, onTranscript, onError);
+    return createLateEventSafeSTTProvider(
+      (safeTranscript, safeError) => new DeepgramProvider(settings.deepgramApiKey, safeTranscript, safeError),
+      onTranscript,
+      onError,
+    );
   }
-  return new WebSpeechProvider(onTranscript, onError);
+  return createLateEventSafeSTTProvider(
+    (safeTranscript, safeError) => new WebSpeechProvider(safeTranscript, safeError),
+    onTranscript,
+    onError,
+  );
 }

@@ -2,6 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const storage = vi.hoisted(() => new Map<string, string>());
 const platform = vi.hoisted(() => ({ OS: 'web' }));
+const sttMocks = vi.hoisted(() => ({
+  deepgramInstances: [] as any[],
+  deepgramStartError: null as Error | null,
+  webSpeechInstances: [] as any[],
+  webSpeechStartError: null as Error | null,
+}));
 
 vi.mock('@react-native-async-storage/async-storage', () => ({
   default: {
@@ -15,20 +21,46 @@ vi.mock('react-native', () => ({ Platform: platform }));
 vi.mock('../stt/deepgram', () => ({
   DeepgramProvider: class {
     readonly name = 'Deepgram';
-    constructor(readonly apiKey: string) {}
-    async start() {}
+
+    constructor(
+      readonly apiKey: string,
+      readonly onTranscript: (text: string) => void,
+      readonly onError: (error: string) => void,
+    ) {
+      sttMocks.deepgramInstances.push(this);
+    }
+
+    async start() {
+      if (sttMocks.deepgramStartError) throw sttMocks.deepgramStartError;
+    }
+
     pause() {}
     resume() {}
     stop() {}
+    emitTranscript(text: string) { this.onTranscript(text); }
+    emitError(error: string) { this.onError(error); }
   },
 }));
 vi.mock('../stt/web-speech', () => ({
   WebSpeechProvider: class {
     readonly name = 'Web Speech';
-    async start() {}
+
+    constructor(
+      readonly onTranscript: (text: string) => void,
+      readonly onError: (error: string) => void,
+    ) {
+      sttMocks.webSpeechInstances.push(this);
+    }
+
+    async start() {
+      if (sttMocks.webSpeechStartError) throw sttMocks.webSpeechStartError;
+    }
+
     pause() {}
     resume() {}
     stop() {}
+    emitTranscript(text: string) { this.onTranscript(text); }
+    emitError(error: string) { this.onError(error); }
   },
 }));
 
@@ -39,6 +71,10 @@ describe('STT provider settings', () => {
   beforeEach(() => {
     storage.clear();
     platform.OS = 'web';
+    sttMocks.deepgramInstances.length = 0;
+    sttMocks.deepgramStartError = null;
+    sttMocks.webSpeechInstances.length = 0;
+    sttMocks.webSpeechStartError = null;
     resetAppDataControlsForTests();
     vi.clearAllMocks();
   });
@@ -55,5 +91,33 @@ describe('STT provider settings', () => {
 
     expect(loadedSettings).toEqual(savedSettings);
     expect(provider.name).toBe('Deepgram');
+  });
+
+  it('wraps Web Speech so stopped capture events do not reach session callbacks', async () => {
+    const onTranscript = vi.fn();
+    const onError = vi.fn();
+    const provider = buildProvider({ provider: 'web-speech', deepgramApiKey: '' }, onTranscript, onError);
+
+    await provider.start();
+    sttMocks.webSpeechInstances[0].emitTranscript('active speech');
+    await provider.stop();
+    sttMocks.webSpeechInstances[0].emitTranscript('late speech');
+    sttMocks.webSpeechInstances[0].emitError('late error');
+
+    expect(onTranscript).toHaveBeenCalledTimes(1);
+    expect(onTranscript).toHaveBeenCalledWith('active speech');
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  it('still propagates Web Speech and Deepgram startup failures', async () => {
+    sttMocks.webSpeechStartError = new Error('browser mic denied');
+    await expect(
+      buildProvider({ provider: 'web-speech', deepgramApiKey: '' }, vi.fn(), vi.fn()).start(),
+    ).rejects.toThrow('browser mic denied');
+
+    sttMocks.deepgramStartError = new Error('deepgram rejected key');
+    await expect(
+      buildProvider({ provider: 'deepgram', deepgramApiKey: 'bad-key' }, vi.fn(), vi.fn()).start(),
+    ).rejects.toThrow('deepgram rejected key');
   });
 });
