@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Switch, Text, TextInput, TouchableOpacity, View, type TextInputProps } from 'react-native';
 
 import { Ionicon } from '../../components/Ionicon';
 import { SRD_SOURCES } from '../../entities/providers/srd';
@@ -77,24 +77,20 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
       <View style={styles.group}>
         <Text style={styles.groupLabel}>KANKA</Text>
         <Text style={styles.groupDesc}>Campaign world data: characters, locations, factions, items.</Text>
-        <TextInput
-          style={styles.input}
+        <DataInput
+          styles={styles}
           value={dsLocal.kankaToken}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaToken: v }))}
           placeholder="API token"
-          placeholderTextColor={C.textMuted}
           secureTextEntry
-          autoCorrect={false}
-          autoCapitalize="none"
         />
-        <TextInput
-          style={styles.input}
+        <DataInput
+          styles={styles}
           value={dsLocal.kankaCampaignId}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaCampaignId: v.replace(/\D/g, '') }))}
           placeholder="Campaign ID (from kanka.io/en/campaign/12345)"
-          placeholderTextColor={C.textMuted}
           keyboardType="numeric"
-          autoCorrect={false}
+          autoCapitalize={undefined}
         />
         <KeyLink label="Get your Kanka API token" url="https://kanka.io/en/profile/api" />
       </View>
@@ -102,38 +98,29 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
       <View style={styles.group}>
         <Text style={styles.groupLabel}>HOMEBREWERY</Text>
         <Text style={styles.groupDesc}>Paste the share URL of any public document.</Text>
-        <TextInput
-          style={styles.input}
+        <DataInput
+          styles={styles}
           value={dsLocal.homebreweryUrl}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, homebreweryUrl: v }))}
           placeholder="https://homebrewery.naturalcrit.com/share/..."
-          placeholderTextColor={C.textMuted}
-          autoCorrect={false}
-          autoCapitalize="none"
         />
       </View>
 
       <View style={styles.group}>
         <Text style={styles.groupLabel}>NOTION</Text>
         <Text style={styles.groupDesc}>Fetches pages from your workspace.</Text>
-        <TextInput
-          style={styles.input}
+        <DataInput
+          styles={styles}
           value={dsLocal.notionToken}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, notionToken: v }))}
           placeholder="Integration token (secret_...)"
-          placeholderTextColor={C.textMuted}
           secureTextEntry
-          autoCorrect={false}
-          autoCapitalize="none"
         />
-        <TextInput
-          style={styles.input}
+        <DataInput
+          styles={styles}
           value={dsLocal.notionPageIds}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, notionPageIds: v }))}
           placeholder="Page URLs, comma-separated"
-          placeholderTextColor={C.textMuted}
-          autoCorrect={false}
-          autoCapitalize="none"
         />
         <KeyLink label="Create a Notion integration" url="https://www.notion.so/my-integrations" />
         <Text style={styles.fieldHint}>Share each page with the integration after creating it.</Text>
@@ -142,14 +129,11 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
       <View style={styles.group}>
         <Text style={styles.groupLabel}>GOOGLE DOCS</Text>
         <Text style={styles.groupDesc}>The doc must be set to "Anyone with the link can view".</Text>
-        <TextInput
-          style={styles.input}
+        <DataInput
+          styles={styles}
           value={dsLocal.googleDocsUrl}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, googleDocsUrl: v }))}
           placeholder="https://docs.google.com/document/d/..."
-          placeholderTextColor={C.textMuted}
-          autoCorrect={false}
-          autoCapitalize="none"
         />
       </View>
 
@@ -157,5 +141,17 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
         <Text style={styles.saveBtnText}>{dataSaved ? 'Saved' : 'Save'}</Text>
       </TouchableOpacity>
     </View>
+  );
+}
+
+function DataInput({ styles, ...props }: TextInputProps & Pick<DataSectionProps, 'styles'>) {
+  return (
+    <TextInput
+      style={styles.input}
+      placeholderTextColor={styles.__colors.textMuted}
+      autoCorrect={false}
+      autoCapitalize="none"
+      {...props}
+    />
   );
 }

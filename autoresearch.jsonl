@@ -1,1 +1,2 @@
 {"type":"config","name":"Minimize project LOC by reducing repeated code and simplifying while preserving functionality","metricName":"loc","metricUnit":"","bestDirection":"lower"}
+{"run":1,"commit":"091f546","metric":11330,"metrics":{},"status":"keep","description":"Baseline LOC excluding package-lock, with TypeScript check","timestamp":1777331225561,"segment":0,"confidence":null,"iterationTokens":179,"asi":{"hypothesis":"Establish baseline LOC metric and correctness gate before simplification experiments"}}
