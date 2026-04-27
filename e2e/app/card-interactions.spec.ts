@@ -1,10 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import {
-  setupTestWithSession,
-  speak,
-  DETECT_WAIT_MS,
-} from '../helpers';
+import { setupTestWithSession, speak, DETECT_WAIT_MS, } from '../helpers';
 
 test.describe('card interactions', () => {
   test.beforeEach(async ({ page }) => {

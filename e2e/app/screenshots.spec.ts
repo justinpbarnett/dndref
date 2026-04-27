@@ -1,12 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import {
-  setupTest,
-  startSession,
-  speak,
-  waitForSettings,
-  DETECT_WAIT_MS,
-} from '../helpers';
+import { setupTest, startSession, speak, waitForSettings, DETECT_WAIT_MS, } from '../helpers';
 
 test.describe('screenshots', () => {
   test.beforeEach(async ({ page }) => { await setupTest(page); });

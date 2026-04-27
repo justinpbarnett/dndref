@@ -1,12 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-import {
-  DETECT_WAIT_MS,
-  setupTest,
-  speak,
-  startSession,
-  waitForSettings,
-} from '../helpers';
+import { DETECT_WAIT_MS, setupTest, speak, startSession, waitForSettings, } from '../helpers';
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 360, height: 640 };
