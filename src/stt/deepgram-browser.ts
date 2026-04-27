@@ -1,11 +1,16 @@
-import type { STTProvider } from './index';
-
 import {
   assertDeepgramApiKey,
   DEEPGRAM_PARAMS,
   DEEPGRAM_WS_URL,
+  extractDeepgramFinalTranscript,
   getDeepgramCloseMessage,
 } from './deepgram-shared';
+
+import type { STTProvider } from './index';
+
+const BROWSER_RECORDER_MIME_TYPES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
+const DEEPGRAM_CONNECTION_TIMEOUT_MS = 10000;
+const RECORDER_TIMESLICE_MS = 250;
 
 export class DeepgramBrowserCaptureAdapter implements STTProvider {
   readonly name = 'Deepgram';
@@ -48,47 +53,60 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
 
   private getRecorderOptions(): MediaRecorderOptions | undefined {
     if (typeof MediaRecorder === 'undefined') return undefined;
-    const supportedTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
-    const mimeType = supportedTypes.find((type) => MediaRecorder.isTypeSupported(type));
+    const mimeType = BROWSER_RECORDER_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
     return mimeType ? { mimeType } : undefined;
   }
 
   private cleanup(): void {
+    this.stopRecorder();
+    this.closeSocket();
+    if (this.stream) stopMediaStream(this.stream);
+    this.stream = null;
+  }
+
+  private stopRecorder(): void {
     const recorder = this.recorder;
     this.recorder = null;
     try {
       if (recorder && recorder.state !== 'inactive') recorder.stop();
     } catch {}
+  }
 
+  private closeSocket(): void {
     const ws = this.ws;
     this.ws = null;
     try {
       if (ws && ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) ws.close();
     } catch {}
-
-    this.stream?.getTracks().forEach((track) => track.stop());
-    this.stream = null;
   }
 
   private async startBrowserCapture(): Promise<void> {
-    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Microphone capture is not available in this browser.');
+    this.stream = await this.openMicrophoneStream();
+    await this.connectDeepgramSocket();
+  }
+
+  private async openMicrophoneStream(): Promise<MediaStream> {
+    const mediaDevices = globalThis.navigator?.mediaDevices;
+    if (!mediaDevices?.getUserMedia) throw new Error('Microphone capture is not available in this browser.');
     if (typeof MediaRecorder === 'undefined') throw new Error('Browser audio recording is not available.');
 
     let stream: MediaStream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await mediaDevices.getUserMedia({ audio: true });
     } catch (e) {
       const detail = e instanceof Error ? e.message : String(e);
       throw new Error(`Microphone access denied. ${detail}`);
     }
 
     if (!this.active) {
-      stream.getTracks().forEach((track) => track.stop());
+      stopMediaStream(stream);
       throw new Error('Recording was stopped before microphone access completed.');
     }
-    this.stream = stream;
+    return stream;
+  }
 
-    await new Promise<void>((resolve, reject) => {
+  private connectDeepgramSocket(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(`${DEEPGRAM_WS_URL}?${DEEPGRAM_PARAMS}`, ['token', this.apiKey]);
       this.ws = ws;
       let settled = false;
@@ -108,7 +126,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
 
       const timeout = setTimeout(() => {
         settle(new Error('Deepgram connection timed out. Check your API key and network.'));
-      }, 10000);
+      }, DEEPGRAM_CONNECTION_TIMEOUT_MS);
 
       ws.onopen = () => {
         if (!this.active || !this.stream) {
@@ -129,7 +147,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
             }
             if (this.active) this.onError(`Mic recording error: ${err}`);
           };
-          recorder.start(250);
+          recorder.start(RECORDER_TIMESLICE_MS);
           settle();
         } catch (e) {
           settle(new Error(`Failed to start browser recorder: ${e instanceof Error ? e.message : String(e)}`));
@@ -137,15 +155,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
       };
 
       ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data as string);
-          if (data.type === 'Results' && data.is_final) {
-            const text: string = data.channel?.alternatives?.[0]?.transcript ?? '';
-            if (text.trim() && this.active) this.onTranscript(text.trim());
-          }
-        } catch (e) {
-          if (this.active) this.onError(`Unexpected Deepgram response: ${e instanceof Error ? e.message : String(e)}`);
-        }
+        this.handleDeepgramMessage(event.data as string);
       };
 
       ws.onerror = () => {
@@ -158,16 +168,30 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
       };
 
       ws.onclose = (event) => {
+        const message = getDeepgramCloseMessage(event);
         if (!settled) {
-          settle(new Error(getDeepgramCloseMessage(event)));
+          settle(new Error(message));
           return;
         }
         if (this.active) {
-          this.onError(getDeepgramCloseMessage(event));
+          this.onError(message);
           this.active = false;
           this.cleanup();
         }
       };
     });
   }
+
+  private handleDeepgramMessage(message: string): void {
+    try {
+      const text = extractDeepgramFinalTranscript(message).trim();
+      if (text && this.active) this.onTranscript(text);
+    } catch (e) {
+      if (this.active) this.onError(`Unexpected Deepgram response: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+}
+
+function stopMediaStream(stream: MediaStream): void {
+  stream.getTracks().forEach((track) => track.stop());
 }

@@ -1,20 +1,22 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
 import {
+  assertDeepgramApiKey,
+  DEEPGRAM_HTTP_URL,
+  DEEPGRAM_PARAMS,
+  extractDeepgramTranscript,
+} from './deepgram-shared';
+import {
   createNativeAudioRecorder,
   releaseNativeAudioRecorder,
   requestNativeRecordingAccess,
   type NativeAudioRecorder,
 } from './native-audio';
 
-import {
-  assertDeepgramApiKey,
-  DEEPGRAM_HTTP_URL,
-  DEEPGRAM_PARAMS,
-  extractDeepgramTranscript,
-} from './deepgram-shared';
-
 import type { STTProvider } from './index';
+
+const NATIVE_AUDIO_CONTENT_TYPE = 'audio/mp4';
+const NATIVE_CHUNK_INTERVAL_MS = 5000;
 
 export class DeepgramNativeCaptureAdapter implements STTProvider {
   readonly name = 'Deepgram';
@@ -33,25 +35,30 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
     assertDeepgramApiKey(this.apiKey);
     this.active = true;
     await requestNativeRecordingAccess();
-    await this.enqueueNative(async () => { await this.startNativeChunks(); });
+    await this.startNativeCapture();
   }
 
   async pause(): Promise<void> {
     this.active = false;
-    await this.enqueueNative(async () => {
-      this.clearNativeTimer();
-      await this.stopCurrentRecording();
-    });
+    await this.stopNativeCapture();
   }
 
   async resume(): Promise<void> {
     this.active = true;
-    await this.enqueueNative(async () => { await this.startNativeChunks(); });
+    await this.startNativeCapture();
   }
 
   async stop(): Promise<void> {
     this.active = false;
-    await this.enqueueNative(async () => {
+    await this.stopNativeCapture();
+  }
+
+  private startNativeCapture(): Promise<void> {
+    return this.enqueueNative(async () => { await this.startNativeChunks(); });
+  }
+
+  private stopNativeCapture(): Promise<void> {
+    return this.enqueueNative(async () => {
       this.clearNativeTimer();
       await this.stopCurrentRecording();
     });
@@ -70,15 +77,15 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
   }
 
   private async stopCurrentRecording(): Promise<void> {
-    const rec = this.recording;
+    const recording = this.recording;
     this.recording = null;
-    if (!rec) return;
+    if (!recording) return;
     try {
-      await rec.stop();
+      await recording.stop();
     } catch (e) {
       if (this.active) throw e;
     } finally {
-      releaseNativeAudioRecorder(rec);
+      releaseNativeAudioRecorder(recording);
     }
   }
 
@@ -86,23 +93,25 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
     if (!this.active || this.recording) return;
     this.clearNativeTimer();
     await this.startChunk();
-    if (this.active && this.recording) this.chunkTimer = setInterval(() => { void this.rotateChunk(); }, 5000);
+    if (this.active && this.recording) {
+      this.chunkTimer = setInterval(() => { void this.rotateChunk(); }, NATIVE_CHUNK_INTERVAL_MS);
+    }
   }
 
   private async startChunk(): Promise<void> {
-    const rec = createNativeAudioRecorder();
+    const recording = createNativeAudioRecorder();
     try {
-      await rec.prepareToRecordAsync();
-      rec.record();
+      await recording.prepareToRecordAsync();
+      recording.record();
       if (!this.active) {
-        await rec.stop().catch(() => {});
-        releaseNativeAudioRecorder(rec);
+        await recording.stop().catch(() => {});
+        releaseNativeAudioRecorder(recording);
         return;
       }
-      this.recording = rec;
+      this.recording = recording;
     } catch (e) {
-      await rec.stop().catch(() => {});
-      releaseNativeAudioRecorder(rec);
+      await recording.stop().catch(() => {});
+      releaseNativeAudioRecorder(recording);
       if (this.active) throw e;
     }
   }
@@ -110,23 +119,11 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
   private async rotateChunk(): Promise<void> {
     await this.enqueueNative(async () => {
       if (!this.active || !this.recording) return;
-      const rec = this.recording;
+      const recording = this.recording;
       this.recording = null;
       try {
-        let uri: string | null = null;
-        try {
-          await rec.stop();
-          uri = rec.uri;
-        } finally {
-          releaseNativeAudioRecorder(rec);
-        }
-        if (uri) {
-          this.transcribeChunk(uri).then((text) => {
-            if (text && this.active) this.onTranscript(text);
-          }).catch((e: unknown) => {
-            if (this.active) this.onError(`Transcription failed: ${e instanceof Error ? e.message : String(e)}`);
-          });
-        }
+        const uri = await this.stopRecordingForUpload(recording);
+        if (uri) this.transcribeCompletedChunk(uri);
         if (this.active) await this.startChunk();
       } catch (e) {
         if (this.active) {
@@ -138,12 +135,29 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
     });
   }
 
+  private async stopRecordingForUpload(recording: NativeAudioRecorder): Promise<string | null> {
+    try {
+      await recording.stop();
+      return recording.uri;
+    } finally {
+      releaseNativeAudioRecorder(recording);
+    }
+  }
+
+  private transcribeCompletedChunk(uri: string): void {
+    void this.transcribeChunk(uri).then((text) => {
+      if (text && this.active) this.onTranscript(text);
+    }).catch((e: unknown) => {
+      if (this.active) this.onError(`Transcription failed: ${e instanceof Error ? e.message : String(e)}`);
+    });
+  }
+
   private async transcribeChunk(uri: string): Promise<string> {
     try {
       const result = await FileSystem.uploadAsync(`${DEEPGRAM_HTTP_URL}?${DEEPGRAM_PARAMS}`, uri, {
         headers: {
           Authorization: `Token ${this.apiKey}`,
-          'Content-Type': 'audio/mp4',
+          'Content-Type': NATIVE_AUDIO_CONTENT_TYPE,
         },
         httpMethod: 'POST',
         uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
