@@ -208,9 +208,7 @@ export class SessionRuntime {
     }
   }
 
-  private acceptProviderTranscript(text: string, generation: number): void {
-    if (this.sttGeneration === generation && this.acceptingTranscript) this.appendTranscript(text);
-  }
+  private acceptProviderTranscript(text: string, generation: number): void { if (this.sttGeneration === generation && this.acceptingTranscript) this.appendTranscript(text); }
 
   private handleProviderError(error: string, generation: number): void {
     if (this.sttGeneration !== generation) return;
@@ -257,9 +255,7 @@ export class SessionRuntime {
     this.detectionInterval = null;
   }
 
-  private clearStartInFlight(command: Promise<void>): void {
-    if (this.startInFlight === command) this.startInFlight = null;
-  }
+  private clearStartInFlight(command: Promise<void>): void { if (this.startInFlight === command) this.startInFlight = null; }
 
   private invalidateStt(): STTProvider | null {
     this.sttGeneration += 1;
