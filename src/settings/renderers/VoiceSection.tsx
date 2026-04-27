@@ -1,12 +1,11 @@
 import React from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { KeyLink } from '../KeyLink';
 import { VoiceSectionProps } from '../types';
+import { SettingsInput } from './SettingsInput';
 
 export function VoiceSection({ sttSettings, setSttSettings, saveVoice, voiceSaved, isWebSpeech, styles }: VoiceSectionProps) {
-  const C = styles.__colors;
-
   return (
     <View testID="settings-content" style={styles.contentInner}>
       <View style={styles.group}>
@@ -43,15 +42,12 @@ export function VoiceSection({ sttSettings, setSttSettings, saveVoice, voiceSave
       {sttSettings.provider === 'deepgram' && (
         <View style={styles.group}>
           <Text style={styles.groupLabel}>DEEPGRAM API KEY</Text>
-          <TextInput
-            style={styles.input}
+          <SettingsInput
+            styles={styles}
             value={sttSettings.deepgramApiKey}
             onChangeText={(v) => setSttSettings((s) => ({ ...s, deepgramApiKey: v }))}
             placeholder="paste key here"
-            placeholderTextColor={C.textMuted}
             secureTextEntry
-            autoCorrect={false}
-            autoCapitalize="none"
           />
           <KeyLink label="Get a free Deepgram key" url="https://console.deepgram.com" />
         </View>

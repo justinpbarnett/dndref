@@ -1,10 +1,11 @@
 import React from 'react';
-import { Switch, Text, TextInput, TouchableOpacity, View, type TextInputProps } from 'react-native';
+import { Switch, Text, TouchableOpacity, View } from 'react-native';
 
 import { Ionicon } from '../../components/Ionicon';
 import { SRD_SOURCES } from '../../entities/providers/srd';
 import { KeyLink } from '../KeyLink';
 import { DataSectionProps } from '../types';
+import { SettingsInput } from './SettingsInput';
 
 const SRD_PUBLISHER_GROUPS = (() => {
   const map = new Map<string, { slug: string; label: string }[]>();
@@ -77,14 +78,14 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
       <View style={styles.group}>
         <Text style={styles.groupLabel}>KANKA</Text>
         <Text style={styles.groupDesc}>Campaign world data: characters, locations, factions, items.</Text>
-        <DataInput
+        <SettingsInput
           styles={styles}
           value={dsLocal.kankaToken}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaToken: v }))}
           placeholder="API token"
           secureTextEntry
         />
-        <DataInput
+        <SettingsInput
           styles={styles}
           value={dsLocal.kankaCampaignId}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaCampaignId: v.replace(/\D/g, '') }))}
@@ -98,7 +99,7 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
       <View style={styles.group}>
         <Text style={styles.groupLabel}>HOMEBREWERY</Text>
         <Text style={styles.groupDesc}>Paste the share URL of any public document.</Text>
-        <DataInput
+        <SettingsInput
           styles={styles}
           value={dsLocal.homebreweryUrl}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, homebreweryUrl: v }))}
@@ -109,14 +110,14 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
       <View style={styles.group}>
         <Text style={styles.groupLabel}>NOTION</Text>
         <Text style={styles.groupDesc}>Fetches pages from your workspace.</Text>
-        <DataInput
+        <SettingsInput
           styles={styles}
           value={dsLocal.notionToken}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, notionToken: v }))}
           placeholder="Integration token (secret_...)"
           secureTextEntry
         />
-        <DataInput
+        <SettingsInput
           styles={styles}
           value={dsLocal.notionPageIds}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, notionPageIds: v }))}
@@ -129,7 +130,7 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
       <View style={styles.group}>
         <Text style={styles.groupLabel}>GOOGLE DOCS</Text>
         <Text style={styles.groupDesc}>The doc must be set to "Anyone with the link can view".</Text>
-        <DataInput
+        <SettingsInput
           styles={styles}
           value={dsLocal.googleDocsUrl}
           onChangeText={(v) => setDsLocal((s) => ({ ...s, googleDocsUrl: v }))}
@@ -144,14 +145,3 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
   );
 }
 
-function DataInput({ styles, ...props }: TextInputProps & Pick<DataSectionProps, 'styles'>) {
-  return (
-    <TextInput
-      style={styles.input}
-      placeholderTextColor={styles.__colors.textMuted}
-      autoCorrect={false}
-      autoCapitalize="none"
-      {...props}
-    />
-  );
-}

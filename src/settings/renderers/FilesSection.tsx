@@ -1,8 +1,9 @@
 import React from 'react';
-import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { Ionicon } from '../../components/Ionicon';
 import { FilesSectionProps } from '../types';
+import { SettingsInput } from './SettingsInput';
 
 export function FilesSection({
   uploads,
@@ -38,22 +39,19 @@ export function FilesSection({
 
       <View style={styles.group}>
         <Text style={styles.groupLabel}>PASTE CONTENT</Text>
-        <TextInput
-          style={styles.input}
+        <SettingsInput
+          styles={styles}
           value={pasteFileName}
           onChangeText={setPasteFileName}
           placeholder="File name (e.g. my-campaign.md)"
-          placeholderTextColor={C.textMuted}
-          autoCorrect={false}
         />
-        <TextInput
-          style={[styles.input, styles.textarea]}
+        <SettingsInput
+          styles={styles}
+          style={styles.textarea}
           value={pasteContent}
           onChangeText={setPasteContent}
           placeholder="Paste content here..."
-          placeholderTextColor={C.textMuted}
           multiline
-          autoCorrect={false}
         />
         <TouchableOpacity
           style={[styles.outlineBtn, !pasteContent.trim() && styles.outlineBtnDisabled]}
