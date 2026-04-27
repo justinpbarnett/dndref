@@ -66,9 +66,7 @@ export async function injectSpeechMock(page: Page) {
     (window as any).webkitSpeechRecognition = MockSpeechRecognition;
     (window as any).__speechMock = state;
 
-    (window as any).__speak = (text: string): boolean => {
-      return state.emitSpeech(text);
-    };
+    (window as any).__speak = (text: string): boolean => state.emitSpeech(text);
   });
 }
 
@@ -115,23 +113,17 @@ export async function failNextSpeechStart(
   message = 'Microphone permission required',
 ) {
   await page.evaluate(
-    ({ errorName, errorMessage }) => {
-      (window as any).__speechMock.failNextStart(errorName, errorMessage);
-    },
+    ({ errorName, errorMessage }) => { (window as any).__speechMock.failNextStart(errorName, errorMessage); },
     { errorName: name, errorMessage: message },
   );
 }
 
 export async function emitSpeechError(page: Page, error = 'audio-capture') {
-  await page.evaluate((value) => {
-    (window as any).__speechMock.emitError(value);
-  }, error);
+  await page.evaluate((value) => { (window as any).__speechMock.emitError(value); }, error);
 }
 
 export async function emitSpeechEnd(page: Page) {
-  await page.evaluate(() => {
-    (window as any).__speechMock.emitEnd();
-  });
+  await page.evaluate(() => { (window as any).__speechMock.emitEnd(); });
 }
 
 export async function getSpeechStartCount(page: Page): Promise<number> {
