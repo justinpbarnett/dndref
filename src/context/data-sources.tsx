@@ -1,39 +1,15 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import {
-  allowAppDataCacheWrites,
-  createAppDataWriteToken,
-  getAppDataItem,
-  isAppDataWriteTokenCurrent,
-  setAppDataItem,
+  createDefaultDataSourceSettings,
+  loadDataSourceSettings,
+  mergeDataSourceSettings,
+  saveDataSourceSettings,
 } from '../storage/app-data';
-import { DATA_SOURCES_KEY } from '../storage/keys';
+import type { DataSourcesSettings } from '../storage/app-data';
 
 export { DATA_SOURCES_KEY } from '../storage/keys';
-
-export interface DataSourcesSettings {
-  srdEnabled: boolean;
-  srdSources: string[];
-  kankaToken: string;
-  kankaCampaignId: string;
-  homebreweryUrl: string;
-  notionToken: string;
-  notionPageIds: string;
-  googleDocsUrl: string;
-  aiApiKey: string;
-}
-
-export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
-  srdEnabled: true,
-  srdSources: ['wotc-srd'],
-  kankaToken: '',
-  kankaCampaignId: '',
-  homebreweryUrl: '',
-  notionToken: '',
-  notionPageIds: '',
-  googleDocsUrl: '',
-  aiApiKey: '',
-};
+export { DEFAULT_DATA_SOURCES_SETTINGS, type DataSourcesSettings } from '../storage/app-data';
 
 interface DataSourcesContextType {
   settings: DataSourcesSettings;
@@ -46,37 +22,24 @@ interface DataSourcesContextType {
 const DataSourcesContext = createContext<DataSourcesContextType | null>(null);
 
 export function DataSourcesProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<DataSourcesSettings>(DEFAULT_DATA_SOURCES_SETTINGS);
+  const [settings, setSettings] = useState<DataSourcesSettings>(() => createDefaultDataSourceSettings());
   const [uploadsVersion, setUploadsVersion] = useState(0);
 
   useEffect(() => {
-    const token = createAppDataWriteToken();
-    getAppDataItem(DATA_SOURCES_KEY, token)
-      .then((raw) => {
-        if (raw) {
-          try {
-            setSettings({ ...DEFAULT_DATA_SOURCES_SETTINGS, ...(JSON.parse(raw) as Partial<DataSourcesSettings>) });
-          } catch (parseErr) {
-            console.warn('[dnd-ref] Failed to parse data source settings:', parseErr);
-          }
-        }
-      })
-      .catch((e) => console.warn('[dnd-ref] Failed to load data source settings:', e));
+    let mounted = true;
+    loadDataSourceSettings().then((loaded) => {
+      if (mounted && loaded) setSettings(loaded);
+    });
+    return () => { mounted = false; };
   }, []);
 
   async function update(patch: Partial<DataSourcesSettings>) {
-    const token = createAppDataWriteToken();
-    if (!isAppDataWriteTokenCurrent(token)) return;
     let next!: DataSourcesSettings;
     setSettings((prev) => {
-      next = { ...prev, ...patch };
+      next = mergeDataSourceSettings({ ...prev, ...patch });
       return next;
     });
-    const saved = await setAppDataItem(DATA_SOURCES_KEY, JSON.stringify(next), { token }).catch((e) => {
-      console.warn('[dnd-ref] Failed to save data source settings:', e);
-      return false;
-    });
-    if (saved) allowAppDataCacheWrites();
+    await saveDataSourceSettings(next);
   }
 
   const bumpUploads = useCallback(() => {
@@ -84,7 +47,7 @@ export function DataSourcesProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const reset = useCallback(() => {
-    setSettings(DEFAULT_DATA_SOURCES_SETTINGS);
+    setSettings(createDefaultDataSourceSettings());
     setUploadsVersion((v) => v + 1);
   }, []);
 
