@@ -57,9 +57,7 @@ describe('slugify', () => {
     ['GIMBLE', 'gimble'],
     ['Gimble Lock', 'gimble-lock'],
     ['Test!@#$%', 'test'],
-  ])('slugifies %s', (input, expected) => {
-    expect(slugify(input)).toBe(expected);
-  });
+  ])('slugifies %s', (input, expected) => expect(slugify(input)).toBe(expected));
 });
 
 describe('normalizeEntityType', () => {
@@ -67,7 +65,5 @@ describe('normalizeEntityType', () => {
     ['npc', 'NPC'], ['character', 'NPC'], ['person', 'NPC'],
     ['location', 'Location'], ['place', 'Location'], ['city', 'Location'],
     ['xyz', 'Unknown'],
-  ] as const)('normalizes %s', (input, expected) => {
-    expect(normalizeEntityType(input)).toBe(expected);
-  });
+  ] as const)('normalizes %s', (input, expected) => expect(normalizeEntityType(input)).toBe(expected));
 });
