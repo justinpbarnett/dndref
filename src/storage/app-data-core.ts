@@ -1,13 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { STT_SETTINGS_KEY } from '../stt';
-import {
-  CARD_SIZE_KEY,
-  COLOR_SCHEME_KEY,
-  DATA_SOURCES_KEY,
-  SRD_CACHE_KEY_PREFIX,
-  UPLOADS_KEY,
-} from './keys';
+import { CARD_SIZE_KEY, COLOR_SCHEME_KEY, DATA_SOURCES_KEY, SRD_CACHE_KEY_PREFIX, UPLOADS_KEY } from './keys';
 
 const APP_STORAGE_PREFIXES = ['dndref:', '@dnd-ref/'];
 const INVALID_APP_DATA_TOKEN = -1;
@@ -17,13 +11,7 @@ let appDataResetActive = false;
 let cacheWritesBlockedForGeneration: number | null = null;
 let appDataWriteQueue: Promise<unknown> = Promise.resolve();
 
-export const APP_STORAGE_KEYS = [
-  DATA_SOURCES_KEY,
-  UPLOADS_KEY,
-  STT_SETTINGS_KEY,
-  CARD_SIZE_KEY,
-  COLOR_SCHEME_KEY,
-];
+export const APP_STORAGE_KEYS = [DATA_SOURCES_KEY, UPLOADS_KEY, STT_SETTINGS_KEY, CARD_SIZE_KEY, COLOR_SCHEME_KEY];
 
 export function isAppStorageKey(key: string): boolean {
   return (
@@ -43,17 +31,9 @@ export function isAppDataWriteTokenCurrent(token: number): boolean {
     !appDataResetActive;
 }
 
-export function canPersistAppData(token: number): boolean {
-  return isAppDataWriteTokenCurrent(token);
-}
-
-export function canPersistAppDataCache(token: number): boolean {
-  return canPersistAppData(token) && cacheWritesBlockedForGeneration !== token;
-}
-
-export function allowAppDataCacheWrites(): void {
-  cacheWritesBlockedForGeneration = null;
-}
+export function canPersistAppData(token: number): boolean { return isAppDataWriteTokenCurrent(token); }
+export function canPersistAppDataCache(token: number): boolean { return canPersistAppData(token) && cacheWritesBlockedForGeneration !== token; }
+export function allowAppDataCacheWrites(): void { cacheWritesBlockedForGeneration = null; }
 
 export interface AppDataCacheSession {
   getItem: (key: string) => Promise<string | null>;
@@ -98,9 +78,7 @@ export async function setAppDataItem(
   return operation;
 }
 
-export async function waitForAppDataWrites(): Promise<void> {
-  await appDataWriteQueue.catch(() => undefined);
-}
+export async function waitForAppDataWrites(): Promise<void> { await appDataWriteQueue.catch(() => undefined); }
 
 export function beginAppDataReset(): number {
   appDataResetGeneration += 1;
