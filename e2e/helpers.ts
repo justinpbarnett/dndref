@@ -126,9 +126,7 @@ export async function emitSpeechEnd(page: Page) {
   await page.evaluate(() => { (window as any).__speechMock.emitEnd(); });
 }
 
-export async function getSpeechStartCount(page: Page): Promise<number> {
-  return page.evaluate(() => (window as any).__speechMock.startCount);
-}
+export async function getSpeechStartCount(page: Page): Promise<number> { return page.evaluate(() => (window as any).__speechMock.startCount); }
 
 export async function startSession(page: Page) {
   await page.getByText('Start', { exact: true }).click();

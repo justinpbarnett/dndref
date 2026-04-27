@@ -202,9 +202,7 @@ function createDefaultSnapshot(): FilesSettingsCategorySnapshot {
 
 function noop(): void {}
 
-function resolveStringUpdate(update: SetStateAction<string>, current: string): string {
-  return typeof update === 'function' ? update(current) : update;
-}
+function resolveStringUpdate(update: SetStateAction<string>, current: string): string { return typeof update === 'function' ? update(current) : update; }
 
 function pickFilesWithWebInput(): Promise<PickedTextFile[]> {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return Promise.resolve([]);

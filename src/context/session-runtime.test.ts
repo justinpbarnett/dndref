@@ -67,9 +67,7 @@ function makeRuntimeWithFakeStt(
   return { providers, runtime };
 }
 
-function normalizeSpaces(value: string): string {
-  return value.replace(/\s+/g, ' ').trim();
-}
+function normalizeSpaces(value: string): string { return value.replace(/\s+/g, ' ').trim(); }
 
 describe('SessionRuntime', () => {
   it('carries active transcript context so split entity names are detected', () => {

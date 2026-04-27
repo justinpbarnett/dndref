@@ -36,6 +36,4 @@ export function extractDeepgramFinalTranscript(message: string): string {
   return getFirstTranscript(data.channel);
 }
 
-function getFirstTranscript(channel: DeepgramTranscriptChannel | undefined): string {
-  return channel?.alternatives?.[0]?.transcript ?? '';
-}
+function getFirstTranscript(channel: DeepgramTranscriptChannel | undefined): string { return channel?.alternatives?.[0]?.transcript ?? ''; }

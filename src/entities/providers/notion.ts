@@ -71,9 +71,7 @@ export class NotionProvider implements WorldDataProvider {
   }
 }
 
-function richText(rts: any[]): string {
-  return (rts ?? []).map((rt: any) => rt.plain_text ?? '').join('');
-}
+function richText(rts: any[]): string { return (rts ?? []).map((rt: any) => rt.plain_text ?? '').join(''); }
 
 function blocksToMarkdown(blocks: any[]): string {
   return blocks.map((block) => {

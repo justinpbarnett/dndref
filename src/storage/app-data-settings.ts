@@ -26,9 +26,7 @@ export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
   aiApiKey: '',
 };
 
-export function createDefaultDataSourceSettings(): DataSourcesSettings {
-  return { ...DEFAULT_DATA_SOURCES_SETTINGS, srdSources: [...DEFAULT_DATA_SOURCES_SETTINGS.srdSources] };
-}
+export function createDefaultDataSourceSettings(): DataSourcesSettings { return { ...DEFAULT_DATA_SOURCES_SETTINGS, srdSources: [...DEFAULT_DATA_SOURCES_SETTINGS.srdSources] }; }
 
 export function mergeDataSourceSettings(
   settings?: Partial<DataSourcesSettings> | null,
@@ -44,13 +42,8 @@ export function mergeDataSourceSettings(
 
 type VoiceSettingsPatch = Partial<Record<keyof STTSettings, unknown>>;
 
-function isVoiceSettingsPatch(value: unknown): value is VoiceSettingsPatch {
-  return value !== null && typeof value === 'object';
-}
-
-function isVoiceProvider(value: unknown): value is STTSettings['provider'] {
-  return value === 'deepgram' || value === 'web-speech';
-}
+function isVoiceSettingsPatch(value: unknown): value is VoiceSettingsPatch { return value !== null && typeof value === 'object'; }
+function isVoiceProvider(value: unknown): value is STTSettings['provider'] { return value === 'deepgram' || value === 'web-speech'; }
 
 export function createDefaultVoiceSettings(): STTSettings { return { ...DEFAULT_STT_SETTINGS }; }
 

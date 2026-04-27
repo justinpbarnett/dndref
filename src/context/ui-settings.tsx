@@ -37,9 +37,7 @@ export { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from '../storage/keys';
 export const DEFAULT_CARD_SIZE: CardSize = 'M';
 export const DEFAULT_COLOR_SCHEME: ColorScheme = 'dark';
 
-function isColorScheme(value: unknown): value is ColorScheme {
-  return typeof value === 'string' && (COLOR_SCHEMES as readonly string[]).includes(value);
-}
+function isColorScheme(value: unknown): value is ColorScheme { return typeof value === 'string' && (COLOR_SCHEMES as readonly string[]).includes(value); }
 
 // Read synchronously from localStorage on web so the first render matches
 // the stored preference -- avoids SSR/client hydration mismatch.
@@ -53,13 +51,8 @@ function readStoredSetting<T>(key: string, isValue: (value: unknown) => value is
   return defaultValue;
 }
 
-function readStoredColorScheme(): ColorScheme {
-  return readStoredSetting(COLOR_SCHEME_KEY, isColorScheme, DEFAULT_COLOR_SCHEME);
-}
-
-function readStoredCardSize(): CardSize {
-  return readStoredSetting(CARD_SIZE_KEY, isCardSize, DEFAULT_CARD_SIZE);
-}
+function readStoredColorScheme(): ColorScheme { return readStoredSetting(COLOR_SCHEME_KEY, isColorScheme, DEFAULT_COLOR_SCHEME); }
+function readStoredCardSize(): CardSize { return readStoredSetting(CARD_SIZE_KEY, isCardSize, DEFAULT_CARD_SIZE); }
 
 interface UISettingsContextType {
   cardSize: CardSize;
