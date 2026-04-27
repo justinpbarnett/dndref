@@ -1,5 +1,10 @@
 import { TestContext } from './runner';
 
+async function saveScreenshot(page: TestContext['page'], screenshots: string[], path: string) {
+  await page.screenshot({ path });
+  screenshots.push(path);
+}
+
 export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
   await page.goto(baseUrl, { waitUntil: 'load', timeout: 30000 });
@@ -59,8 +64,7 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
   await page.waitForTimeout(2000);
 
   const initialScreenshot = `${screenshotDir}/test-03-card-size-initial.png`;
-  await page.screenshot({ path: initialScreenshot });
-  screenshots.push(initialScreenshot);
+  await saveScreenshot(page, screenshots, initialScreenshot);
 
   const sizes = ['S', 'M', 'L', 'XL'];
   const testedSizes: string[] = [];
@@ -73,15 +77,13 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
       await sizeBtn.click();
       await page.waitForTimeout(600);
       const screenshotPath = `${screenshotDir}/test-03-card-size-${size.toLowerCase()}.png`;
-      await page.screenshot({ path: screenshotPath });
-      screenshots.push(screenshotPath);
+      await saveScreenshot(page, screenshots, screenshotPath);
       testedSizes.push(size);
     } else if (await altSizeBtn.isVisible().catch(() => false)) {
       await altSizeBtn.click();
       await page.waitForTimeout(600);
       const screenshotPath = `${screenshotDir}/test-03-card-size-${size.toLowerCase()}.png`;
-      await page.screenshot({ path: screenshotPath });
-      screenshots.push(screenshotPath);
+      await saveScreenshot(page, screenshots, screenshotPath);
       testedSizes.push(size);
     }
   }
@@ -101,8 +103,7 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
     await darkBtn.click();
     await page.waitForTimeout(1000);
     const darkScreenshot = `${screenshotDir}/test-04-theme-dark.png`;
-    await page.screenshot({ path: darkScreenshot });
-    screenshots.push(darkScreenshot);
+    await saveScreenshot(page, screenshots, darkScreenshot);
   }
 
   const lightBtn = page.getByText('Light', { exact: true }).first();
@@ -110,8 +111,7 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
     await lightBtn.click();
     await page.waitForTimeout(1000);
     const lightScreenshot = `${screenshotDir}/test-04-theme-light.png`;
-    await page.screenshot({ path: lightScreenshot });
-    screenshots.push(lightScreenshot);
+    await saveScreenshot(page, screenshots, lightScreenshot);
   }
 
   const systemBtn = page.getByText('System', { exact: true }).first();
@@ -119,8 +119,7 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
     await systemBtn.click();
     await page.waitForTimeout(1000);
     const systemScreenshot = `${screenshotDir}/test-04-theme-system.png`;
-    await page.screenshot({ path: systemScreenshot });
-    screenshots.push(systemScreenshot);
+    await saveScreenshot(page, screenshots, systemScreenshot);
   }
 
   return { screenshotPath: screenshots.join(', '), errors: [...consoleErrors], extraInfo: `Tested themes: Dark, Light, System` };
@@ -139,8 +138,7 @@ export async function testSttProvider({ page, consoleErrors, screenshotDir, base
   await voiceTab.click();
   await page.waitForTimeout(800);
 
-  await page.screenshot({ path: `${screenshotDir}/test-05-stt-initial.png` });
-  screenshots.push(`${screenshotDir}/test-05-stt-initial.png`);
+  await saveScreenshot(page, screenshots, `${screenshotDir}/test-05-stt-initial.png`);
 
   const bodyText = await page.textContent('body') || '';
   const hasWebSpeech = bodyText.toLowerCase().includes('web speech');
@@ -157,15 +155,13 @@ export async function testSttProvider({ page, consoleErrors, screenshotDir, base
     const apiKeyField = page.getByPlaceholder(/API key/i).or(page.getByText(/API key/i)).first();
     hasApiKeyField = await apiKeyField.isVisible().catch(() => false);
 
-    await page.screenshot({ path: `${screenshotDir}/test-05-stt-deepgram.png` });
-    screenshots.push(`${screenshotDir}/test-05-stt-deepgram.png`);
+    await saveScreenshot(page, screenshots, `${screenshotDir}/test-05-stt-deepgram.png`);
 
     const webSpeechBtn = page.getByText('Web Speech', { exact: true }).first();
     if (await webSpeechBtn.isVisible().catch(() => false)) {
       await webSpeechBtn.click();
       await page.waitForTimeout(800);
-      await page.screenshot({ path: `${screenshotDir}/test-05-stt-webspeech.png` });
-      screenshots.push(`${screenshotDir}/test-05-stt-webspeech.png`);
+      await saveScreenshot(page, screenshots, `${screenshotDir}/test-05-stt-webspeech.png`);
     }
 
     return { screenshotPath: screenshots.join(', '), errors: [...consoleErrors], extraInfo: `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}, API key field visible: ${hasApiKeyField}` };
