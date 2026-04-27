@@ -1,9 +1,4 @@
-import {
-  RecordingPresets,
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-  type AudioRecorder,
-} from 'expo-audio';
+import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, type AudioRecorder } from 'expo-audio';
 import AudioModule from 'expo-audio/build/AudioModule';
 import { createRecordingOptions } from 'expo-audio/build/utils/options';
 

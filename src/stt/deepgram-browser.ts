@@ -1,10 +1,4 @@
-import {
-  assertDeepgramApiKey,
-  DEEPGRAM_PARAMS,
-  DEEPGRAM_WS_URL,
-  extractDeepgramFinalTranscript,
-  getDeepgramCloseMessage,
-} from './deepgram-shared';
+import { assertDeepgramApiKey, DEEPGRAM_PARAMS, DEEPGRAM_WS_URL, extractDeepgramFinalTranscript, getDeepgramCloseMessage } from './deepgram-shared';
 
 import type { STTProvider } from './index';
 

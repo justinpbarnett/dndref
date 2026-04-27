@@ -1,17 +1,7 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
-import {
-  assertDeepgramApiKey,
-  DEEPGRAM_HTTP_URL,
-  DEEPGRAM_PARAMS,
-  extractDeepgramTranscript,
-} from './deepgram-shared';
-import {
-  createNativeAudioRecorder,
-  releaseNativeAudioRecorder,
-  requestNativeRecordingAccess,
-  type NativeAudioRecorder,
-} from './native-audio';
+import { assertDeepgramApiKey, DEEPGRAM_HTTP_URL, DEEPGRAM_PARAMS, extractDeepgramTranscript } from './deepgram-shared';
+import { createNativeAudioRecorder, releaseNativeAudioRecorder, requestNativeRecordingAccess, type NativeAudioRecorder } from './native-audio';
 
 import type { STTProvider } from './index';
 
