@@ -1,175 +1,110 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const platform = vi.hoisted(() => {
-  (globalThis as any).__DEV__ = false;
-  return { OS: 'ios' };
-});
+const platform = vi.hoisted(() => ({ OS: 'web' }));
 
-type Deferred = {
-  promise: Promise<void>;
-  resolve: () => void;
-};
-
-const nativeState = vi.hoisted(() => {
-  class MockRecording {
+const adapterState = vi.hoisted(() => {
+  class MockBrowserAdapter {
+    pauseCalls = 0;
+    resumeCalls = 0;
+    startCalls = 0;
     stopCalls = 0;
-    uri = 'file:///chunk.m4a';
 
-    constructor() {
-      state.recordings.push(this);
+    constructor(
+      readonly apiKey: string,
+      readonly onTranscript: (text: string) => void,
+      readonly onError: (error: string) => void,
+    ) {
+      state.browserInstances.push(this);
     }
 
-    async prepareToRecordAsync(): Promise<void> {
-      if (!state.nextPrepare) return;
-      await state.nextPrepare.promise;
+    async start(): Promise<void> { this.startCalls += 1; }
+    async pause(): Promise<void> { this.pauseCalls += 1; }
+    async resume(): Promise<void> { this.resumeCalls += 1; }
+    async stop(): Promise<void> { this.stopCalls += 1; }
+  }
+
+  class MockNativeAdapter {
+    pauseCalls = 0;
+    resumeCalls = 0;
+    startCalls = 0;
+    stopCalls = 0;
+
+    constructor(
+      readonly apiKey: string,
+      readonly onTranscript: (text: string) => void,
+      readonly onError: (error: string) => void,
+    ) {
+      state.nativeInstances.push(this);
     }
 
-    record(): void {}
-
-    async stop(): Promise<void> {
-      this.stopCalls += 1;
-    }
-
-    release(): void {}
+    async start(): Promise<void> { this.startCalls += 1; }
+    async pause(): Promise<void> { this.pauseCalls += 1; }
+    async resume(): Promise<void> { this.resumeCalls += 1; }
+    async stop(): Promise<void> { this.stopCalls += 1; }
   }
 
   const state = {
-    MockRecording,
-    recordings: [] as MockRecording[],
-    nextPrepare: null as Deferred | null,
+    MockBrowserAdapter,
+    MockNativeAdapter,
+    browserInstances: [] as MockBrowserAdapter[],
+    nativeInstances: [] as MockNativeAdapter[],
   };
   return state;
 });
 
 vi.mock('react-native', () => ({ Platform: platform }));
-vi.mock('expo-audio', () => ({
-  RecordingPresets: { HIGH_QUALITY: {} },
-  requestRecordingPermissionsAsync: vi.fn(async () => ({ granted: true })),
-  setAudioModeAsync: vi.fn(async () => undefined),
+vi.mock('./deepgram-browser', () => ({
+  DeepgramBrowserCaptureAdapter: adapterState.MockBrowserAdapter,
 }));
-vi.mock('expo-audio/build/AudioModule', () => ({
-  default: { AudioRecorder: nativeState.MockRecording },
-}));
-vi.mock('expo-audio/build/utils/options', () => ({
-  createRecordingOptions: vi.fn((options) => options),
-}));
-vi.mock('expo-file-system/legacy', () => ({
-  default: {},
-  FileSystemUploadType: { BINARY_CONTENT: 'BINARY_CONTENT' },
-  uploadAsync: vi.fn(async () => ({ status: 200, body: '{"results":{"channels":[{"alternatives":[{"transcript":""}]}]}}' })),
-  deleteAsync: vi.fn(async () => undefined),
+vi.mock('./deepgram-native', () => ({
+  DeepgramNativeCaptureAdapter: adapterState.MockNativeAdapter,
 }));
 
 import { DeepgramProvider } from './deepgram';
 
-function deferred(): Deferred {
-  let resolve!: () => void;
-  const promise = new Promise<void>((res) => { resolve = res; });
-  return { promise, resolve };
-}
-
-async function flush(): Promise<void> {
-  await Promise.resolve();
-  await Promise.resolve();
-}
-
-describe('DeepgramProvider lifecycle', () => {
+describe('DeepgramProvider internal adapter selection', () => {
   beforeEach(() => {
-    platform.OS = 'ios';
-    nativeState.recordings.length = 0;
-    nativeState.nextPrepare = null;
-    vi.clearAllMocks();
-  });
-
-  it('unloads native recording if stop happens during first chunk startup', async () => {
-    nativeState.nextPrepare = deferred();
-    const onError = vi.fn();
-    const provider = new DeepgramProvider('key', vi.fn(), onError);
-
-    const startPromise = provider.start();
-    for (let i = 0; i < 10 && nativeState.recordings.length === 0; i++) {
-      await flush();
-    }
-    expect(nativeState.recordings).toHaveLength(1);
-
-    const stopPromise = provider.stop();
-    nativeState.nextPrepare.resolve();
-    await Promise.all([startPromise, stopPromise]);
-
-    expect(nativeState.recordings[0].stopCalls).toBe(1);
-    expect(onError).not.toHaveBeenCalled();
-  });
-
-  it('cleans up web mic stream when stopped before Deepgram websocket opens', async () => {
     platform.OS = 'web';
-    const trackStop = vi.fn();
-    const stream = { getTracks: () => [{ stop: trackStop }] };
-    const sockets: Array<{ close: () => void; onclose: ((event: CloseEvent) => void) | null }> = [];
-
-    Object.defineProperty(globalThis, 'navigator', {
-      configurable: true,
-      value: { mediaDevices: { getUserMedia: vi.fn(async () => stream) } },
-    });
-    (globalThis as any).MediaRecorder = class {
-      static isTypeSupported() { return true; }
-    };
-    (globalThis as any).WebSocket = class {
-      static OPEN = 1;
-      static CLOSING = 2;
-      static CLOSED = 3;
-      readyState = 0;
-      onclose: ((event: CloseEvent) => void) | null = null;
-
-      constructor() {
-        sockets.push(this);
-      }
-
-      close() {
-        this.readyState = 3;
-        this.onclose?.({ code: 1000 } as CloseEvent);
-      }
-    };
-
-    const provider = new DeepgramProvider('key', vi.fn(), vi.fn());
-    const startPromise = provider.start();
-    await flush();
-
-    await expect(provider.stop()).resolves.toBeUndefined();
-    await expect(startPromise).rejects.toThrow('Deepgram connection closed');
-    expect(sockets).toHaveLength(1);
-    expect(trackStop).toHaveBeenCalledTimes(1);
+    adapterState.browserInstances.length = 0;
+    adapterState.nativeInstances.length = 0;
   });
 
-  it('cleans up web mic stream when stopped while getUserMedia is pending', async () => {
-    platform.OS = 'web';
-    const trackStop = vi.fn();
-    const stream = { getTracks: () => [{ stop: trackStop }] };
-    let resolveStream!: (value: typeof stream) => void;
-    const getUserMedia = vi.fn(() => new Promise<typeof stream>((resolve) => { resolveStream = resolve; }));
+  it('keeps browser capture hidden behind the Deepgram provider seam on web', async () => {
+    const provider = new DeepgramProvider('browser-key', vi.fn(), vi.fn());
 
-    Object.defineProperty(globalThis, 'navigator', {
-      configurable: true,
-      value: { mediaDevices: { getUserMedia } },
-    });
-    (globalThis as any).MediaRecorder = class {
-      static isTypeSupported() { return true; }
-    };
-    const sockets: unknown[] = [];
-    (globalThis as any).WebSocket = class {
-      constructor() {
-        sockets.push(this);
-      }
-    };
-
-    const provider = new DeepgramProvider('key', vi.fn(), vi.fn());
-    const startPromise = provider.start();
-    await flush();
-
+    await provider.start();
+    await provider.pause();
+    await provider.resume();
     await provider.stop();
-    resolveStream(stream);
 
-    await expect(startPromise).rejects.toThrow('microphone access completed');
-    expect(trackStop).toHaveBeenCalledTimes(1);
-    expect(sockets).toHaveLength(0);
+    expect(provider.name).toBe('Deepgram');
+    expect(adapterState.browserInstances).toHaveLength(1);
+    expect(adapterState.nativeInstances).toHaveLength(0);
+    expect(adapterState.browserInstances[0].apiKey).toBe('browser-key');
+    expect(adapterState.browserInstances[0].startCalls).toBe(1);
+    expect(adapterState.browserInstances[0].pauseCalls).toBe(1);
+    expect(adapterState.browserInstances[0].resumeCalls).toBe(1);
+    expect(adapterState.browserInstances[0].stopCalls).toBe(1);
+  });
+
+  it('keeps native capture hidden behind the Deepgram provider seam off web', async () => {
+    platform.OS = 'ios';
+    const provider = new DeepgramProvider('native-key', vi.fn(), vi.fn());
+
+    await provider.start();
+
+    expect(provider.name).toBe('Deepgram');
+    expect(adapterState.browserInstances).toHaveLength(0);
+    expect(adapterState.nativeInstances).toHaveLength(1);
+    expect(adapterState.nativeInstances[0].apiKey).toBe('native-key');
+    expect(adapterState.nativeInstances[0].startCalls).toBe(1);
+  });
+
+  it('preserves the missing API key startup error before starting an adapter', async () => {
+    const provider = new DeepgramProvider('', vi.fn(), vi.fn());
+
+    await expect(provider.start()).rejects.toThrow('Deepgram API key not set');
+    expect(adapterState.browserInstances).toHaveLength(1);
+    expect(adapterState.browserInstances[0].startCalls).toBe(0);
   });
 });
