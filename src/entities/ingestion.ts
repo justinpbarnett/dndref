@@ -219,9 +219,7 @@ function buildEntityId(name: string, options: NormalizeIngestedEntityOptions): s
   const parts: Array<string | number> = [];
   if (options.idPrefix) parts.push(options.idPrefix);
   parts.push(slugify(name));
-  if (options.idNamespace !== undefined && options.idNamespace !== '') {
-    parts.push(options.idNamespace);
-  }
+  if (options.idNamespace !== undefined && options.idNamespace !== '') parts.push(options.idNamespace);
   if (options.index !== undefined) parts.push(options.index);
 
   return parts.join('-');

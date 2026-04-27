@@ -13,9 +13,7 @@ export type NativeAudioRecorder = AudioRecorder;
 
 export async function requestNativeRecordingAccess(): Promise<void> {
   const { granted } = await requestRecordingPermissionsAsync();
-  if (!granted) {
-    throw new Error('Microphone permission denied.');
-  }
+  if (!granted) throw new Error('Microphone permission denied.');
   await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
 }
 

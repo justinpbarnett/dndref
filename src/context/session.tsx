@@ -49,9 +49,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       new FileUploadProvider(),
     ];
     if (ds.srdEnabled) providers.push(new SRDProvider(ds.srdSources));
-    if (ds.kankaToken && ds.kankaCampaignId) {
-      providers.push(new KankaProvider(ds.kankaToken, Number(ds.kankaCampaignId)));
-    }
+    if (ds.kankaToken && ds.kankaCampaignId) providers.push(new KankaProvider(ds.kankaToken, Number(ds.kankaCampaignId)));
     if (ds.homebreweryUrl) providers.push(new HomebreweryProvider(ds.homebreweryUrl));
     if (ds.notionToken && ds.notionPageIds) {
       const ids = ds.notionPageIds.split(',').map((s) => extractNotionId(s.trim())).filter(Boolean);

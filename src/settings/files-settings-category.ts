@@ -261,9 +261,7 @@ export function createFilesSettingsCategoryController(
 
 export function useFilesSettingsCategory(options: FilesSettingsCategoryControllerOptions) {
   const controllerRef = useRef<FilesSettingsCategoryController | null>(null);
-  if (!controllerRef.current) {
-    controllerRef.current = createFilesSettingsCategoryController(options);
-  }
+  if (!controllerRef.current) controllerRef.current = createFilesSettingsCategoryController(options);
   const controller = controllerRef.current;
   const [snapshot, setSnapshot] = useState(() => controller.getSnapshot());
 

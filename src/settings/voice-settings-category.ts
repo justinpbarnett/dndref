@@ -149,9 +149,7 @@ export function createVoiceSettingsCategoryController(
 
 export function useVoiceSettingsCategory() {
   const controllerRef = useRef<VoiceSettingsCategoryController | null>(null);
-  if (!controllerRef.current) {
-    controllerRef.current = createVoiceSettingsCategoryController();
-  }
+  if (!controllerRef.current) controllerRef.current = createVoiceSettingsCategoryController();
   const controller = controllerRef.current;
   const [snapshot, setSnapshot] = useState(() => controller.getSnapshot());
 

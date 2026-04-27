@@ -36,8 +36,6 @@ function createDeepgramCaptureAdapter(
   onTranscript: TranscriptHandler,
   onError: ErrorHandler,
 ): STTProvider {
-  if (Platform.OS === 'web') {
-    return new DeepgramBrowserCaptureAdapter(apiKey, onTranscript, onError);
-  }
+  if (Platform.OS === 'web') return new DeepgramBrowserCaptureAdapter(apiKey, onTranscript, onError);
   return new DeepgramNativeCaptureAdapter(apiKey, onTranscript, onError);
 }
