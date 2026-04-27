@@ -4,6 +4,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View 
 import { Ionicon } from './Ionicon';
 import type { CardState } from '../context/session-types';
 import { useColors } from '../context/ui-settings';
+import { extractEntityDetailBullets } from '../entity-card-presentation';
 import { Colors, F, typeAccent } from '../theme';
 
 interface Props {
@@ -56,23 +57,12 @@ export function EntityDetailsModal({ card, visible, onClose }: Props) {
 }
 
 function renderDetails(details: string, styles: ReturnType<typeof createStyles>, accentColor: string) {
-  return details
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line, index) => {
-      const bullet = line.match(/^[-*]\s+(.+)$/);
-      if (bullet) {
-        return (
-          <View key={index} style={styles.detailBulletRow}>
-            <Text style={[styles.detailBulletMark, { color: accentColor + 'aa' }]}>{'>'}</Text>
-            <Text style={styles.details}>{bullet[1]}</Text>
-          </View>
-        );
-      }
-
-      return <Text key={index} style={styles.detailParagraph}>{line}</Text>;
-    });
+  return extractEntityDetailBullets(details).map((bullet, index) => (
+    <View key={index} style={styles.detailBulletRow}>
+      <Text style={[styles.detailBulletMark, { color: accentColor + 'aa' }]}>{'>'}</Text>
+      <Text style={styles.details}>{bullet}</Text>
+    </View>
+  ));
 }
 
 function createStyles(C: Colors) {
@@ -141,13 +131,6 @@ function createStyles(C: Colors) {
       lineHeight: 23,
       fontFamily: F.body,
       flex: 1,
-    },
-    detailParagraph: {
-      color: C.textSecondary,
-      fontSize: 15,
-      lineHeight: 23,
-      fontFamily: F.body,
-      marginBottom: 10,
     },
     detailBulletRow: {
       flexDirection: 'row',

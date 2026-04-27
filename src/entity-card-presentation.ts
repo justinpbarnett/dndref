@@ -45,11 +45,27 @@ export interface DeriveEntityCardPresentationInput {
 }
 
 export function extractEntityCardSummaryBullets(summary: string): string[] {
-  return summary
-    .split(/(?<=[.!?])\s+/)
-    .map((sentence) => sentence.replace(/[.!?]$/, '').trim())
-    .filter((sentence) => sentence.length > 0)
+  return extractEntityDetailBullets(summary)
+    .map((bullet) => bullet.replace(/[.!?]$/, '').trim())
     .slice(0, ENTITY_CARD_MAX_SUMMARY_BULLETS);
+}
+
+export function extractEntityDetailBullets(details: string): string[] {
+  return details
+    .split('\n')
+    .flatMap((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return [];
+
+      const markdownBullet = trimmed.match(/^[-*]\s+(.+)$/);
+      if (markdownBullet) return [markdownBullet[1].trim()];
+
+      return trimmed
+        .split(/(?<=[.!?])\s+/)
+        .map((sentence) => sentence.trim())
+        .filter(Boolean);
+    })
+    .filter((bullet) => bullet.length > 0);
 }
 
 function derivePinTogglePresentation(pinned: boolean): EntityCardPinTogglePresentation {

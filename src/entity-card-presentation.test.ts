@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import type { CardState } from './context/session-types';
-import { deriveEntityCardPresentation, extractEntityCardSummaryBullets } from './entity-card-presentation';
+import { deriveEntityCardPresentation, extractEntityCardSummaryBullets, extractEntityDetailBullets } from './entity-card-presentation';
 
 function makeCard(overrides: Partial<CardState> = {}): CardState {
   return {
@@ -51,6 +51,22 @@ describe('extractEntityCardSummaryBullets', () => {
       'Who guards the armory',
       'Gorm knows: level 4',
       'Wait--listen',
+    ]);
+  });
+});
+
+describe('extractEntityDetailBullets', () => {
+  test('preserves rarity, prose sentences, and markdown bullets as display bullets', () => {
+    expect(extractEntityDetailBullets([
+      'Rare. If you hold this beetle-shaped medallion in your hand for 1 round, an inscription appears on its surface revealing its magical nature. It provides two benefits while it is on your person:',
+      '* You have advantage on saving throws against spells.',
+      '* The scarab has 12 charges.',
+    ].join('\n'))).toEqual([
+      'Rare.',
+      'If you hold this beetle-shaped medallion in your hand for 1 round, an inscription appears on its surface revealing its magical nature.',
+      'It provides two benefits while it is on your person:',
+      'You have advantage on saving throws against spells.',
+      'The scarab has 12 charges.',
     ]);
   });
 });
