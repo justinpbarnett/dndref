@@ -8,22 +8,9 @@ type EntityCardPinToggleKind = 'pin' | 'unpin';
 type EntityCardPinToggleIconName = 'bookmark' | 'bookmark-outline';
 type EntityCardPinToggleLabel = 'Pin' | 'Unpin';
 
-export interface EntityCardPinTogglePresentation {
-  kind: EntityCardPinToggleKind;
-  accessibilityLabel: EntityCardPinToggleLabel;
-  iconName: EntityCardPinToggleIconName;
-}
-
-export interface EntityCardDismissActionPresentation {
-  kind: 'dismiss';
-  accessibilityLabel: 'Dismiss';
-  iconName: 'close';
-}
-
-export interface EntityCardActionsPresentation {
-  pinToggle: EntityCardPinTogglePresentation;
-  dismiss: EntityCardDismissActionPresentation;
-}
+export interface EntityCardPinTogglePresentation { kind: EntityCardPinToggleKind; accessibilityLabel: EntityCardPinToggleLabel; iconName: EntityCardPinToggleIconName }
+export interface EntityCardDismissActionPresentation { kind: 'dismiss'; accessibilityLabel: 'Dismiss'; iconName: 'close' }
+export interface EntityCardActionsPresentation { pinToggle: EntityCardPinTogglePresentation; dismiss: EntityCardDismissActionPresentation }
 
 export interface EntityCardPresentation {
   instanceId: string;
@@ -39,10 +26,7 @@ export interface EntityCardPresentation {
   actions: EntityCardActionsPresentation;
 }
 
-export interface DeriveEntityCardPresentationInput {
-  card: CardState;
-  accentColor: string;
-}
+export interface DeriveEntityCardPresentationInput { card: CardState; accentColor: string }
 
 export function extractEntityCardSummaryBullets(summary: string): string[] {
   return extractEntityDetailBullets(summary)
