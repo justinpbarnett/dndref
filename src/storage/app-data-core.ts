@@ -121,9 +121,7 @@ export async function getStoredAppDataKeys(): Promise<string[]> {
 
 export async function clearStoredAppData(): Promise<string[]> {
   const keys = await getStoredAppDataKeys();
-  if (keys.length > 0) {
-    await AsyncStorage.multiRemove(keys);
-  }
+  if (keys.length > 0) await AsyncStorage.multiRemove(keys);
   return keys;
 }
 
