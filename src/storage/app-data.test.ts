@@ -25,6 +25,7 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 
 import {
   APP_STORAGE_KEYS,
+  DEFAULT_DATA_SOURCES_SETTINGS,
   allowAppDataCacheWrites,
   beginAppDataReset,
   canPersistAppDataCache,
@@ -32,8 +33,10 @@ import {
   finishAppDataReset,
   getAppDataItem,
   isAppStorageKey,
+  loadDataSourceSettings,
   resetAppDataControlsForTests,
   resetStoredAppData,
+  saveDataSourceSettings,
   setAppDataItem,
 } from './app-data';
 import {
@@ -44,6 +47,14 @@ import {
   UPLOADS_KEY,
 } from './keys';
 import { STT_SETTINGS_KEY } from '../stt';
+
+function blockStorageOperation(operation: keyof typeof storageControls): () => void {
+  let releaseGate = () => {};
+  storageControls[operation] = new Promise((resolve) => {
+    releaseGate = resolve;
+  });
+  return releaseGate;
+}
 
 describe('app data storage clearing', () => {
   beforeEach(() => {
@@ -114,10 +125,7 @@ describe('app data storage clearing', () => {
   });
 
   it('waits for in-flight settings writes before clearing storage', async () => {
-    let releaseSetItem!: () => void;
-    storageControls.setItemGate = new Promise((resolve) => {
-      releaseSetItem = resolve;
-    });
+    const releaseSetItem = blockStorageOperation('setItemGate');
 
     const write = setAppDataItem(DATA_SOURCES_KEY, '{"aiApiKey":"secret"}');
     await Promise.resolve();
@@ -132,10 +140,7 @@ describe('app data storage clearing', () => {
   });
 
   it('ignores stale hydration reads that resolve after reset starts', async () => {
-    let releaseGetItem!: () => void;
-    storageControls.getItemGate = new Promise((resolve) => {
-      releaseGetItem = resolve;
-    });
+    const releaseGetItem = blockStorageOperation('getItemGate');
 
     const read = getAppDataItem(STT_SETTINGS_KEY);
     await Promise.resolve();
@@ -145,5 +150,67 @@ describe('app data storage clearing', () => {
     releaseGetItem();
 
     expect(await read).toBeNull();
+  });
+
+  it('loads data source settings through the local app data seam', async () => {
+    storage.set(DATA_SOURCES_KEY, JSON.stringify({
+      srdEnabled: false,
+      kankaToken: 'kanka-secret',
+      srdSources: ['kobold-press-tob'],
+    }));
+
+    await expect(loadDataSourceSettings()).resolves.toEqual({
+      ...DEFAULT_DATA_SOURCES_SETTINGS,
+      srdEnabled: false,
+      kankaToken: 'kanka-secret',
+      srdSources: ['kobold-press-tob'],
+    });
+  });
+
+  it('saves data source settings through the local app data seam', async () => {
+    await resetStoredAppData();
+    const cacheWriteToken = createAppDataWriteToken();
+    const settings = {
+      ...DEFAULT_DATA_SOURCES_SETTINGS,
+      googleDocsUrl: 'https://docs.google.com/document/d/campaign',
+    };
+
+    expect(canPersistAppDataCache(cacheWriteToken)).toBe(false);
+    await expect(saveDataSourceSettings(settings)).resolves.toBe(true);
+
+    expect(JSON.parse(storage.get(DATA_SOURCES_KEY)!)).toEqual(settings);
+    expect(canPersistAppDataCache(cacheWriteToken)).toBe(true);
+  });
+
+  it('drops stale data source settings hydration through the local app data seam', async () => {
+    storage.set(DATA_SOURCES_KEY, JSON.stringify({ aiApiKey: 'stale-secret' }));
+    const releaseGetItem = blockStorageOperation('getItemGate');
+
+    const read = loadDataSourceSettings();
+    await Promise.resolve();
+
+    const generation = beginAppDataReset();
+    finishAppDataReset(generation);
+    releaseGetItem();
+
+    await expect(read).resolves.toBeNull();
+  });
+
+  it('drops stale data source settings writes through the local app data seam', async () => {
+    const releaseSetItem = blockStorageOperation('setItemGate');
+
+    const write = saveDataSourceSettings({
+      ...DEFAULT_DATA_SOURCES_SETTINGS,
+      aiApiKey: 'secret',
+    });
+    await Promise.resolve();
+
+    const reset = resetStoredAppData();
+    releaseSetItem();
+
+    await expect(write).resolves.toBe(false);
+    await reset;
+
+    expect(storage.get(DATA_SOURCES_KEY)).toBeUndefined();
   });
 });

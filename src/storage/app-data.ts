@@ -12,6 +12,30 @@ import {
 const APP_STORAGE_PREFIXES = ['dndref:', '@dnd-ref/'];
 const INVALID_APP_DATA_TOKEN = -1;
 
+export interface DataSourcesSettings {
+  srdEnabled: boolean;
+  srdSources: string[];
+  kankaToken: string;
+  kankaCampaignId: string;
+  homebreweryUrl: string;
+  notionToken: string;
+  notionPageIds: string;
+  googleDocsUrl: string;
+  aiApiKey: string;
+}
+
+export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
+  srdEnabled: true,
+  srdSources: ['wotc-srd'],
+  kankaToken: '',
+  kankaCampaignId: '',
+  homebreweryUrl: '',
+  notionToken: '',
+  notionPageIds: '',
+  googleDocsUrl: '',
+  aiApiKey: '',
+};
+
 let appDataResetGeneration = 0;
 let appDataResetActive = false;
 let cacheWritesBlockedForGeneration: number | null = null;
@@ -53,6 +77,61 @@ export function canPersistAppDataCache(token: number): boolean {
 
 export function allowAppDataCacheWrites(): void {
   cacheWritesBlockedForGeneration = null;
+}
+
+export function createDefaultDataSourceSettings(): DataSourcesSettings {
+  return {
+    ...DEFAULT_DATA_SOURCES_SETTINGS,
+    srdSources: [...DEFAULT_DATA_SOURCES_SETTINGS.srdSources],
+  };
+}
+
+export function mergeDataSourceSettings(
+  settings?: Partial<DataSourcesSettings> | null,
+): DataSourcesSettings {
+  const patch = settings ?? {};
+  const defaultSettings = createDefaultDataSourceSettings();
+  const srdSources = Array.isArray(patch.srdSources)
+    ? [...patch.srdSources]
+    : defaultSettings.srdSources;
+
+  return {
+    ...defaultSettings,
+    ...patch,
+    srdSources,
+  };
+}
+
+export async function loadDataSourceSettings(): Promise<DataSourcesSettings | null> {
+  let raw: string | null;
+  try {
+    raw = await getAppDataItem(DATA_SOURCES_KEY);
+  } catch (e) {
+    console.warn('[dnd-ref] Failed to load data source settings:', e);
+    return null;
+  }
+
+  if (!raw) return null;
+
+  try {
+    return mergeDataSourceSettings(JSON.parse(raw) as Partial<DataSourcesSettings>);
+  } catch (parseErr) {
+    console.warn('[dnd-ref] Failed to parse data source settings:', parseErr);
+    return null;
+  }
+}
+
+export async function saveDataSourceSettings(settings: DataSourcesSettings): Promise<boolean> {
+  const serializedSettings = JSON.stringify(settings);
+
+  try {
+    const saved = await setAppDataItem(DATA_SOURCES_KEY, serializedSettings);
+    if (saved) allowAppDataCacheWrites();
+    return saved;
+  } catch (e) {
+    console.warn('[dnd-ref] Failed to save data source settings:', e);
+    return false;
+  }
 }
 
 export async function getAppDataItem(key: string, token = createAppDataWriteToken()): Promise<string | null> {

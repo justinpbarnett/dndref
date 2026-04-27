@@ -1,39 +1,19 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import {
-  allowAppDataCacheWrites,
-  createAppDataWriteToken,
-  getAppDataItem,
-  isAppDataWriteTokenCurrent,
-  setAppDataItem,
+  createDefaultDataSourceSettings,
+  loadDataSourceSettings,
+  mergeDataSourceSettings,
+  saveDataSourceSettings,
+  type DataSourcesSettings,
 } from '../storage/app-data';
-import { DATA_SOURCES_KEY } from '../storage/keys';
 
 export { DATA_SOURCES_KEY } from '../storage/keys';
-
-export interface DataSourcesSettings {
-  srdEnabled: boolean;
-  srdSources: string[];
-  kankaToken: string;
-  kankaCampaignId: string;
-  homebreweryUrl: string;
-  notionToken: string;
-  notionPageIds: string;
-  googleDocsUrl: string;
-  aiApiKey: string;
-}
-
-export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
-  srdEnabled: true,
-  srdSources: ['wotc-srd'],
-  kankaToken: '',
-  kankaCampaignId: '',
-  homebreweryUrl: '',
-  notionToken: '',
-  notionPageIds: '',
-  googleDocsUrl: '',
-  aiApiKey: '',
-};
+export {
+  DEFAULT_DATA_SOURCES_SETTINGS,
+  createDefaultDataSourceSettings,
+  type DataSourcesSettings,
+} from '../storage/app-data';
 
 interface DataSourcesContextType {
   settings: DataSourcesSettings;
@@ -46,47 +26,42 @@ interface DataSourcesContextType {
 const DataSourcesContext = createContext<DataSourcesContextType | null>(null);
 
 export function DataSourcesProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<DataSourcesSettings>(DEFAULT_DATA_SOURCES_SETTINGS);
+  const [settings, setSettings] = useState<DataSourcesSettings>(() => createDefaultDataSourceSettings());
+  const latestSettings = useRef(settings);
   const [uploadsVersion, setUploadsVersion] = useState(0);
 
-  useEffect(() => {
-    const token = createAppDataWriteToken();
-    getAppDataItem(DATA_SOURCES_KEY, token)
-      .then((raw) => {
-        if (raw) {
-          try {
-            setSettings({ ...DEFAULT_DATA_SOURCES_SETTINGS, ...(JSON.parse(raw) as Partial<DataSourcesSettings>) });
-          } catch (parseErr) {
-            console.warn('[dnd-ref] Failed to parse data source settings:', parseErr);
-          }
-        }
-      })
-      .catch((e) => console.warn('[dnd-ref] Failed to load data source settings:', e));
+  const replaceSettings = useCallback((nextSettings: DataSourcesSettings) => {
+    latestSettings.current = nextSettings;
+    setSettings(nextSettings);
   }, []);
 
-  async function update(patch: Partial<DataSourcesSettings>) {
-    const token = createAppDataWriteToken();
-    if (!isAppDataWriteTokenCurrent(token)) return;
-    let next!: DataSourcesSettings;
-    setSettings((prev) => {
-      next = { ...prev, ...patch };
-      return next;
+  useEffect(() => {
+    let mounted = true;
+
+    loadDataSourceSettings().then((loadedSettings) => {
+      if (!mounted || !loadedSettings) return;
+      replaceSettings(loadedSettings);
     });
-    const saved = await setAppDataItem(DATA_SOURCES_KEY, JSON.stringify(next), { token }).catch((e) => {
-      console.warn('[dnd-ref] Failed to save data source settings:', e);
-      return false;
-    });
-    if (saved) allowAppDataCacheWrites();
-  }
+
+    return () => {
+      mounted = false;
+    };
+  }, [replaceSettings]);
+
+  const update = useCallback(async (patch: Partial<DataSourcesSettings>) => {
+    const nextSettings = mergeDataSourceSettings({ ...latestSettings.current, ...patch });
+    replaceSettings(nextSettings);
+    await saveDataSourceSettings(nextSettings);
+  }, [replaceSettings]);
 
   const bumpUploads = useCallback(() => {
     setUploadsVersion((v) => v + 1);
   }, []);
 
   const reset = useCallback(() => {
-    setSettings(DEFAULT_DATA_SOURCES_SETTINGS);
+    replaceSettings(createDefaultDataSourceSettings());
     setUploadsVersion((v) => v + 1);
-  }, []);
+  }, [replaceSettings]);
 
   return (
     <DataSourcesContext.Provider value={{ settings, uploadsVersion, update, bumpUploads, reset }}>
