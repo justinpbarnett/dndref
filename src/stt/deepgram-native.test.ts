@@ -16,15 +16,9 @@ const nativeState = vi.hoisted(() => {
       state.recordings.push(this);
     }
 
-    async prepareToRecordAsync(): Promise<void> {
-      if (!state.nextPrepare) return;
-      await state.nextPrepare.promise;
-    }
-
+    async prepareToRecordAsync(): Promise<void> { if (state.nextPrepare) await state.nextPrepare.promise; }
     record(): void { this.recordCalls += 1; }
-
     async stop(): Promise<void> { this.stopCalls += 1; }
-
     release(): void {}
   }
 
