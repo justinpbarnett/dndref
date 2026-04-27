@@ -6,25 +6,14 @@ import { SessionRuntime, type SessionRuntimeDetector } from './session-runtime';
 
 const TEST_STT_SETTINGS: STTSettings = { provider: 'web-speech', deepgramApiKey: '' };
 
-function makeEntity(id: string, name: string): Entity {
-  return {
-    id,
-    name,
-    type: 'NPC',
-    aliases: [],
-    summary: `${name} summary`,
-  };
-}
+function makeEntity(id: string, name: string): Entity { return { id, name, type: 'NPC', aliases: [], summary: `${name} summary` }; }
 
 class FakeDetector implements SessionRuntimeDetector {
   inputs: string[] = [];
 
   constructor(private readonly respond: (input: string) => Entity[]) {}
 
-  detect(input: string): Entity[] {
-    this.inputs.push(input);
-    return this.respond(input);
-  }
+  detect(input: string): Entity[] { this.inputs.push(input); return this.respond(input); }
 }
 
 class FakeSTTProvider implements STTProvider {
