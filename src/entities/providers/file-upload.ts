@@ -11,21 +11,10 @@ import { ingestUploadedFile } from '../ingestion';
 export { UPLOADS_KEY } from '../../storage/keys';
 export type { UploadedFile } from '../../storage/app-data';
 
-export async function getUploads(): Promise<UploadedFile[]> {
-  return getUploadedFiles();
-}
-
-export async function addUpload(name: string, content: string): Promise<void> {
-  await addUploadedFile(name, content);
-}
-
-export async function removeUpload(id: string): Promise<void> {
-  await removeUploadedFile(id);
-}
-
-export async function waitForUploadMutations(): Promise<void> {
-  await waitForUploadedFileMutations();
-}
+export async function getUploads(): Promise<UploadedFile[]> { return getUploadedFiles(); }
+export async function addUpload(name: string, content: string): Promise<void> { await addUploadedFile(name, content); }
+export async function removeUpload(id: string): Promise<void> { await removeUploadedFile(id); }
+export async function waitForUploadMutations(): Promise<void> { await waitForUploadedFileMutations(); }
 
 export class FileUploadProvider implements WorldDataProvider {
   readonly name = 'Uploaded Files';
