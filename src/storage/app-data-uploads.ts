@@ -1,10 +1,10 @@
-import { UPLOADS_KEY } from './keys';
 import {
   canPersistAppData,
   createAppDataWriteToken,
   getAppDataItem,
   setAppDataItem,
 } from './app-data-core';
+import { UPLOADS_KEY } from './keys';
 
 export interface UploadedFile {
   id: string;

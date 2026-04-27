@@ -1,6 +1,6 @@
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, type STTSettings } from '../stt';
-import { DATA_SOURCES_KEY } from './keys';
 import { getAppDataItem, setAppDataItem } from './app-data-core';
+import { DATA_SOURCES_KEY } from './keys';
 
 export interface DataSourcesSettings {
   srdEnabled: boolean;

@@ -33,22 +33,11 @@ class MockMediaRecorder {
     installedBrowserMocks?.recorders.push(this);
   }
 
-  start(ms: number): void {
-    this.state = 'recording';
-    this.startMs = ms;
-  }
-
+  start(ms: number): void { this.state = 'recording'; this.startMs = ms; }
   pause(): void { this.state = 'paused'; }
   resume(): void { this.state = 'recording'; }
-
-  stop(): void {
-    this.stopCalls += 1;
-    this.state = 'inactive';
-  }
-
-  emitChunk(data: { size: number }): void {
-    this.ondataavailable?.({ data });
-  }
+  stop(): void { this.stopCalls += 1; this.state = 'inactive'; }
+  emitChunk(data: { size: number }): void { this.ondataavailable?.({ data }); }
 }
 
 class MockWebSocket {
@@ -71,24 +60,10 @@ class MockWebSocket {
     installedBrowserMocks?.sockets.push(this);
   }
 
-  close(): void {
-    this.closeCalls += 1;
-    this.readyState = MockWebSocket.CLOSED;
-    this.onclose?.({ code: 1000 } as CloseEvent);
-  }
-
-  open(): void {
-    this.readyState = MockWebSocket.OPEN;
-    this.onopen?.();
-  }
-
-  send(data: unknown): void {
-    this.sent.push(data);
-  }
-
-  receive(data: string): void {
-    this.onmessage?.({ data });
-  }
+  close(): void { this.closeCalls += 1; this.readyState = MockWebSocket.CLOSED; this.onclose?.({ code: 1000 } as CloseEvent); }
+  open(): void { this.readyState = MockWebSocket.OPEN; this.onopen?.(); }
+  send(data: unknown): void { this.sent.push(data); }
+  receive(data: string): void { this.onmessage?.({ data }); }
 }
 
 let installedBrowserMocks: BrowserCaptureMocks | null = null;
