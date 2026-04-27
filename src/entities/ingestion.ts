@@ -214,11 +214,7 @@ function normalizeSummary(summary: unknown, description: unknown): string {
 }
 
 function buildEntityId(name: string, options: NormalizeIngestedEntityOptions): string {
-  const parts: Array<string | number> = [];
-  if (options.idPrefix) parts.push(options.idPrefix);
-  parts.push(slugify(name));
-  if (options.idNamespace !== undefined && options.idNamespace !== '') parts.push(options.idNamespace);
-  if (options.index !== undefined) parts.push(options.index);
-
-  return parts.join('-');
+  return [options.idPrefix, slugify(name), options.idNamespace, options.index]
+    .filter((part) => part !== undefined && part !== '')
+    .join('-');
 }
