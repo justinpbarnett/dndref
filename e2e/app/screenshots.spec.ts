@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 import {
   setupTest,
@@ -9,9 +9,7 @@ import {
 } from '../helpers';
 
 test.describe('screenshots', () => {
-  test.beforeEach(async ({ page }: { page: Page }) => {
-    await setupTest(page);
-  });
+  test.beforeEach(async ({ page }) => { await setupTest(page); });
 
   test('idle state', async ({ page }) => {
     await page.screenshot({ path: 'e2e/screenshots/app-01-idle.png' });

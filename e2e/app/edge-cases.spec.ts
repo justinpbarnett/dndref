@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 import {
   emitSpeechEnd,
@@ -13,9 +13,7 @@ import {
 } from '../helpers';
 
 test.describe('edge cases', () => {
-  test.beforeEach(async ({ page }: { page: Page }) => {
-    await setupTest(page);
-  });
+  test.beforeEach(async ({ page }) => { await setupTest(page); });
 
   test('rapid start/stop cycle does not corrupt state', async ({ page }) => {
     await startSession(page);

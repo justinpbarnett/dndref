@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 import {
   setupTest,
@@ -8,7 +8,7 @@ import {
 } from '../helpers';
 
 test.describe('entity details modal', () => {
-  test.beforeEach(async ({ page }: { page: Page }) => {
+  test.beforeEach(async ({ page }) => {
     await setupTest(page);
     await startSession(page);
   });
