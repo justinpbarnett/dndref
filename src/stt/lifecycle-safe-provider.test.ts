@@ -4,20 +4,17 @@ import { createLateEventSafeSTTProvider } from './lifecycle-safe-provider';
 
 import type { STTProvider } from './index';
 
-type Deferred = {
+type RejectablePromise = {
   promise: Promise<void>;
   reject: (error: unknown) => void;
-  resolve: () => void;
 };
 
-function deferred(): Deferred {
+function rejectablePromise(): RejectablePromise {
   let reject!: (error: unknown) => void;
-  let resolve!: () => void;
-  const promise = new Promise<void>((res, rej) => {
-    resolve = res;
+  const promise = new Promise<void>((_resolve, rej) => {
     reject = rej;
   });
-  return { promise, reject, resolve };
+  return { promise, reject };
 }
 
 class FakeCaptureAdapter implements STTProvider {
@@ -84,7 +81,7 @@ describe('late-event-safe STT provider', () => {
   });
 
   it('cancels stop-during-start so startup completions cannot deliver stale events', async () => {
-    const startup = deferred();
+    const startup = rejectablePromise();
     const { adapters, onError, onTranscript, provider } = makeProvider((adapter) => {
       adapter.startResult = startup.promise;
     });

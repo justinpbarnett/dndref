@@ -2,10 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const storage = vi.hoisted(() => new Map<string, string>());
 const platform = vi.hoisted(() => ({ OS: 'web' }));
+
+type MockProviderInstance = {
+  emitError(error: string): void;
+  emitTranscript(text: string): void;
+};
+
 const sttMocks = vi.hoisted(() => ({
-  deepgramInstances: [] as any[],
+  deepgramInstances: [] as MockProviderInstance[],
   deepgramStartError: null as Error | null,
-  webSpeechInstances: [] as any[],
+  webSpeechInstances: [] as MockProviderInstance[],
   webSpeechStartError: null as Error | null,
 }));
 
@@ -18,7 +24,7 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 vi.mock('react-native', () => ({ Platform: platform }));
-vi.mock('../stt/deepgram', () => ({
+vi.mock('./deepgram', () => ({
   DeepgramProvider: class {
     readonly name = 'Deepgram';
 
@@ -30,18 +36,19 @@ vi.mock('../stt/deepgram', () => ({
       sttMocks.deepgramInstances.push(this);
     }
 
-    async start() {
+    async start(): Promise<void> {
       if (sttMocks.deepgramStartError) throw sttMocks.deepgramStartError;
     }
 
-    pause() {}
-    resume() {}
-    stop() {}
-    emitTranscript(text: string) { this.onTranscript(text); }
-    emitError(error: string) { this.onError(error); }
+    pause(): void {}
+    resume(): void {}
+    stop(): void {}
+
+    emitTranscript(text: string): void { this.onTranscript(text); }
+    emitError(error: string): void { this.onError(error); }
   },
 }));
-vi.mock('../stt/web-speech', () => ({
+vi.mock('./web-speech', () => ({
   WebSpeechProvider: class {
     readonly name = 'Web Speech';
 
@@ -52,15 +59,16 @@ vi.mock('../stt/web-speech', () => ({
       sttMocks.webSpeechInstances.push(this);
     }
 
-    async start() {
+    async start(): Promise<void> {
       if (sttMocks.webSpeechStartError) throw sttMocks.webSpeechStartError;
     }
 
-    pause() {}
-    resume() {}
-    stop() {}
-    emitTranscript(text: string) { this.onTranscript(text); }
-    emitError(error: string) { this.onError(error); }
+    pause(): void {}
+    resume(): void {}
+    stop(): void {}
+
+    emitTranscript(text: string): void { this.onTranscript(text); }
+    emitError(error: string): void { this.onError(error); }
   },
 }));
 
