@@ -41,10 +41,8 @@ function createUploadedFile(name: string, content: string): UploadedFile {
 function isUploadedFile(value: unknown): value is UploadedFile {
   if (!value || typeof value !== 'object') return false;
 
-  const file = value as Record<string, unknown>;
-  return typeof file.id === 'string' &&
-    typeof file.name === 'string' &&
-    typeof file.content === 'string';
+  const file = value as Record<keyof UploadedFile, unknown>;
+  return (['id', 'name', 'content'] as const).every((key) => typeof file[key] === 'string');
 }
 
 async function readUploadedFiles(token: number): Promise<UploadedFile[]> {
