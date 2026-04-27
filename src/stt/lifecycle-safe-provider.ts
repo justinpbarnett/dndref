@@ -117,10 +117,6 @@ export class LateEventSafeSTTProvider implements STTProvider {
   }
 }
 
-export function createLateEventSafeSTTProvider(
-  createProvider: STTProviderFactory,
-  onTranscript: (text: string) => void,
-  onError: (error: string) => void,
-): STTProvider {
+export function createLateEventSafeSTTProvider(createProvider: STTProviderFactory, onTranscript: (text: string) => void, onError: (error: string) => void): STTProvider {
   return new LateEventSafeSTTProvider(createProvider, onTranscript, onError);
 }
