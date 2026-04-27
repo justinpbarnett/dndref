@@ -286,11 +286,6 @@ export class SessionRuntime {
   private updateSnapshot(patch: SnapshotPatch): void {
     if (Object.keys(patch).length === 0) return;
     this.snapshot = { ...this.snapshot, ...patch };
-    this.notifyListeners();
-  }
-
-  private notifyListeners(): void {
-    const snapshot = this.snapshot;
-    for (const listener of this.listeners) listener(snapshot);
+    for (const listener of this.listeners) listener(this.snapshot);
   }
 }
