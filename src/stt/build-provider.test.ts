@@ -18,9 +18,7 @@ const sttMocks = vi.hoisted(() => ({
 vi.mock('@react-native-async-storage/async-storage', () => ({
   default: {
     getItem: vi.fn(async (key: string) => storage.get(key) ?? null),
-    setItem: vi.fn(async (key: string, value: string) => {
-      storage.set(key, value);
-    }),
+    setItem: vi.fn(async (key: string, value: string) => { storage.set(key, value); }),
   },
 }));
 vi.mock('react-native', () => ({ Platform: platform }));
