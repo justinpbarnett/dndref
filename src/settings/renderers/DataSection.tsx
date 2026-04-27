@@ -7,14 +7,10 @@ import { KeyLink } from '../KeyLink';
 import { DataSectionProps } from '../types';
 import { SettingsInput } from './SettingsInput';
 
-const SRD_PUBLISHER_GROUPS = (() => {
-  const map = new Map<string, { slug: string; label: string }[]>();
-  for (const src of SRD_SOURCES) {
-    if (!map.has(src.publisher)) map.set(src.publisher, []);
-    map.get(src.publisher)!.push({ slug: src.slug, label: src.label });
-  }
-  return Array.from(map.entries());
-})();
+const SRD_PUBLISHER_GROUPS = Array.from(SRD_SOURCES.reduce((map, src) => {
+  map.set(src.publisher, [...(map.get(src.publisher) ?? []), { slug: src.slug, label: src.label }]);
+  return map;
+}, new Map<string, { slug: string; label: string }[]>()).entries());
 
 export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }: DataSectionProps) {
   const C = styles.__colors;
