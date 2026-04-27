@@ -48,21 +48,17 @@ export function EntityDetailsModal({ card, visible, onClose }: Props) {
             </TouchableOpacity>
           </View>
           <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
-            {renderDetails(details, styles, accentColor)}
+            {extractEntityDetailBullets(details).map((bullet, index) => (
+              <View key={index} style={styles.detailBulletRow}>
+                <Text style={[styles.detailBulletMark, { color: accentColor + 'aa' }]}>{'>'}</Text>
+                <Text style={styles.details}>{bullet}</Text>
+              </View>
+            ))}
           </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>
   );
-}
-
-function renderDetails(details: string, styles: ReturnType<typeof createStyles>, accentColor: string) {
-  return extractEntityDetailBullets(details).map((bullet, index) => (
-    <View key={index} style={styles.detailBulletRow}>
-      <Text style={[styles.detailBulletMark, { color: accentColor + 'aa' }]}>{'>'}</Text>
-      <Text style={styles.details}>{bullet}</Text>
-    </View>
-  ));
 }
 
 function createStyles(C: Colors) {
