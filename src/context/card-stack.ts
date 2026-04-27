@@ -5,10 +5,7 @@ export const MAX_CARDS = 6;
 
 export function extractCard(cards: CardState[], instanceId: string): [CardState, CardState[]] | null {
   const card = cards.find((candidate) => candidate.instanceId === instanceId);
-  if (!card) return null;
-
-  const remainingCards = cards.filter((candidate) => candidate.instanceId !== instanceId);
-  return [card, remainingCards];
+  return card ? [card, cards.filter((candidate) => candidate.instanceId !== instanceId)] : null;
 }
 
 export function insertAfterPinned(cards: CardState[], card: CardState): CardState[] {
