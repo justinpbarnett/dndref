@@ -4,20 +4,35 @@ import type { CardState } from './session-types';
 export const MAX_CARDS = 6;
 
 export function extractCard(cards: CardState[], instanceId: string): [CardState, CardState[]] | null {
-  const card = cards.find((c) => c.instanceId === instanceId);
+  const card = cards.find((candidate) => candidate.instanceId === instanceId);
   if (!card) return null;
-  return [card, cards.filter((c) => c.instanceId !== instanceId)];
+
+  const remainingCards = cards.filter((candidate) => candidate.instanceId !== instanceId);
+  return [card, remainingCards];
 }
 
 export function buildCardIdSet(cards: CardState[]): Set<string> {
-  return new Set(cards.map((c) => c.entity.id));
+  return new Set(cards.map((card) => card.entity.id));
 }
 
 export function insertAfterPinned(cards: CardState[], card: CardState): CardState[] {
-  const lastPinnedIdx = cards.reduce((acc, c, i) => (c.pinned ? i : acc), -1);
-  const result = [...cards];
-  result.splice(lastPinnedIdx + 1, 0, card);
-  return result;
+  const lastPinnedIndex = cards.reduce((lastIndex, candidate, index) => {
+    if (!candidate.pinned) return lastIndex;
+    return index;
+  }, -1);
+  const nextCards = [...cards];
+  nextCards.splice(lastPinnedIndex + 1, 0, card);
+  return nextCards;
+}
+
+function findRightmostUnpinnedIndex(cards: CardState[]): number {
+  for (let index = cards.length - 1; index >= 0; index--) {
+    if (!cards[index].pinned) {
+      return index;
+    }
+  }
+
+  return -1;
 }
 
 export function addCard(cards: CardState[], entity: Entity): CardState[] {
@@ -25,34 +40,31 @@ export function addCard(cards: CardState[], entity: Entity): CardState[] {
   if (existingIds.has(entity.id)) return cards;
 
   const newCard: CardState = { instanceId: `${entity.id}-${Date.now()}`, entity, pinned: false };
-  const next = insertAfterPinned(cards, newCard);
+  const nextCards = insertAfterPinned(cards, newCard);
 
-  if (next.length > MAX_CARDS) {
-    let evictIdx = -1;
-    for (let i = next.length - 1; i >= 0; i--) {
-      if (!next[i].pinned) { evictIdx = i; break; }
-    }
-    if (evictIdx === -1) return cards;
-    next.splice(evictIdx, 1);
+  if (nextCards.length > MAX_CARDS) {
+    const evictionIndex = findRightmostUnpinnedIndex(nextCards);
+    if (evictionIndex === -1) return cards;
+    nextCards.splice(evictionIndex, 1);
   }
 
-  return next;
+  return nextCards;
 }
 
 export function pinCard(cards: CardState[], instanceId: string): CardState[] {
-  const result = extractCard(cards, instanceId);
-  if (!result) return cards;
-  const [card, rest] = result;
+  const extracted = extractCard(cards, instanceId);
+  if (!extracted) return cards;
+  const [card, rest] = extracted;
   return [{ ...card, pinned: true }, ...rest];
 }
 
 export function unpinCard(cards: CardState[], instanceId: string): CardState[] {
-  const result = extractCard(cards, instanceId);
-  if (!result) return cards;
-  const [card, rest] = result;
+  const extracted = extractCard(cards, instanceId);
+  if (!extracted) return cards;
+  const [card, rest] = extracted;
   return insertAfterPinned(rest, { ...card, pinned: false });
 }
 
 export function dismissCard(cards: CardState[], instanceId: string): CardState[] {
-  return cards.filter((c) => c.instanceId !== instanceId);
+  return cards.filter((card) => card.instanceId !== instanceId);
 }

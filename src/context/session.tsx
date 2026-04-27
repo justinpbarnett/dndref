@@ -30,9 +30,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [sttProviderName, setSttProviderName] = useState('');
   const [entityStatus, setEntityStatus] = useState<EntityStatus>('loading');
   const [entities, setEntities] = useState<EntityIndex>([]);
-  const runtimeRef = useRef<SessionRuntime | null>(null);
-  if (!runtimeRef.current) runtimeRef.current = new SessionRuntime();
-  const runtime = runtimeRef.current;
+  const [runtime] = useState(() => new SessionRuntime());
   const [runtimeSnapshot, setRuntimeSnapshot] = useState(() => runtime.getSnapshot());
   const { status, cards, transcript, recentDetections } = runtimeSnapshot;
   const sttRef = useRef<STTProvider | null>(null);
