@@ -6,6 +6,9 @@ import {
   slugify,
 } from './index';
 
+const JSON_UPLOAD_EXTENSION = '.json';
+const UPLOAD_ENTITY_ID_PREFIX = 'upload';
+
 interface MarkdownBlock {
   name: string;
   body: string;
@@ -40,7 +43,7 @@ export function normalizeIngestedEntity(
   record: IngestedEntityRecord,
   options: NormalizeIngestedEntityOptions = {},
 ): Entity | null {
-  const name = normalizeName(record.name);
+  const name = normalizeNonEmptyString(record.name);
   if (!name) return null;
 
   const entity: Entity = {
@@ -51,9 +54,8 @@ export function normalizeIngestedEntity(
     summary: normalizeSummary(record.summary, record.description),
   };
 
-  if (typeof record.image === 'string' && record.image.trim()) {
-    entity.image = record.image.trim();
-  }
+  const image = normalizeNonEmptyString(record.image);
+  if (image) entity.image = image;
 
   return entity;
 }
@@ -95,7 +97,7 @@ export function ingestUploadedFile(
   if (isJsonUploadName(upload.name)) {
     try {
       return ingestJsonContent(upload.content, {
-        idPrefix: 'upload',
+        idPrefix: UPLOAD_ENTITY_ID_PREFIX,
         idNamespace: options.idNamespace ?? Date.now(),
       });
     } catch (error) {
@@ -107,13 +109,13 @@ export function ingestUploadedFile(
 }
 
 export function isJsonUploadName(name: string): boolean {
-  return name.toLowerCase().endsWith('.json');
+  return name.toLowerCase().endsWith(JSON_UPLOAD_EXTENSION);
 }
 
 function normalizeMarkdownBlock(block: MarkdownBlock): Entity | null {
   const name = cleanHeading(block.name);
-  let type = '';
-  let aliases = '';
+  let rawType = '';
+  let rawAliases = '';
   const summaryLines: string[] = [];
 
   for (const line of block.body.split('\n')) {
@@ -122,11 +124,11 @@ function normalizeMarkdownBlock(block: MarkdownBlock): Entity | null {
 
     const field = parseField(trimmed);
     if (field?.key === 'type') {
-      type = field.value;
+      rawType = field.value;
       continue;
     }
     if (field?.key === 'aliases') {
-      aliases = field.value;
+      rawAliases = field.value;
       continue;
     }
 
@@ -136,8 +138,8 @@ function normalizeMarkdownBlock(block: MarkdownBlock): Entity | null {
 
   return normalizeIngestedEntity({
     name,
-    type,
-    aliases,
+    type: rawType,
+    aliases: rawAliases,
     summary: summaryLines.join('\n'),
   });
 }
@@ -177,8 +179,11 @@ function isIngestedEntityRecord(value: unknown): value is IngestedEntityRecord {
   return value !== null && typeof value === 'object';
 }
 
-function normalizeName(value: unknown): string | null {
-  return typeof value === 'string' ? value.trim() || null : null;
+function normalizeNonEmptyString(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+
+  const normalized = value.trim();
+  return normalized || null;
 }
 
 function normalizeIngestedEntityType(value: unknown): EntityType {

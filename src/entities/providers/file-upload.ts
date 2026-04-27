@@ -32,14 +32,13 @@ export class FileUploadProvider implements WorldDataProvider {
 
   async load(): Promise<EntityIndex> {
     const uploads = await getUploads();
-    const results = await Promise.all(uploads.map(parseUpload));
-    return results.flat();
+    return uploads.flatMap(parseUpload);
   }
 
   getName(): string { return this.name; }
 }
 
-async function parseUpload(upload: UploadedFile): Promise<EntityIndex> {
+function parseUpload(upload: UploadedFile): EntityIndex {
   return ingestUploadedFile(upload, {
     onJsonParseError: () => {
       console.warn(`[dnd-ref] Failed to parse JSON upload: ${upload.name}`);
