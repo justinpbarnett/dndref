@@ -15,11 +15,7 @@ export async function removeUploadedFile(id: string): Promise<boolean> { return 
 export async function waitForUploadedFileMutations(): Promise<void> { await uploadMutationQueue.catch(() => undefined); }
 
 function createUploadedFile(name: string, content: string): UploadedFile {
-  return {
-    id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    name,
-    content,
-  };
+  return { id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, content };
 }
 
 function isUploadedFile(value: unknown): value is UploadedFile {
