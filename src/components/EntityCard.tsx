@@ -1,18 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { Ionicon } from './Ionicon';
-import { CardState } from '../context/session';
+import type { CardState } from '../context/session';
 import { CARD_SIZE_CONFIGS, useColors, useUISettings } from '../context/ui-settings';
+import { deriveEntityCardPresentation } from '../entity-card-presentation';
 import { Colors, F, typeAccent } from '../theme';
-
-function parseBullets(summary: string): string[] {
-  return summary
-    .split(/(?<=[.!])\s+/)
-    .map((s) => s.replace(/[.!]$/, '').trim())
-    .filter((s) => s.length > 0)
-    .slice(0, 5);
-}
+import { Ionicon } from './Ionicon';
 
 interface Props {
   card: CardState;
@@ -23,9 +16,8 @@ interface Props {
 }
 
 export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
-  const { entity, pinned } = card;
   const C = useColors();
-  const color = typeAccent(entity.type, C);
+  const accentColor = typeAccent(card.entity.type, C);
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(8)).current;
 
@@ -33,6 +25,13 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
   const { fontScale } = CARD_SIZE_CONFIGS[cardSize];
 
   const styles = useMemo(() => createStyles(C), [C]);
+  const presentation = useMemo(
+    () => deriveEntityCardPresentation({ card, accentColor }),
+    [card, accentColor],
+  );
+  const { pinned } = presentation;
+  const color = presentation.accentColor;
+  const onTogglePin = presentation.actions.pinToggle.kind === 'unpin' ? onUnpin : onPin;
 
   useEffect(() => {
     const anim = Animated.parallel([
@@ -42,8 +41,6 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
     anim.start();
     return () => anim.stop();
   }, []);
-
-  const bullets = useMemo(() => parseBullets(entity.summary), [entity.summary]);
 
   const webStyles = Platform.OS === 'web'
     ? {
@@ -72,36 +69,40 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
               style={[styles.name, { fontSize: 14 * fontScale, lineHeight: 20 * fontScale }]}
               numberOfLines={2}
             >
-              {entity.name}
+              {presentation.name}
             </Text>
             <Text style={[styles.typeLabel, { color: color + 'b0', fontSize: 8 * fontScale }]}>
-              {entity.type.toUpperCase()}
+              {presentation.typeLabel}
             </Text>
           </View>
           <View style={styles.headerRight}>
             <View style={styles.actions}>
-              <TouchableOpacity
-                onPress={pinned ? onUnpin : onPin}
-                accessibilityLabel={pinned ? 'Unpin' : 'Pin'}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 6 }}
-              >
-                <Ionicon
-                  name={pinned ? 'bookmark' : 'bookmark-outline'}
-                  size={15 * fontScale}
-                  color={pinned ? color : C.textDim}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={onDismiss}
-                accessibilityLabel="Dismiss"
-                hitSlop={{ top: 12, bottom: 12, left: 6, right: 12 }}
-              >
-                <Ionicon name="close" size={14 * fontScale} color={C.textDim} />
-              </TouchableOpacity>
+              {presentation.actions.pinToggle.available && (
+                <TouchableOpacity
+                  onPress={onTogglePin}
+                  accessibilityLabel={presentation.actions.pinToggle.accessibilityLabel}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 6 }}
+                >
+                  <Ionicon
+                    name={presentation.actions.pinToggle.iconName}
+                    size={15 * fontScale}
+                    color={pinned ? color : C.textDim}
+                  />
+                </TouchableOpacity>
+              )}
+              {presentation.actions.dismiss.available && (
+                <TouchableOpacity
+                  onPress={onDismiss}
+                  accessibilityLabel={presentation.actions.dismiss.accessibilityLabel}
+                  hitSlop={{ top: 12, bottom: 12, left: 6, right: 12 }}
+                >
+                  <Ionicon name={presentation.actions.dismiss.iconName} size={14 * fontScale} color={C.textDim} />
+                </TouchableOpacity>
+              )}
             </View>
-            {entity.image && (
+            {presentation.imageUri && (
               <Image
-                source={{ uri: entity.image }}
+                source={{ uri: presentation.imageUri }}
                 style={[styles.portrait, { borderColor: color + '35' }]}
                 resizeMode="cover"
               />
@@ -113,10 +114,10 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss }: Props) {
       <View style={[styles.divider, { backgroundColor: color + '22' }]} />
 
       <View style={styles.bullets}>
-        {bullets.map((bullet, i) => (
+        {presentation.summaryBullets.map((bullet, i) => (
           <View key={i} style={styles.bulletRow}>
             <Text style={[styles.bulletMark, { color: color + 'aa', fontSize: 11 * fontScale, lineHeight: 18 * fontScale }]}>
-              {'>'}
+              {presentation.bulletMarker}
             </Text>
             <Text style={[styles.bulletText, { fontSize: 12 * fontScale, lineHeight: 18 * fontScale }]}>
               {bullet}
