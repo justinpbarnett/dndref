@@ -81,7 +81,7 @@ async function loadCache(key: string, cacheSession: AppDataCacheSession): Promis
   try {
     const raw = await cacheSession.getItem(key);
     if (!raw) return null;
-    const cache = JSON.parse(raw) as { ts: number; entities: EntityIndex };
+    const cache = JSON.parse(raw) as SRDCache;
     if (Date.now() - cache.ts > CACHE_TTL_MS) return null;
     return cache.entities;
   } catch {
@@ -90,8 +90,10 @@ async function loadCache(key: string, cacheSession: AppDataCacheSession): Promis
 }
 
 async function saveCache(key: string, entities: EntityIndex, cacheSession: AppDataCacheSession): Promise<void> {
+  const cache: SRDCache = { ts: Date.now(), entities };
+
   try {
-    await cacheSession.setItem(key, JSON.stringify({ ts: Date.now(), entities }));
+    await cacheSession.setItem(key, JSON.stringify(cache));
   } catch {
     // Storage full -- skip caching
   }

@@ -144,10 +144,7 @@ export async function getUploadedFiles(): Promise<UploadedFile[]> {
 }
 
 export async function addUploadedFile(name: string, content: string): Promise<boolean> {
-  return mutateUploadedFiles((uploads) => {
-    const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    return [...uploads, { id, name, content }];
-  });
+  return mutateUploadedFiles((uploads) => [...uploads, createUploadedFile(name, content)]);
 }
 
 export async function removeUploadedFile(id: string): Promise<boolean> {
@@ -158,12 +155,21 @@ export async function waitForUploadedFileMutations(): Promise<void> {
   await uploadMutationQueue.catch(() => undefined);
 }
 
+function createUploadedFile(name: string, content: string): UploadedFile {
+  return {
+    id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name,
+    content,
+  };
+}
+
 function isUploadedFile(value: unknown): value is UploadedFile {
-  return !!value &&
-    typeof value === 'object' &&
-    typeof (value as UploadedFile).id === 'string' &&
-    typeof (value as UploadedFile).name === 'string' &&
-    typeof (value as UploadedFile).content === 'string';
+  if (!value || typeof value !== 'object') return false;
+
+  const file = value as Record<string, unknown>;
+  return typeof file.id === 'string' &&
+    typeof file.name === 'string' &&
+    typeof file.content === 'string';
 }
 
 async function readUploadedFiles(token: number): Promise<UploadedFile[]> {
@@ -184,9 +190,11 @@ function mutateUploadedFiles(mutator: (uploads: UploadedFile[]) => UploadedFile[
     .catch(() => undefined)
     .then(async () => {
       if (!canPersistAppData(token)) return false;
-      const uploads = await readUploadedFiles(token);
+      const currentUploads = await readUploadedFiles(token);
       if (!canPersistAppData(token)) return false;
-      return setAppDataItem(UPLOADS_KEY, JSON.stringify(mutator(uploads)), { token });
+
+      const nextUploads = mutator(currentUploads);
+      return setAppDataItem(UPLOADS_KEY, JSON.stringify(nextUploads), { token });
     });
 
   uploadMutationQueue = operation.catch(() => undefined);
@@ -216,15 +224,16 @@ export async function setAppDataItem(
   value: string,
   options: { cache?: boolean; token?: number } = {},
 ): Promise<boolean> {
-  const token = options.token ?? createAppDataWriteToken();
+  const { cache = false, token = createAppDataWriteToken() } = options;
   const operation = appDataWriteQueue
     .catch(() => undefined)
     .then(async () => {
-      const canPersist = options.cache ? canPersistAppDataCache : canPersistAppData;
+      const canPersist = cache ? canPersistAppDataCache : canPersistAppData;
       if (!canPersist(token)) return false;
+
       await AsyncStorage.setItem(key, value);
       const saved = canPersist(token);
-      if (saved && !options.cache) allowAppDataCacheWrites();
+      if (saved && !cache) allowAppDataCacheWrites();
       return saved;
     });
 
