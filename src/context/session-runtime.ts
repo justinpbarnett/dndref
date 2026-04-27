@@ -143,18 +143,11 @@ export class SessionRuntime {
     this.updateSnapshot(snapshotPatch);
   }
 
-  pin(instanceId: string): void {
-    const cards = pinCard(this.snapshot.cards, instanceId);
-    if (cards !== this.snapshot.cards) this.updateSnapshot({ cards });
-  }
+  pin(instanceId: string): void { this.updateCards(pinCard(this.snapshot.cards, instanceId)); }
+  unpin(instanceId: string): void { this.updateCards(unpinCard(this.snapshot.cards, instanceId)); }
+  dismiss(instanceId: string): void { this.updateCards(dismissCard(this.snapshot.cards, instanceId)); }
 
-  unpin(instanceId: string): void {
-    const cards = unpinCard(this.snapshot.cards, instanceId);
-    if (cards !== this.snapshot.cards) this.updateSnapshot({ cards });
-  }
-
-  dismiss(instanceId: string): void {
-    const cards = dismissCard(this.snapshot.cards, instanceId);
+  private updateCards(cards: CardState[]): void {
     if (cards !== this.snapshot.cards) this.updateSnapshot({ cards });
   }
 
