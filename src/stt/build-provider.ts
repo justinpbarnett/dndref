@@ -1,24 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
+import { createDefaultVoiceSettings, loadVoiceSettings } from '../storage/app-data';
 import { DeepgramProvider } from '../stt/deepgram';
-import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, STTProvider, STTSettings } from '../stt/index';
+import { STTProvider, STTSettings } from '../stt/index';
 import { WebSpeechProvider } from '../stt/web-speech';
 
 export async function loadSettings(): Promise<STTSettings> {
-  try {
-    const raw = await AsyncStorage.getItem(STT_SETTINGS_KEY);
-    if (raw) {
-      try {
-        return { ...DEFAULT_STT_SETTINGS, ...(JSON.parse(raw) as Partial<STTSettings>) };
-      } catch (parseErr) {
-        console.warn('[dnd-ref] Failed to parse STT settings, using defaults:', parseErr);
-      }
-    }
-  } catch (e) {
-    console.warn('[dnd-ref] Failed to load STT settings, using defaults:', e);
-  }
-  return DEFAULT_STT_SETTINGS;
+  return (await loadVoiceSettings()) ?? createDefaultVoiceSettings();
 }
 
 export function buildProvider(

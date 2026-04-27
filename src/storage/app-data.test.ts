@@ -37,10 +37,12 @@ import {
   getUploadedFiles,
   isAppStorageKey,
   loadDataSourceSettings,
+  loadVoiceSettings,
   removeUploadedFile,
   resetAppDataControlsForTests,
   resetStoredAppData,
   saveDataSourceSettings,
+  saveVoiceSettings,
   setAppDataItem,
 } from './app-data';
 import {
@@ -50,7 +52,7 @@ import {
   SRD_CACHE_KEY_PREFIX,
   UPLOADS_KEY,
 } from './keys';
-import { STT_SETTINGS_KEY } from '../stt';
+import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY } from '../stt';
 
 function blockStorageOperation(operation: keyof typeof storageControls): () => void {
   let releaseGate = () => {};
@@ -196,6 +198,26 @@ describe('app data storage clearing', () => {
     releaseGetItem();
 
     expect(await read).toBeNull();
+  });
+
+  it('loads and saves voice settings through the local app data seam', async () => {
+    const settings = {
+      provider: 'deepgram' as const,
+      deepgramApiKey: 'voice-secret',
+    };
+
+    await expect(saveVoiceSettings(settings)).resolves.toBe(true);
+    expect(JSON.parse(storage.get(STT_SETTINGS_KEY)!)).toEqual(settings);
+    await expect(loadVoiceSettings()).resolves.toEqual(settings);
+  });
+
+  it('validates loaded voice settings through the local app data seam', async () => {
+    storage.set(STT_SETTINGS_KEY, JSON.stringify({
+      provider: 'bogus-provider',
+      deepgramApiKey: 42,
+    }));
+
+    await expect(loadVoiceSettings()).resolves.toEqual(DEFAULT_STT_SETTINGS);
   });
 
   it('loads data source settings through the local app data seam', async () => {
