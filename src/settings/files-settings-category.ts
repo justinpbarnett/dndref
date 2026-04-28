@@ -8,12 +8,12 @@ import {
   type UploadedFile,
 } from "../entities/providers/file-upload";
 import { resetStoredAppData as resetStoredLocalAppData } from "../storage/app-data";
+import { SnapshotStore, type SnapshotListener } from "./snapshot-store";
 
 const DELETE_ALL_MESSAGE =
   "This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.";
 const PASTED_CONTENT_FILE_NAME = "Pasted Content.md";
 
-type FilesSettingsListener = (snapshot: FilesSettingsCategorySnapshot) => void;
 type MaybePromise<T> = T | Promise<T>;
 
 export interface PickedTextFile {
@@ -44,7 +44,7 @@ export interface FilesSettingsCategoryControllerOptions {
 
 export interface FilesSettingsCategoryController {
   getSnapshot(): FilesSettingsCategorySnapshot;
-  subscribe(listener: FilesSettingsListener): () => void;
+  subscribe(listener: SnapshotListener<FilesSettingsCategorySnapshot>): () => void;
   load(): Promise<void>;
   setPasteFileName(update: SetStateAction<string>): void;
   setPasteContent(update: SetStateAction<string>): void;
@@ -56,7 +56,10 @@ export interface FilesSettingsCategoryController {
   dispose(): void;
 }
 
-class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryController {
+class DefaultFilesSettingsCategoryController
+  extends SnapshotStore<FilesSettingsCategorySnapshot>
+  implements FilesSettingsCategoryController
+{
   private readonly getUploads: () => Promise<UploadedFile[]>;
   private readonly addUpload: (name: string, content: string) => MaybePromise<void>;
   private readonly removeUpload: (id: string) => MaybePromise<void>;
@@ -66,12 +69,11 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
   private readonly resetStoredAppData: () => Promise<unknown>;
   private readonly stopSession: () => void;
   private readonly onDeleteAllDataReset: () => void;
-  private readonly listeners = new Set<FilesSettingsListener>();
-  private snapshot: FilesSettingsCategorySnapshot = createDefaultSnapshot();
   private refreshGeneration = 0;
   private disposed = false;
 
   constructor(options: FilesSettingsCategoryControllerOptions = {}) {
+    super(createDefaultSnapshot());
     this.getUploads = options.getUploads ?? getStoredUploads;
     this.addUpload = options.addUpload ?? addStoredUpload;
     this.removeUpload = options.removeUpload ?? removeStoredUpload;
@@ -81,17 +83,6 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
     this.resetStoredAppData = options.resetStoredAppData ?? resetStoredLocalAppData;
     this.stopSession = options.stopSession ?? noop;
     this.onDeleteAllDataReset = options.onDeleteAllDataReset ?? noop;
-  }
-
-  getSnapshot(): FilesSettingsCategorySnapshot {
-    return this.snapshot;
-  }
-
-  subscribe(listener: FilesSettingsListener): () => void {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
   }
 
   async load(): Promise<void> {
@@ -170,7 +161,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
   dispose(): void {
     this.disposed = true;
     this.refreshGeneration += 1;
-    this.listeners.clear();
+    this.clearSnapshotListeners();
   }
 
   private async refreshUploads(): Promise<void> {
@@ -180,15 +171,6 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
 
     this.updateSnapshot({ uploads });
     this.bumpUploads();
-  }
-
-  private updateSnapshot(patch: Partial<FilesSettingsCategorySnapshot>): void {
-    this.replaceSnapshot({ ...this.snapshot, ...patch });
-  }
-
-  private replaceSnapshot(snapshot: FilesSettingsCategorySnapshot): void {
-    this.snapshot = snapshot;
-    this.listeners.forEach((listener) => listener(this.snapshot));
   }
 }
 

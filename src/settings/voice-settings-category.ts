@@ -8,11 +8,11 @@ import {
   saveVoiceSettings as saveStoredVoiceSettings,
 } from "../storage/app-data";
 import type { STTSettings } from "../stt";
+import { SnapshotStore, type SnapshotListener } from "./snapshot-store";
 
 export const VOICE_SAVED_INDICATOR_MS = 2000;
 
 type SavedTimer = ReturnType<typeof setTimeout>;
-type VoiceSettingsListener = (snapshot: VoiceSettingsCategorySnapshot) => void;
 
 export interface VoiceSettingsCategorySnapshot {
   sttSettings: STTSettings;
@@ -28,7 +28,7 @@ export interface VoiceSettingsCategoryControllerOptions {
 
 export interface VoiceSettingsCategoryController {
   getSnapshot(): VoiceSettingsCategorySnapshot;
-  subscribe(listener: VoiceSettingsListener): () => void;
+  subscribe(listener: SnapshotListener<VoiceSettingsCategorySnapshot>): () => void;
   load(): Promise<void>;
   setSttSettings(update: SetStateAction<STTSettings>): void;
   save(): Promise<void>;
@@ -36,36 +36,24 @@ export interface VoiceSettingsCategoryController {
   dispose(): void;
 }
 
-class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryController {
+class DefaultVoiceSettingsCategoryController
+  extends SnapshotStore<VoiceSettingsCategorySnapshot>
+  implements VoiceSettingsCategoryController
+{
   private readonly loadVoiceSettings: () => Promise<STTSettings | null>;
   private readonly saveVoiceSettings: (settings: STTSettings) => Promise<boolean>;
   private readonly setSavedTimer: (callback: () => void, ms: number) => SavedTimer;
   private readonly clearSavedTimer: (timer: SavedTimer) => void;
-  private readonly listeners = new Set<VoiceSettingsListener>();
-  private snapshot: VoiceSettingsCategorySnapshot = {
-    sttSettings: createDefaultVoiceSettings(),
-    voiceSaved: false,
-  };
   private savedTimer: SavedTimer | null = null;
   private loadGeneration = 0;
   private disposed = false;
 
   constructor(options: VoiceSettingsCategoryControllerOptions = {}) {
+    super({ sttSettings: createDefaultVoiceSettings(), voiceSaved: false });
     this.loadVoiceSettings = options.loadVoiceSettings ?? loadStoredVoiceSettings;
     this.saveVoiceSettings = options.saveVoiceSettings ?? saveStoredVoiceSettings;
     this.setSavedTimer = options.setSavedTimer ?? setTimeout;
     this.clearSavedTimer = options.clearSavedTimer ?? clearTimeout;
-  }
-
-  getSnapshot(): VoiceSettingsCategorySnapshot {
-    return this.snapshot;
-  }
-
-  subscribe(listener: VoiceSettingsListener): () => void {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
   }
 
   async load(): Promise<void> {
@@ -101,7 +89,7 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     this.disposed = true;
     this.loadGeneration += 1;
     this.clearSavedIndicatorTimer();
-    this.listeners.clear();
+    this.clearSnapshotListeners();
   }
 
   private restartSavedTimer(): void {
@@ -117,15 +105,6 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     if (!this.savedTimer) return;
     this.clearSavedTimer(this.savedTimer);
     this.savedTimer = null;
-  }
-
-  private updateSnapshot(patch: Partial<VoiceSettingsCategorySnapshot>): void {
-    this.replaceSnapshot({ ...this.snapshot, ...patch });
-  }
-
-  private replaceSnapshot(snapshot: VoiceSettingsCategorySnapshot): void {
-    this.snapshot = snapshot;
-    this.listeners.forEach((listener) => listener(this.snapshot));
   }
 }
 
