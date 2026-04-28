@@ -18,14 +18,6 @@ export function insertAfterPinned(cards: CardState[], card: CardState): CardStat
   return nextCards;
 }
 
-function findRightmostUnpinnedIndex(cards: CardState[]): number {
-  for (let index = cards.length - 1; index >= 0; index--) {
-    if (!cards[index].pinned) return index;
-  }
-
-  return -1;
-}
-
 export function addCard(cards: CardState[], entity: Entity): CardState[] {
   if (cards.some((card) => card.entity.id === entity.id)) return cards;
 
@@ -33,7 +25,7 @@ export function addCard(cards: CardState[], entity: Entity): CardState[] {
   const nextCards = insertAfterPinned(cards, newCard);
 
   if (nextCards.length > MAX_CARDS) {
-    const evictionIndex = findRightmostUnpinnedIndex(nextCards);
+    const evictionIndex = nextCards.findLastIndex((card) => !card.pinned);
     if (evictionIndex === -1) return cards;
     nextCards.splice(evictionIndex, 1);
   }
