@@ -40,22 +40,16 @@ export function mergeDataSourceSettings(settings?: Partial<DataSourcesSettings> 
 
 type VoiceSettingsPatch = Partial<Record<keyof STTSettings, unknown>>;
 
-function isVoiceSettingsPatch(value: unknown): value is VoiceSettingsPatch {
-  return value !== null && typeof value === "object";
-}
-function isVoiceProvider(value: unknown): value is STTSettings["provider"] {
-  return value === "deepgram" || value === "web-speech";
-}
-
 export function createDefaultVoiceSettings(): STTSettings {
   return { ...DEFAULT_STT_SETTINGS };
 }
 
 function normalizeVoiceSettings(settings: unknown): STTSettings {
-  const patch = isVoiceSettingsPatch(settings) ? settings : {};
+  const patch = settings !== null && typeof settings === "object" ? (settings as VoiceSettingsPatch) : {};
   const defaultSettings = createDefaultVoiceSettings();
 
-  const provider = isVoiceProvider(patch.provider) ? patch.provider : defaultSettings.provider;
+  const provider =
+    patch.provider === "deepgram" || patch.provider === "web-speech" ? patch.provider : defaultSettings.provider;
   const deepgramApiKey =
     typeof patch.deepgramApiKey === "string" ? patch.deepgramApiKey : defaultSettings.deepgramApiKey;
 
