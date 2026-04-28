@@ -3,69 +3,49 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const platform = vi.hoisted(() => ({ OS: "web" }));
 
 const adapterState = vi.hoisted(() => {
-  class MockBrowserAdapter {
-    pauseCalls = 0;
-    resumeCalls = 0;
-    startCalls = 0;
-    stopCalls = 0;
-
-    constructor(
-      readonly apiKey: string,
-      readonly onTranscript: (text: string) => void,
-      readonly onError: (error: string) => void,
-    ) {
-      state.browserInstances.push(this);
-    }
-
-    async start(): Promise<void> {
-      this.startCalls += 1;
-    }
-    async pause(): Promise<void> {
-      this.pauseCalls += 1;
-    }
-    async resume(): Promise<void> {
-      this.resumeCalls += 1;
-    }
-    async stop(): Promise<void> {
-      this.stopCalls += 1;
-    }
-  }
-
-  class MockNativeAdapter {
-    pauseCalls = 0;
-    resumeCalls = 0;
-    startCalls = 0;
-    stopCalls = 0;
-
-    constructor(
-      readonly apiKey: string,
-      readonly onTranscript: (text: string) => void,
-      readonly onError: (error: string) => void,
-    ) {
-      state.nativeInstances.push(this);
-    }
-
-    async start(): Promise<void> {
-      this.startCalls += 1;
-    }
-    async pause(): Promise<void> {
-      this.pauseCalls += 1;
-    }
-    async resume(): Promise<void> {
-      this.resumeCalls += 1;
-    }
-    async stop(): Promise<void> {
-      this.stopCalls += 1;
-    }
-  }
-
-  const state = {
-    MockBrowserAdapter,
-    MockNativeAdapter,
-    browserInstances: [] as MockBrowserAdapter[],
-    nativeInstances: [] as MockNativeAdapter[],
+  type MockAdapter = {
+    apiKey: string;
+    startCalls: number;
+    pauseCalls: number;
+    resumeCalls: number;
+    stopCalls: number;
   };
-  return state;
+  const createMockAdapter = (instances: MockAdapter[]) =>
+    class implements MockAdapter {
+      pauseCalls = 0;
+      resumeCalls = 0;
+      startCalls = 0;
+      stopCalls = 0;
+
+      constructor(
+        readonly apiKey: string,
+        readonly onTranscript: (text: string) => void,
+        readonly onError: (error: string) => void,
+      ) {
+        instances.push(this);
+      }
+
+      async start(): Promise<void> {
+        this.startCalls += 1;
+      }
+      async pause(): Promise<void> {
+        this.pauseCalls += 1;
+      }
+      async resume(): Promise<void> {
+        this.resumeCalls += 1;
+      }
+      async stop(): Promise<void> {
+        this.stopCalls += 1;
+      }
+    };
+  const browserInstances: MockAdapter[] = [];
+  const nativeInstances: MockAdapter[] = [];
+  return {
+    MockBrowserAdapter: createMockAdapter(browserInstances),
+    MockNativeAdapter: createMockAdapter(nativeInstances),
+    browserInstances,
+    nativeInstances,
+  };
 });
 
 vi.mock("react-native", () => ({ Platform: platform }));
