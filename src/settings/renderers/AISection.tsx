@@ -17,6 +17,7 @@ export function AISection({
   styles,
 }: AISectionProps) {
   const C = styles.__colors;
+  const parseDisabled = !aiContent.trim() || !dsLocal.aiApiKey || aiParsing;
 
   return (
     <View testID="settings-content" style={styles.contentInner}>
@@ -45,13 +46,10 @@ export function AISection({
           multiline
         />
         <TouchableOpacity
-          style={[
-            styles.outlineBtn,
-            (!aiContent.trim() || !dsLocal.aiApiKey || aiParsing) && styles.outlineBtnDisabled,
-          ]}
+          style={[styles.outlineBtn, parseDisabled && styles.outlineBtnDisabled]}
           onPress={handleAIParse}
           activeOpacity={0.7}
-          disabled={!aiContent.trim() || !dsLocal.aiApiKey || aiParsing}
+          disabled={parseDisabled}
         >
           <Ionicon name="sparkles-outline" size={14} color={C.active} style={{ marginRight: 6 }} />
           <Text style={styles.outlineBtnText}>{aiParsing ? "Parsing..." : "Parse with AI"}</Text>
