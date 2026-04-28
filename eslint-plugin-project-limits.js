@@ -1,6 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 
+const MAX_OPTION_SCHEMA = [
+  {
+    type: 'object',
+    properties: { max: { type: 'number' } },
+    additionalProperties: false,
+  },
+];
+
 module.exports = {
   rules: {
     'max-lines': {
@@ -9,15 +17,7 @@ module.exports = {
         docs: {
           description: 'Enforce a maximum number of lines per file',
         },
-        schema: [
-          {
-            type: 'object',
-            properties: {
-              max: { type: 'number' },
-            },
-            additionalProperties: false,
-          },
-        ],
+        schema: MAX_OPTION_SCHEMA,
         messages: {
           maxLines: 'File has {{lineCount}} lines, which exceeds the maximum of {{max}} lines.',
         },
@@ -54,15 +54,7 @@ module.exports = {
         docs: {
           description: 'Enforce a maximum number of flat files per directory',
         },
-        schema: [
-          {
-            type: 'object',
-            properties: {
-              max: { type: 'number' },
-            },
-            additionalProperties: false,
-          },
-        ],
+        schema: MAX_OPTION_SCHEMA,
         messages: {
           maxFiles: 'Directory {{directory}} contains {{fileCount}} flat files, which exceeds the maximum of {{max}}.',
         },
