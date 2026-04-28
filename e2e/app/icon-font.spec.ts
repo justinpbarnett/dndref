@@ -23,12 +23,7 @@ test('renders Ionicons from local app assets when external CDNs are blocked', as
     );
     const fontFaces: string[] = [];
     document.fonts.forEach((font) => { if (font.family.includes('ionicons')) fontFaces.push(font.status); });
-    return {
-      fontFaces,
-      iconCount: icons.length,
-      iconFonts: icons.slice(0, 5).map((el) => getComputedStyle(el).fontFamily),
-      iconTexts: icons.slice(0, 5).map((el) => el.textContent ?? ''),
-    };
+    return { fontFaces, iconCount: icons.length, iconFonts: icons.slice(0, 5).map((el) => getComputedStyle(el).fontFamily), iconTexts: icons.slice(0, 5).map((el) => el.textContent ?? '') };
   });
 
   expect(fontResponses).toContain('200 http://localhost:3333/fonts/Ionicons.ttf');

@@ -20,11 +20,7 @@ export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl
 
   await page.screenshot({ path: `${screenshotDir}/test-01-app-loads.png` });
 
-  return {
-    screenshotPath: `${screenshotDir}/test-01-app-loads.png`,
-    errors: [...consoleErrors],
-    extraInfo: `Ready: ${hasReady}, Start: ${hasStart}`
-  };
+  return { screenshotPath: `${screenshotDir}/test-01-app-loads.png`, errors: [...consoleErrors], extraInfo: `Ready: ${hasReady}, Start: ${hasStart}` };
 }
 
 export async function testNavigateToSettings({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -49,11 +45,7 @@ export async function testNavigateToSettings({ page, consoleErrors, screenshotDi
 
   await page.screenshot({ path: `${screenshotDir}/test-02-settings-page.png` });
 
-  return {
-    screenshotPath: `${screenshotDir}/test-02-settings-page.png`,
-    errors: [...consoleErrors],
-    extraInfo: `Found tabs: ${foundTabs.join(', ')}`
-  };
+  return { screenshotPath: `${screenshotDir}/test-02-settings-page.png`, errors: [...consoleErrors], extraInfo: `Found tabs: ${foundTabs.join(', ')}` };
 }
 
 export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
