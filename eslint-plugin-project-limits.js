@@ -8,8 +8,6 @@ module.exports = {
         type: 'problem',
         docs: {
           description: 'Enforce a maximum number of lines per file',
-          category: 'Best Practices',
-          recommended: false,
         },
         schema: [
           {
@@ -55,8 +53,6 @@ module.exports = {
         type: 'problem',
         docs: {
           description: 'Enforce a maximum number of flat files per directory',
-          category: 'Best Practices',
-          recommended: false,
         },
         schema: [
           {
