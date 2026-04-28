@@ -48,12 +48,8 @@ class FakeSTTProvider implements STTProvider {
     this.stopCalls += 1;
   }
 
-  emitTranscript(text: string): void {
-    this.onTranscript(text);
-  }
-  emitError(error: string): void {
-    this.onError(error);
-  }
+  emitTranscript = (text: string) => this.onTranscript(text);
+  emitError = (error: string) => this.onError(error);
 }
 
 function makeRuntimeWithFakeStt(configure?: (provider: FakeSTTProvider) => void): {

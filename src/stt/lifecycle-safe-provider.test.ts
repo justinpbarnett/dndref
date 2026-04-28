@@ -36,12 +36,8 @@ class FakeCaptureAdapter implements STTProvider {
   async stop(): Promise<void> {
     this.stopCalls += 1;
   }
-  emitTranscript(text: string): void {
-    this.onTranscript(text);
-  }
-  emitError(error: string): void {
-    this.onError(error);
-  }
+  emitTranscript = (text: string) => this.onTranscript(text);
+  emitError = (error: string) => this.onError(error);
 }
 
 function makeProvider(configure?: (adapter: FakeCaptureAdapter) => void) {
