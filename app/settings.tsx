@@ -52,16 +52,9 @@ export default function SettingsScreen() {
     onDeleteAllDataReset: resetAfterDeleteAll,
   });
 
-  useEffect(
-    () => () => {
-      if (dataSavedTimer.current) clearTimeout(dataSavedTimer.current);
-    },
-    [],
-  );
+  useEffect(() => () => void (dataSavedTimer.current && clearTimeout(dataSavedTimer.current)), []);
 
-  useEffect(() => {
-    setDsLocal(ds);
-  }, [ds]);
+  useEffect(() => setDsLocal(ds), [ds]);
 
   const saveData = async () => {
     await updateDs(dsLocal);

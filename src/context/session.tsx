@@ -34,12 +34,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => runtime.subscribe(setRuntimeSnapshot), [runtime]);
 
-  useEffect(
-    () => () => {
-      runtime.dispose();
-    },
-    [runtime],
-  );
+  useEffect(() => () => runtime.dispose(), [runtime]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,9 +70,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setEntityStatus(combined.length > 0 ? "ready" : "error");
     });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => void (cancelled = true);
   }, [
     ds.srdEnabled,
     ds.srdSources.join(","),

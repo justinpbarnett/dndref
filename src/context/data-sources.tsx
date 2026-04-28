@@ -36,9 +36,7 @@ export function DataSourcesProvider({ children }: { children: React.ReactNode })
       replaceSettings(loadedSettings);
     });
 
-    return () => {
-      mounted = false;
-    };
+    return () => void (mounted = false);
   }, [replaceSettings]);
 
   const update = useCallback(
