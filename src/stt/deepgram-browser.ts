@@ -8,10 +8,6 @@ import {
 
 import type { STTProvider } from "./index";
 
-const BROWSER_RECORDER_MIME_TYPES = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
-const DEEPGRAM_CONNECTION_TIMEOUT_MS = 10000;
-const RECORDER_TIMESLICE_MS = 250;
-
 export class DeepgramBrowserCaptureAdapter implements STTProvider {
   readonly name = "Deepgram";
   private active = false;
@@ -53,7 +49,9 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
 
   private getRecorderOptions(): MediaRecorderOptions | undefined {
     if (typeof MediaRecorder === "undefined") return undefined;
-    const mimeType = BROWSER_RECORDER_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
+    const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((type) =>
+      MediaRecorder.isTypeSupported(type),
+    );
     return mimeType ? { mimeType } : undefined;
   }
 
@@ -126,7 +124,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
 
       const timeout = setTimeout(
         () => settle(new Error("Deepgram connection timed out. Check your API key and network.")),
-        DEEPGRAM_CONNECTION_TIMEOUT_MS,
+        10000,
       );
 
       ws.onopen = () => {
@@ -148,7 +146,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
             }
             if (this.active) this.onError(`Mic recording error: ${err}`);
           };
-          recorder.start(RECORDER_TIMESLICE_MS);
+          recorder.start(250);
           settle();
         } catch (e) {
           settle(new Error(`Failed to start browser recorder: ${e instanceof Error ? e.message : String(e)}`));
