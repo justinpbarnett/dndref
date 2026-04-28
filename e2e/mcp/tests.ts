@@ -58,8 +58,7 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
 
   await gotoSettingsPage(page, baseUrl);
 
-  const initialScreenshot = `${screenshotDir}/test-03-card-size-initial.png`;
-  await saveScreenshot(page, screenshots, initialScreenshot);
+  await saveScreenshot(page, screenshots, `${screenshotDir}/test-03-card-size-initial.png`);
 
   const testedSizes: string[] = [];
 
