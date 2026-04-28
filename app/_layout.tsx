@@ -49,34 +49,25 @@ function ThemedTabs() {
         },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "REFERENCE",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicon name={focused ? "layers" : "layers-outline"} size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="debug"
-        options={{
-          title: "DEBUG",
-          href: __DEV__ ? undefined : null,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicon name={focused ? "bug" : "bug-outline"} size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "SETTINGS",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicon name={focused ? "settings" : "settings-outline"} size={20} color={color} />
-          ),
-        }}
-      />
+      {(
+        [
+          { name: "index", title: "REFERENCE", icon: "layers-outline", focusedIcon: "layers" },
+          { name: "debug", title: "DEBUG", icon: "bug-outline", focusedIcon: "bug", href: __DEV__ ? undefined : null },
+          { name: "settings", title: "SETTINGS", icon: "settings-outline", focusedIcon: "settings" },
+        ] as const
+      ).map((tab) => (
+        <Tabs.Screen
+          key={tab.name}
+          name={tab.name}
+          options={{
+            title: tab.title,
+            href: "href" in tab ? tab.href : undefined,
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicon name={focused ? tab.focusedIcon : tab.icon} size={20} color={color} />
+            ),
+          }}
+        />
+      ))}
     </Tabs>
   );
 }
