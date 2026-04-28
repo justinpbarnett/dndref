@@ -18,9 +18,10 @@ Open only under the new moon.
 Commands the east watch.
 `;
 
-    const entities = await new MarkdownProvider(content, "Imported Doc").load();
-
-    expect(entities.map((e) => e.name)).toEqual(["Moonlit Bazaar", "Captain Aria"]);
+    expect((await new MarkdownProvider(content, "Imported Doc").load()).map((e) => e.name)).toEqual([
+      "Moonlit Bazaar",
+      "Captain Aria",
+    ]);
   });
 
   it("normalizes imported type variants and alias separators", async () => {

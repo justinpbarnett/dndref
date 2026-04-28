@@ -30,8 +30,7 @@ describe("file upload storage", () => {
   it("preserves every file when uploads are added concurrently", async () => {
     await Promise.all([addUpload("one.md", "# One"), addUpload("two.md", "# Two"), addUpload("three.md", "# Three")]);
 
-    const uploads = await getUploads();
-    expect(uploads.map((u) => u.name).sort()).toEqual(["one.md", "three.md", "two.md"]);
+    expect((await getUploads()).map((u) => u.name).sort()).toEqual(["one.md", "three.md", "two.md"]);
   });
 
   it("removes only the selected upload", async () => {
@@ -53,8 +52,7 @@ describe("file upload storage", () => {
 
     await Promise.all([removeUpload(old.id), addUpload("new-a.md", "# New A"), addUpload("new-b.md", "# New B")]);
 
-    const uploads = await getUploads();
-    expect(uploads.map((u) => u.name).sort()).toEqual(["new-a.md", "new-b.md"]);
+    expect((await getUploads()).map((u) => u.name).sort()).toEqual(["new-a.md", "new-b.md"]);
   });
 
   it("does not resurrect an upload mutation that is in flight during reset", async () => {
