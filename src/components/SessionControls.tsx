@@ -56,11 +56,9 @@ export function SessionControls() {
 
   const webBarShadow = Platform.OS === "web" ? { boxShadow: `0 1px 0 ${C.border}, 0 4px 16px #00000030` } : {};
 
-  let statusLabel = "Ready";
-  if (sttStatus === "connecting") statusLabel = "Connecting";
-  else if (sttStatus === "error") statusLabel = "Mic Error";
-  else if (status === "active") statusLabel = "Listening";
-  else if (status === "paused") statusLabel = "Paused";
+  const statusLabel =
+    ({ connecting: "Connecting", error: "Mic Error" } as Record<string, string>)[sttStatus] ??
+    { idle: "Ready", active: "Listening", paused: "Paused" }[status];
 
   return (
     <View>
