@@ -56,6 +56,18 @@ function blockStorageOperation(operation: keyof typeof storageControls): () => v
   return releaseGate;
 }
 
+async function expectStaleHydrationReadDropped(readStaleValue: () => Promise<unknown>) {
+  const releaseGetItem = blockStorageOperation("getItemGate");
+  const read = readStaleValue();
+  await Promise.resolve();
+
+  const generation = beginAppDataReset();
+  finishAppDataReset(generation);
+  releaseGetItem();
+
+  await expect(read).resolves.toBeNull();
+}
+
 describe("app data storage clearing", () => {
   beforeEach(() => {
     resetAppDataControlsForTests();
@@ -178,16 +190,7 @@ describe("app data storage clearing", () => {
   });
 
   it("ignores stale hydration reads that resolve after reset starts", async () => {
-    const releaseGetItem = blockStorageOperation("getItemGate");
-
-    const read = getAppDataItem(STT_SETTINGS_KEY);
-    await Promise.resolve();
-
-    const generation = beginAppDataReset();
-    finishAppDataReset(generation);
-    releaseGetItem();
-
-    expect(await read).toBeNull();
+    await expectStaleHydrationReadDropped(() => getAppDataItem(STT_SETTINGS_KEY));
   });
 
   it("loads and saves voice settings through the local app data seam", async () => {
@@ -244,16 +247,7 @@ describe("app data storage clearing", () => {
 
   it("drops stale data source settings hydration through the local app data seam", async () => {
     storage.set(DATA_SOURCES_KEY, JSON.stringify({ aiApiKey: "stale-secret" }));
-    const releaseGetItem = blockStorageOperation("getItemGate");
-
-    const read = loadDataSourceSettings();
-    await Promise.resolve();
-
-    const generation = beginAppDataReset();
-    finishAppDataReset(generation);
-    releaseGetItem();
-
-    await expect(read).resolves.toBeNull();
+    await expectStaleHydrationReadDropped(loadDataSourceSettings);
   });
 
   it("drops stale data source settings writes through the local app data seam", async () => {
