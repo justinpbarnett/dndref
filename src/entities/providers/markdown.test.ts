@@ -2,9 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { MarkdownProvider } from "./markdown";
 
-describe("MarkdownProvider", () => {
-  it("parses h2 and h3 headings as separate entities", async () => {
-    const content = `
+const SAMPLE_MARKDOWN = `
 ## Moonlit Bazaar
 Type: place
 Aliases: Night Market; Bazaar
@@ -18,28 +16,16 @@ Open only under the new moon.
 Commands the east watch.
 `;
 
-    expect((await new MarkdownProvider(content, "Imported Doc").load()).map((e) => e.name)).toEqual([
+describe("MarkdownProvider", () => {
+  it("parses h2 and h3 headings as separate entities", async () => {
+    expect((await new MarkdownProvider(SAMPLE_MARKDOWN, "Imported Doc").load()).map((e) => e.name)).toEqual([
       "Moonlit Bazaar",
       "Captain Aria",
     ]);
   });
 
   it("normalizes imported type variants and alias separators", async () => {
-    const content = `
-## Moonlit Bazaar
-Type: place
-Aliases: Night Market; Bazaar
-
-Open only under the new moon.
-
-### Captain Aria
-**Type:** character
-**Aliases:** Aria, the captain
-
-Commands the east watch.
-`;
-
-    await expect(new MarkdownProvider(content, "Imported Doc").load()).resolves.toEqual([
+    await expect(new MarkdownProvider(SAMPLE_MARKDOWN, "Imported Doc").load()).resolves.toEqual([
       {
         id: "moonlit-bazaar",
         name: "Moonlit Bazaar",
