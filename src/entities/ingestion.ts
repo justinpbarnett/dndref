@@ -1,14 +1,34 @@
-import { Entity, EntityIndex, EntityType, normalizeEntityType, slugify } from './index';
+import { Entity, EntityIndex, EntityType, normalizeEntityType, slugify } from "./index";
 
-const JSON_UPLOAD_EXTENSION = '.json';
-const UPLOAD_ENTITY_ID_PREFIX = 'upload';
+const JSON_UPLOAD_EXTENSION = ".json";
+const UPLOAD_ENTITY_ID_PREFIX = "upload";
 
-interface MarkdownBlock { name: string; body: string }
+interface MarkdownBlock {
+  name: string;
+  body: string;
+}
 
-export interface IngestedEntityRecord { name?: unknown; type?: unknown; aliases?: unknown; summary?: unknown; description?: unknown; image?: unknown }
-export interface NormalizeIngestedEntityOptions { idPrefix?: string; idNamespace?: string | number; index?: number }
-export interface UploadedWorldData { name: string; content: string }
-export interface UploadedWorldDataIngestionOptions { idNamespace?: string | number; onJsonParseError?: (error: unknown) => void }
+export interface IngestedEntityRecord {
+  name?: unknown;
+  type?: unknown;
+  aliases?: unknown;
+  summary?: unknown;
+  description?: unknown;
+  image?: unknown;
+}
+export interface NormalizeIngestedEntityOptions {
+  idPrefix?: string;
+  idNamespace?: string | number;
+  index?: number;
+}
+export interface UploadedWorldData {
+  name: string;
+  content: string;
+}
+export interface UploadedWorldDataIngestionOptions {
+  idNamespace?: string | number;
+  onJsonParseError?: (error: unknown) => void;
+}
 
 export function normalizeIngestedEntity(
   record: IngestedEntityRecord,
@@ -42,7 +62,7 @@ export function ingestMarkdownContent(content: string): EntityIndex {
 
 export function ingestJsonContent(
   content: string,
-  options: Omit<NormalizeIngestedEntityOptions, 'index'> = {},
+  options: Omit<NormalizeIngestedEntityOptions, "index"> = {},
 ): EntityIndex {
   const data = JSON.parse(content) as unknown;
   const items = Array.isArray(data) ? data : [];
@@ -79,24 +99,26 @@ export function ingestUploadedFile(
   return ingestMarkdownContent(upload.content);
 }
 
-export function isJsonUploadName(name: string): boolean { return name.toLowerCase().endsWith(JSON_UPLOAD_EXTENSION); }
+export function isJsonUploadName(name: string): boolean {
+  return name.toLowerCase().endsWith(JSON_UPLOAD_EXTENSION);
+}
 
 function normalizeMarkdownBlock(block: MarkdownBlock): Entity | null {
   const name = cleanHeading(block.name);
-  let rawType = '';
-  let rawAliases = '';
+  let rawType = "";
+  let rawAliases = "";
   const summaryLines: string[] = [];
 
-  for (const line of block.body.split('\n')) {
+  for (const line of block.body.split("\n")) {
     const trimmed = line.trim();
-    if (trimmed === '---') continue;
+    if (trimmed === "---") continue;
 
     const field = parseField(trimmed);
-    if (field?.key === 'type') {
+    if (field?.key === "type") {
       rawType = field.value;
       continue;
     }
-    if (field?.key === 'aliases') {
+    if (field?.key === "aliases") {
       rawAliases = field.value;
       continue;
     }
@@ -109,7 +131,7 @@ function normalizeMarkdownBlock(block: MarkdownBlock): Entity | null {
     name,
     type: rawType,
     aliases: rawAliases,
-    summary: summaryLines.join('\n'),
+    summary: summaryLines.join("\n"),
   });
 }
 
@@ -124,31 +146,39 @@ function getHeadingBlocks(content: string): MarkdownBlock[] {
 }
 
 function getFallbackBlock(content: string): MarkdownBlock[] {
-  const lines = content.trim().split('\n');
-  const name = lines.shift()?.trim() ?? '';
-  return name ? [{ name, body: lines.join('\n') }] : [];
+  const lines = content.trim().split("\n");
+  const name = lines.shift()?.trim() ?? "";
+  return name ? [{ name, body: lines.join("\n") }] : [];
 }
 
-function cleanHeading(name: string): string { return name.replace(/\*\*/g, '').trim(); }
+function cleanHeading(name: string): string {
+  return name.replace(/\*\*/g, "").trim();
+}
 
 function parseField(line: string): { key: string; value: string } | null {
   const match = line.match(/^(?:[-*]\s*)?(?:\*\*)?([^:*]+):(?:\*\*)?\s*(.+)$/);
   if (!match) return null;
 
-  return { key: match[1].replace(/\*/g, '').trim().toLowerCase(), value: match[2].trim() };
+  return { key: match[1].replace(/\*/g, "").trim().toLowerCase(), value: match[2].trim() };
 }
 
-function isIngestedEntityRecord(value: unknown): value is IngestedEntityRecord { return value !== null && typeof value === 'object'; }
-function normalizeNonEmptyString(value: unknown): string | null { return typeof value === 'string' ? value.trim() || null : null; }
-function normalizeIngestedEntityType(value: unknown): EntityType { return normalizeEntityType(typeof value === 'string' ? value : ''); }
+function isIngestedEntityRecord(value: unknown): value is IngestedEntityRecord {
+  return value !== null && typeof value === "object";
+}
+function normalizeNonEmptyString(value: unknown): string | null {
+  return typeof value === "string" ? value.trim() || null : null;
+}
+function normalizeIngestedEntityType(value: unknown): EntityType {
+  return normalizeEntityType(typeof value === "string" ? value : "");
+}
 
 function normalizeAliases(value: unknown): string[] {
-  if (typeof value === 'string') return splitAliasString(value);
+  if (typeof value === "string") return splitAliasString(value);
 
   if (!Array.isArray(value)) return [];
 
   return value
-    .filter((alias): alias is string => typeof alias === 'string')
+    .filter((alias): alias is string => typeof alias === "string")
     .map((alias) => alias.trim())
     .filter(Boolean);
 }
@@ -161,12 +191,12 @@ function splitAliasString(value: string): string[] {
 }
 
 function normalizeSummary(summary: unknown, description: unknown): string {
-  const value = typeof summary === 'string' ? summary : description;
-  return typeof value === 'string' ? value.trim() : '';
+  const value = typeof summary === "string" ? summary : description;
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function buildEntityId(name: string, options: NormalizeIngestedEntityOptions): string {
   return [options.idPrefix, slugify(name), options.idNamespace, options.index]
-    .filter((part) => part !== undefined && part !== '')
-    .join('-');
+    .filter((part) => part !== undefined && part !== "")
+    .join("-");
 }

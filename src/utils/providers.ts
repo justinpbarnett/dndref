@@ -2,12 +2,12 @@
  * Shared utility functions for API providers and data fetching.
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /**
  * Generic pagination helper that fetches all pages from an API endpoint.
  * Extracted from SRDProvider and KankaProvider to eliminate duplication.
- * 
+ *
  * @param url - The initial URL to fetch
  * @param getNextUrl - Function to extract the next page URL from response data
  * @param options - Optional fetch options (headers, etc.)
@@ -20,7 +20,7 @@ export async function fetchAll<T>(
 ): Promise<T[]> {
   const results: T[] = [];
   let next: string | null = url;
-  
+
   while (next) {
     const res = await fetch(next, options);
     if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${next}`);
@@ -28,7 +28,7 @@ export async function fetchAll<T>(
     results.push(...(data.results ?? data.data ?? []));
     next = getNextUrl(data);
   }
-  
+
   return results;
 }
 
@@ -46,7 +46,7 @@ export function createTokenFetchAll(token: string) {
 /**
  * Handles CORS errors by detecting TypeError from browser fetch failures.
  * Returns a user-friendly error message for browser CORS issues.
- * 
+ *
  * @param error - The caught error
  * @param serviceName - Name of the service for the error message
  * @param fallbackMessage - Fallback action suggestion (e.g., "Use the iOS app")
@@ -55,7 +55,7 @@ export function createTokenFetchAll(token: string) {
 export function handleCorsError(
   error: unknown,
   serviceName: string,
-  fallbackMessage = 'Use the iOS app or paste content via file upload.',
+  fallbackMessage = "Use the iOS app or paste content via file upload.",
 ): Error {
   if (error instanceof TypeError) {
     return new Error(`Cannot reach ${serviceName} from the browser (CORS). ${fallbackMessage}`);
@@ -66,7 +66,7 @@ export function handleCorsError(
 /**
  * Safely parses JSON from storage, returning null on parse failure.
  * Eliminates duplicated try-catch patterns around JSON.parse.
- * 
+ *
  * @param raw - The raw JSON string to parse
  * @returns Parsed object or null if parsing fails
  */
@@ -82,16 +82,12 @@ export function safeJsonParse<T>(raw: string | null): T | null {
 /**
  * Safely saves data to AsyncStorage with error logging.
  * Eliminates repeated error handling patterns.
- * 
+ *
  * @param key - Storage key
  * @param value - Value to serialize and store
  * @param context - Context for error logging (e.g., "data source settings")
  */
-export async function safeStorageSet(
-  key: string,
-  value: unknown,
-  context: string,
-): Promise<void> {
+export async function safeStorageSet(key: string, value: unknown, context: string): Promise<void> {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
@@ -101,7 +97,7 @@ export async function safeStorageSet(
 
 /**
  * Safely retrieves and parses data from AsyncStorage.
- * 
+ *
  * @param key - Storage key
  * @param context - Context for error logging
  * @returns Parsed data or null

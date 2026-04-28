@@ -1,17 +1,17 @@
-import { Ionicons as ExpoIonicons } from '@expo/vector-icons';
-import { useFonts } from 'expo-font';
-import { Tabs } from 'expo-router';
-import Head from 'expo-router/head';
-import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons as ExpoIonicons } from "@expo/vector-icons";
+import { useFonts } from "expo-font";
+import { Tabs } from "expo-router";
+import Head from "expo-router/head";
+import React, { useEffect } from "react";
+import { Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Ionicon } from '../src/components/Ionicon';
-import { DataSourcesProvider } from '../src/context/data-sources';
-import { SessionProvider } from '../src/context/session';
-import { UISettingsProvider, useColors } from '../src/context/ui-settings';
-import { IONICONS_WEB_FONT, getIoniconsFontSource } from '../src/icon-font';
-import { F } from '../src/theme';
+import { Ionicon } from "../src/components/Ionicon";
+import { DataSourcesProvider } from "../src/context/data-sources";
+import { SessionProvider } from "../src/context/session";
+import { UISettingsProvider, useColors } from "../src/context/ui-settings";
+import { IONICONS_WEB_FONT, getIoniconsFontSource } from "../src/icon-font";
+import { F } from "../src/theme";
 
 function ThemedTabs() {
   const C = useColors();
@@ -21,39 +21,54 @@ function ThemedTabs() {
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: C.bg },
-        tabBarStyle: { backgroundColor: C.bgSurface, borderTopColor: C.border, borderTopWidth: 1, height: 72 + insets.bottom, paddingBottom: 12 + insets.bottom, paddingTop: 8 },
+        tabBarStyle: {
+          backgroundColor: C.bgSurface,
+          borderTopColor: C.border,
+          borderTopWidth: 1,
+          height: 72 + insets.bottom,
+          paddingBottom: 12 + insets.bottom,
+          paddingTop: 8,
+        },
         tabBarItemStyle: { paddingVertical: 4 },
         tabBarIconStyle: { height: 22, marginBottom: 2 },
         tabBarActiveTintColor: C.textPrimary,
         tabBarInactiveTintColor: C.textSecondary,
-        tabBarLabelStyle: { fontSize: 9, lineHeight: 16, height: 16, overflow: 'visible', fontWeight: '600', letterSpacing: 0.8, fontFamily: F.display },
+        tabBarLabelStyle: {
+          fontSize: 9,
+          lineHeight: 16,
+          height: 16,
+          overflow: "visible",
+          fontWeight: "600",
+          letterSpacing: 0.8,
+          fontFamily: F.display,
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'REFERENCE',
+          title: "REFERENCE",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicon name={focused ? 'layers' : 'layers-outline'} size={20} color={color} />
+            <Ionicon name={focused ? "layers" : "layers-outline"} size={20} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="debug"
         options={{
-          title: 'DEBUG',
+          title: "DEBUG",
           href: __DEV__ ? undefined : null,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicon name={focused ? 'bug' : 'bug-outline'} size={20} color={color} />
+            <Ionicon name={focused ? "bug" : "bug-outline"} size={20} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'SETTINGS',
+          title: "SETTINGS",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicon name={focused ? 'settings' : 'settings-outline'} size={20} color={color} />
+            <Ionicon name={focused ? "settings" : "settings-outline"} size={20} color={color} />
           ),
         }}
       />
@@ -63,27 +78,25 @@ function ThemedTabs() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts(
-    Platform.OS === 'web'
-      ? {}
-      : { ionicons: getIoniconsFontSource(Platform.OS, ExpoIonicons.font.ionicons) },
+    Platform.OS === "web" ? {} : { ionicons: getIoniconsFontSource(Platform.OS, ExpoIonicons.font.ionicons) },
   );
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
+    if (Platform.OS !== "web") return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
     link.href =
-      'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap';
+      "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap";
     document.head.appendChild(link);
   }, []);
 
-  if (!fontsLoaded && Platform.OS !== 'web') return null;
+  if (!fontsLoaded && Platform.OS !== "web") return null;
 
   return (
     <>
       <Head>
         <title>DnD Ref</title>
-        {Platform.OS === 'web' && (
+        {Platform.OS === "web" && (
           <>
             <style>
               {`@font-face{font-family:"ionicons";src:url("${IONICONS_WEB_FONT}") format("truetype");font-display:block}`}
@@ -91,9 +104,15 @@ export default function RootLayout() {
             <link rel="preload" href={IONICONS_WEB_FONT} as="font" type="font/ttf" crossOrigin="" />
           </>
         )}
-        <meta name="description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
+        <meta
+          name="description"
+          content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time."
+        />
         <meta property="og:title" content="DnD Ref" />
-        <meta property="og:description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
+        <meta
+          property="og:description"
+          content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time."
+        />
         <meta property="og:image" content="https://dndref.com/og-image.png" />
         <meta property="og:image:width" content="900" />
         <meta property="og:image:height" content="747" />
@@ -101,7 +120,10 @@ export default function RootLayout() {
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="DnD Ref" />
-        <meta name="twitter:description" content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time." />
+        <meta
+          name="twitter:description"
+          content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time."
+        />
         <meta name="twitter:image" content="https://dndref.com/og-image-wide.png" />
         <meta name="twitter:image:width" content="1200" />
         <meta name="twitter:image:height" content="630" />

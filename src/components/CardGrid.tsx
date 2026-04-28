@@ -1,14 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Animated, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { useSession } from '../context/session';
-import { useColors, useUISettings } from '../context/ui-settings';
-import { computeReferenceCardLayout, type ReferenceCardPosition } from '../reference-card-layout';
-import { Colors, F } from '../theme';
-import { EntityCard } from './EntityCard';
-import { EntityDetailsModal } from './EntityDetailsModal';
+import { useSession } from "../context/session";
+import { useColors, useUISettings } from "../context/ui-settings";
+import { computeReferenceCardLayout, type ReferenceCardPosition } from "../reference-card-layout";
+import { Colors, F } from "../theme";
+import { EntityCard } from "./EntityCard";
+import { EntityDetailsModal } from "./EntityDetailsModal";
 
-interface AnimPair { left: Animated.Value; top: Animated.Value }
+interface AnimPair {
+  left: Animated.Value;
+  top: Animated.Value;
+}
 
 const SPRING_CONFIG = { friction: 22, tension: 55, useNativeDriver: false } as const;
 
@@ -25,13 +28,18 @@ export function CardGrid() {
   const animRef = useRef<Record<string, AnimPair>>({});
   const prevPos = useRef<Record<string, ReferenceCardPosition>>({});
 
-  const { cardWidth, positions: targets, totalHeight } = useMemo(
-    () => computeReferenceCardLayout({
-      cards,
-      measuredHeights: cardHeights,
-      viewport: { width, height: winHeight },
-      cardSize,
-    }),
+  const {
+    cardWidth,
+    positions: targets,
+    totalHeight,
+  } = useMemo(
+    () =>
+      computeReferenceCardLayout({
+        cards,
+        measuredHeights: cardHeights,
+        viewport: { width, height: winHeight },
+        cardSize,
+      }),
     [cards, cardHeights, width, winHeight, cardSize],
   );
 
@@ -58,16 +66,16 @@ export function CardGrid() {
 
       const prev = prevPos.current[instanceId];
       if (prev && (prev.x !== target.x || prev.y !== target.y)) {
-        springs.push(Animated.parallel([
-          Animated.spring(anim.left, { toValue: target.x, ...SPRING_CONFIG }),
-          Animated.spring(anim.top, { toValue: target.y, ...SPRING_CONFIG }),
-        ]));
+        springs.push(
+          Animated.parallel([
+            Animated.spring(anim.left, { toValue: target.x, ...SPRING_CONFIG }),
+            Animated.spring(anim.top, { toValue: target.y, ...SPRING_CONFIG }),
+          ]),
+        );
       }
     }
 
-    prevPos.current = Object.fromEntries(
-      Object.entries(targets).map(([id, pos]) => [id, { ...pos }]),
-    );
+    prevPos.current = Object.fromEntries(Object.entries(targets).map(([id, pos]) => [id, { ...pos }]));
 
     if (springs.length > 0) Animated.parallel(springs).start();
   }, [targets, cards]);
@@ -93,12 +101,8 @@ export function CardGrid() {
     return (
       <View style={styles.empty}>
         <Text style={styles.emptyGlyph}>◈</Text>
-        <Text style={styles.emptyLabel}>
-          {status === 'idle' ? 'Session not started' : 'Awaiting entities\u2026'}
-        </Text>
-        {status === 'idle' && (
-          <Text style={styles.emptyHint}>Tap Start to begin listening</Text>
-        )}
+        <Text style={styles.emptyLabel}>{status === "idle" ? "Session not started" : "Awaiting entities\u2026"}</Text>
+        {status === "idle" && <Text style={styles.emptyHint}>Tap Start to begin listening</Text>}
       </View>
     );
   }
@@ -130,13 +134,18 @@ export function CardGrid() {
           })}
         </View>
       </ScrollView>
-      <EntityDetailsModal
-        card={selectedCard}
-        visible={selectedCard !== null}
-        onClose={() => setSelectedCardId(null)}
-      />
+      <EntityDetailsModal card={selectedCard} visible={selectedCard !== null} onClose={() => setSelectedCardId(null)} />
     </>
   );
 }
 
-function createStyles(C: Colors) { return StyleSheet.create({ scroll: { flex: 1 }, cardWrapper: { position: 'absolute' }, empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 }, emptyGlyph: { fontSize: 24, color: C.textMuted, fontFamily: F.display, opacity: 0.6 }, emptyLabel: { color: C.textDim, fontSize: 13, letterSpacing: 0.5, fontFamily: F.mono }, emptyHint: { color: C.textMuted, fontSize: 11, letterSpacing: 0.5, fontFamily: F.mono, marginTop: 2 } }); }
+function createStyles(C: Colors) {
+  return StyleSheet.create({
+    scroll: { flex: 1 },
+    cardWrapper: { position: "absolute" },
+    empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
+    emptyGlyph: { fontSize: 24, color: C.textMuted, fontFamily: F.display, opacity: 0.6 },
+    emptyLabel: { color: C.textDim, fontSize: 13, letterSpacing: 0.5, fontFamily: F.mono },
+    emptyHint: { color: C.textMuted, fontSize: 11, letterSpacing: 0.5, fontFamily: F.mono, marginTop: 2 },
+  });
+}

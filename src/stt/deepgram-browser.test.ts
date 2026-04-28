@@ -1,23 +1,31 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { DeepgramBrowserCaptureAdapter } from './deepgram-browser';
+import { DeepgramBrowserCaptureAdapter } from "./deepgram-browser";
 
-const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
-const originalMediaRecorder = Object.getOwnPropertyDescriptor(globalThis, 'MediaRecorder');
-const originalWebSocket = Object.getOwnPropertyDescriptor(globalThis, 'WebSocket');
+const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+const originalMediaRecorder = Object.getOwnPropertyDescriptor(globalThis, "MediaRecorder");
+const originalWebSocket = Object.getOwnPropertyDescriptor(globalThis, "WebSocket");
 
 type MockTrack = { stop: () => void };
 type MockStream = { getTracks: () => MockTrack[] };
 
-type BrowserCaptureMocks = { getUserMedia: ReturnType<typeof vi.fn>; recorders: MockMediaRecorder[]; sockets: MockWebSocket[]; stream: MockStream; trackStop: ReturnType<typeof vi.fn> };
+type BrowserCaptureMocks = {
+  getUserMedia: ReturnType<typeof vi.fn>;
+  recorders: MockMediaRecorder[];
+  sockets: MockWebSocket[];
+  stream: MockStream;
+  trackStop: ReturnType<typeof vi.fn>;
+};
 
 class MockMediaRecorder {
-  static isTypeSupported(): boolean { return true; }
+  static isTypeSupported(): boolean {
+    return true;
+  }
 
   ondataavailable: ((event: { data: { size: number } }) => void) | null = null;
   onerror: ((event: unknown) => void) | null = null;
   startMs: number | null = null;
-  state = 'inactive';
+  state = "inactive";
   stopCalls = 0;
 
   constructor(
@@ -27,11 +35,23 @@ class MockMediaRecorder {
     installedBrowserMocks?.recorders.push(this);
   }
 
-  start(ms: number): void { this.state = 'recording'; this.startMs = ms; }
-  pause(): void { this.state = 'paused'; }
-  resume(): void { this.state = 'recording'; }
-  stop(): void { this.stopCalls += 1; this.state = 'inactive'; }
-  emitChunk(data: { size: number }): void { this.ondataavailable?.({ data }); }
+  start(ms: number): void {
+    this.state = "recording";
+    this.startMs = ms;
+  }
+  pause(): void {
+    this.state = "paused";
+  }
+  resume(): void {
+    this.state = "recording";
+  }
+  stop(): void {
+    this.stopCalls += 1;
+    this.state = "inactive";
+  }
+  emitChunk(data: { size: number }): void {
+    this.ondataavailable?.({ data });
+  }
 }
 
 class MockWebSocket {
@@ -54,15 +74,28 @@ class MockWebSocket {
     installedBrowserMocks?.sockets.push(this);
   }
 
-  close(): void { this.closeCalls += 1; this.readyState = MockWebSocket.CLOSED; this.onclose?.({ code: 1000 } as CloseEvent); }
-  open(): void { this.readyState = MockWebSocket.OPEN; this.onopen?.(); }
-  send(data: unknown): void { this.sent.push(data); }
-  receive(data: string): void { this.onmessage?.({ data }); }
+  close(): void {
+    this.closeCalls += 1;
+    this.readyState = MockWebSocket.CLOSED;
+    this.onclose?.({ code: 1000 } as CloseEvent);
+  }
+  open(): void {
+    this.readyState = MockWebSocket.OPEN;
+    this.onopen?.();
+  }
+  send(data: unknown): void {
+    this.sent.push(data);
+  }
+  receive(data: string): void {
+    this.onmessage?.({ data });
+  }
 }
 
 let installedBrowserMocks: BrowserCaptureMocks | null = null;
 
-function flush(): Promise<void> { return Promise.resolve().then(() => undefined); }
+function flush(): Promise<void> {
+  return Promise.resolve().then(() => undefined);
+}
 
 function restoreGlobalProperty(key: string, descriptor: PropertyDescriptor | undefined): void {
   if (descriptor) Object.defineProperty(globalThis, key, descriptor);
@@ -78,7 +111,7 @@ function installBrowserCapture(getUserMedia?: ReturnType<typeof vi.fn>): Browser
   const mocks = { getUserMedia: mediaGetter, recorders, sockets, stream, trackStop };
 
   installedBrowserMocks = mocks;
-  Object.defineProperty(globalThis, 'navigator', {
+  Object.defineProperty(globalThis, "navigator", {
     configurable: true,
     value: { mediaDevices: { getUserMedia: mediaGetter } },
   });
@@ -89,23 +122,23 @@ function installBrowserCapture(getUserMedia?: ReturnType<typeof vi.fn>): Browser
 
 afterEach(() => {
   installedBrowserMocks = null;
-  restoreGlobalProperty('navigator', originalNavigator);
-  restoreGlobalProperty('MediaRecorder', originalMediaRecorder);
-  restoreGlobalProperty('WebSocket', originalWebSocket);
+  restoreGlobalProperty("navigator", originalNavigator);
+  restoreGlobalProperty("MediaRecorder", originalMediaRecorder);
+  restoreGlobalProperty("WebSocket", originalWebSocket);
   vi.clearAllMocks();
 });
 
-describe('Deepgram browser capture adapter', () => {
-  it('streams browser microphone chunks over Deepgram websocket and cleans up resources', async () => {
+describe("Deepgram browser capture adapter", () => {
+  it("streams browser microphone chunks over Deepgram websocket and cleans up resources", async () => {
     const { recorders, sockets, trackStop } = installBrowserCapture();
     const onTranscript = vi.fn();
-    const provider = new DeepgramBrowserCaptureAdapter('browser-key', onTranscript, vi.fn());
+    const provider = new DeepgramBrowserCaptureAdapter("browser-key", onTranscript, vi.fn());
 
     const startPromise = provider.start();
     await flush();
     expect(sockets).toHaveLength(1);
-    expect(sockets[0].url).toContain('wss://api.deepgram.com/v1/listen?model=nova-2');
-    expect(sockets[0].protocols).toEqual(['token', 'browser-key']);
+    expect(sockets[0].url).toContain("wss://api.deepgram.com/v1/listen?model=nova-2");
+    expect(sockets[0].protocols).toEqual(["token", "browser-key"]);
 
     sockets[0].open();
     await startPromise;
@@ -115,10 +148,16 @@ describe('Deepgram browser capture adapter', () => {
 
     const chunk = { size: 42 };
     recorders[0].emitChunk(chunk);
-    sockets[0].receive(JSON.stringify({ type: 'Results', is_final: true, channel: { alternatives: [{ transcript: 'Strahd arrives' }] } }));
+    sockets[0].receive(
+      JSON.stringify({
+        type: "Results",
+        is_final: true,
+        channel: { alternatives: [{ transcript: "Strahd arrives" }] },
+      }),
+    );
 
     expect(sockets[0].sent).toEqual([chunk]);
-    expect(onTranscript).toHaveBeenCalledWith('Strahd arrives');
+    expect(onTranscript).toHaveBeenCalledWith("Strahd arrives");
 
     await provider.stop();
 
@@ -127,14 +166,14 @@ describe('Deepgram browser capture adapter', () => {
     expect(trackStop).toHaveBeenCalledTimes(1);
   });
 
-  it('cleans up web mic stream when stopped before Deepgram websocket opens', async () => {
+  it("cleans up web mic stream when stopped before Deepgram websocket opens", async () => {
     const { sockets, trackStop } = installBrowserCapture();
-    const provider = new DeepgramBrowserCaptureAdapter('key', vi.fn(), vi.fn());
+    const provider = new DeepgramBrowserCaptureAdapter("key", vi.fn(), vi.fn());
 
     const startPromise = provider.start();
     await flush();
 
-    const rejectedStart = expect(startPromise).rejects.toThrow('Deepgram connection closed');
+    const rejectedStart = expect(startPromise).rejects.toThrow("Deepgram connection closed");
     provider.stop();
     await rejectedStart;
     expect(sockets).toHaveLength(1);
@@ -142,13 +181,18 @@ describe('Deepgram browser capture adapter', () => {
     expect(trackStop).toHaveBeenCalledTimes(1);
   });
 
-  it('cleans up web mic stream when stopped while getUserMedia is pending', async () => {
+  it("cleans up web mic stream when stopped while getUserMedia is pending", async () => {
     const trackStop = vi.fn();
     const stream: MockStream = { getTracks: () => [{ stop: trackStop }] };
     let resolveStream!: (value: MockStream) => void;
-    const getUserMedia = vi.fn(() => new Promise<MockStream>((resolve) => { resolveStream = resolve; }));
+    const getUserMedia = vi.fn(
+      () =>
+        new Promise<MockStream>((resolve) => {
+          resolveStream = resolve;
+        }),
+    );
     const { sockets } = installBrowserCapture(getUserMedia);
-    const provider = new DeepgramBrowserCaptureAdapter('key', vi.fn(), vi.fn());
+    const provider = new DeepgramBrowserCaptureAdapter("key", vi.fn(), vi.fn());
 
     const startPromise = provider.start();
     await flush();
@@ -156,7 +200,7 @@ describe('Deepgram browser capture adapter', () => {
     await provider.stop();
     resolveStream(stream);
 
-    await expect(startPromise).rejects.toThrow('microphone access completed');
+    await expect(startPromise).rejects.toThrow("microphone access completed");
     expect(trackStop).toHaveBeenCalledTimes(1);
     expect(sockets).toHaveLength(0);
   });

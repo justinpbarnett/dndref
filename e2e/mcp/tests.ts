@@ -1,18 +1,18 @@
-import { TestContext } from './runner';
+import { TestContext } from "./runner";
 
-async function saveScreenshot(page: TestContext['page'], screenshots: string[], path: string) {
+async function saveScreenshot(page: TestContext["page"], screenshots: string[], path: string) {
   await page.screenshot({ path });
   screenshots.push(path);
 }
 
 export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
-  await page.goto(baseUrl, { waitUntil: 'load', timeout: 30000 });
+  await page.goto(baseUrl, { waitUntil: "load", timeout: 30000 });
   await page.waitForTimeout(2500);
 
-  const bodyText = await page.textContent('body') || '';
-  const hasReady = bodyText.includes('Ready');
-  const hasStart = bodyText.includes('Start');
+  const bodyText = (await page.textContent("body")) || "";
+  const hasReady = bodyText.includes("Ready");
+  const hasStart = bodyText.includes("Start");
 
   if (!hasReady || !hasStart) {
     throw new Error(`App not fully loaded. Found: Ready=${hasReady}, Start=${hasStart}`);
@@ -20,7 +20,11 @@ export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl
 
   await page.screenshot({ path: `${screenshotDir}/test-01-app-loads.png` });
 
-  return { screenshotPath: `${screenshotDir}/test-01-app-loads.png`, errors: [...consoleErrors], extraInfo: `Ready: ${hasReady}, Start: ${hasStart}` };
+  return {
+    screenshotPath: `${screenshotDir}/test-01-app-loads.png`,
+    errors: [...consoleErrors],
+    extraInfo: `Ready: ${hasReady}, Start: ${hasStart}`,
+  };
 }
 
 export async function testNavigateToSettings({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -30,39 +34,46 @@ export async function testNavigateToSettings({ page, consoleErrors, screenshotDi
   if (await settingsLink.isVisible().catch(() => false)) {
     await settingsLink.click();
   } else {
-    await page.goto(`${baseUrl}/settings`, { waitUntil: 'load', timeout: 30000 });
+    await page.goto(`${baseUrl}/settings`, { waitUntil: "load", timeout: 30000 });
   }
 
   await page.waitForTimeout(2000);
 
-  const bodyText = await page.textContent('body') || '';
-  const hasDisplay = bodyText.includes('Display');
+  const bodyText = (await page.textContent("body")) || "";
+  const hasDisplay = bodyText.includes("Display");
 
-  if (!hasDisplay) throw new Error('Settings page not loaded - Display tab not found');
+  if (!hasDisplay) throw new Error("Settings page not loaded - Display tab not found");
 
-  const expectedTabs = ['Display', 'Voice', 'Sources', 'Files'];
-  const foundTabs = expectedTabs.filter(tab => bodyText.includes(tab));
+  const expectedTabs = ["Display", "Voice", "Sources", "Files"];
+  const foundTabs = expectedTabs.filter((tab) => bodyText.includes(tab));
 
   await page.screenshot({ path: `${screenshotDir}/test-02-settings-page.png` });
 
-  return { screenshotPath: `${screenshotDir}/test-02-settings-page.png`, errors: [...consoleErrors], extraInfo: `Found tabs: ${foundTabs.join(', ')}` };
+  return {
+    screenshotPath: `${screenshotDir}/test-02-settings-page.png`,
+    errors: [...consoleErrors],
+    extraInfo: `Found tabs: ${foundTabs.join(", ")}`,
+  };
 }
 
 export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
   const screenshots: string[] = [];
 
-  await page.goto(`${baseUrl}/settings`, { waitUntil: 'load' });
+  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
   await page.waitForTimeout(2000);
 
   const initialScreenshot = `${screenshotDir}/test-03-card-size-initial.png`;
   await saveScreenshot(page, screenshots, initialScreenshot);
 
-  const sizes = ['S', 'M', 'L', 'XL'];
+  const sizes = ["S", "M", "L", "XL"];
   const testedSizes: string[] = [];
 
   for (const size of sizes) {
-    const sizeBtn = page.getByText(size, { exact: false }).filter({ hasText: new RegExp(`^${size}$`) }).first();
+    const sizeBtn = page
+      .getByText(size, { exact: false })
+      .filter({ hasText: new RegExp(`^${size}$`) })
+      .first();
     const altSizeBtn = page.locator(`button:has-text("${size}")`).first();
 
     if (await sizeBtn.isVisible().catch(() => false)) {
@@ -80,17 +91,21 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
     }
   }
 
-  return { screenshotPath: screenshots.join(', '), errors: [...consoleErrors], extraInfo: `Tested sizes: ${testedSizes.join(', ')}` };
+  return {
+    screenshotPath: screenshots.join(", "),
+    errors: [...consoleErrors],
+    extraInfo: `Tested sizes: ${testedSizes.join(", ")}`,
+  };
 }
 
 export async function testThemeSwitching({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
   const screenshots: string[] = [];
 
-  await page.goto(`${baseUrl}/settings`, { waitUntil: 'load' });
+  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
   await page.waitForTimeout(2000);
 
-  const darkBtn = page.getByText('Dark', { exact: true }).first();
+  const darkBtn = page.getByText("Dark", { exact: true }).first();
   if (await darkBtn.isVisible().catch(() => false)) {
     await darkBtn.click();
     await page.waitForTimeout(1000);
@@ -98,7 +113,7 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
     await saveScreenshot(page, screenshots, darkScreenshot);
   }
 
-  const lightBtn = page.getByText('Light', { exact: true }).first();
+  const lightBtn = page.getByText("Light", { exact: true }).first();
   if (await lightBtn.isVisible().catch(() => false)) {
     await lightBtn.click();
     await page.waitForTimeout(1000);
@@ -106,7 +121,7 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
     await saveScreenshot(page, screenshots, lightScreenshot);
   }
 
-  const systemBtn = page.getByText('System', { exact: true }).first();
+  const systemBtn = page.getByText("System", { exact: true }).first();
   if (await systemBtn.isVisible().catch(() => false)) {
     await systemBtn.click();
     await page.waitForTimeout(1000);
@@ -114,76 +129,91 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
     await saveScreenshot(page, screenshots, systemScreenshot);
   }
 
-  return { screenshotPath: screenshots.join(', '), errors: [...consoleErrors], extraInfo: `Tested themes: Dark, Light, System` };
+  return {
+    screenshotPath: screenshots.join(", "),
+    errors: [...consoleErrors],
+    extraInfo: `Tested themes: Dark, Light, System`,
+  };
 }
 
 export async function testSttProvider({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
   const screenshots: string[] = [];
 
-  await page.goto(`${baseUrl}/settings`, { waitUntil: 'load' });
+  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
   await page.waitForTimeout(2000);
 
-  const voiceTab = page.getByText('Voice', { exact: true }).first();
-  if (!await voiceTab.isVisible().catch(() => false)) throw new Error('Voice tab not found');
+  const voiceTab = page.getByText("Voice", { exact: true }).first();
+  if (!(await voiceTab.isVisible().catch(() => false))) throw new Error("Voice tab not found");
 
   await voiceTab.click();
   await page.waitForTimeout(800);
 
   await saveScreenshot(page, screenshots, `${screenshotDir}/test-05-stt-initial.png`);
 
-  const bodyText = await page.textContent('body') || '';
-  const hasWebSpeech = bodyText.toLowerCase().includes('web speech');
-  const hasDeepgram = bodyText.toLowerCase().includes('deepgram');
+  const bodyText = (await page.textContent("body")) || "";
+  const hasWebSpeech = bodyText.toLowerCase().includes("web speech");
+  const hasDeepgram = bodyText.toLowerCase().includes("deepgram");
 
-  if (!hasWebSpeech && !hasDeepgram) throw new Error('STT provider options not found');
+  if (!hasWebSpeech && !hasDeepgram) throw new Error("STT provider options not found");
 
-  const deepgramBtn = page.getByText('Deepgram', { exact: true }).first();
+  const deepgramBtn = page.getByText("Deepgram", { exact: true }).first();
   let hasApiKeyField = false;
   if (await deepgramBtn.isVisible().catch(() => false)) {
     await deepgramBtn.click();
     await page.waitForTimeout(800);
 
-    const apiKeyField = page.getByPlaceholder(/API key/i).or(page.getByText(/API key/i)).first();
+    const apiKeyField = page
+      .getByPlaceholder(/API key/i)
+      .or(page.getByText(/API key/i))
+      .first();
     hasApiKeyField = await apiKeyField.isVisible().catch(() => false);
 
     await saveScreenshot(page, screenshots, `${screenshotDir}/test-05-stt-deepgram.png`);
 
-    const webSpeechBtn = page.getByText('Web Speech', { exact: true }).first();
+    const webSpeechBtn = page.getByText("Web Speech", { exact: true }).first();
     if (await webSpeechBtn.isVisible().catch(() => false)) {
       await webSpeechBtn.click();
       await page.waitForTimeout(800);
       await saveScreenshot(page, screenshots, `${screenshotDir}/test-05-stt-webspeech.png`);
     }
 
-    return { screenshotPath: screenshots.join(', '), errors: [...consoleErrors], extraInfo: `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}, API key field visible: ${hasApiKeyField}` };
+    return {
+      screenshotPath: screenshots.join(", "),
+      errors: [...consoleErrors],
+      extraInfo: `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}, API key field visible: ${hasApiKeyField}`,
+    };
   }
 
-  return { screenshotPath: screenshots.join(', '), errors: [...consoleErrors], extraInfo: `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}` };
+  return {
+    screenshotPath: screenshots.join(", "),
+    errors: [...consoleErrors],
+    extraInfo: `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}`,
+  };
 }
 
 export async function testDataSourceToggles({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
 
-  await page.goto(`${baseUrl}/settings`, { waitUntil: 'load' });
+  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
   await page.waitForTimeout(2000);
 
-  const sourcesTab = page.getByText('Sources', { exact: true }).first();
-  if (!await sourcesTab.isVisible().catch(() => false)) throw new Error('Sources tab not found');
+  const sourcesTab = page.getByText("Sources", { exact: true }).first();
+  if (!(await sourcesTab.isVisible().catch(() => false))) throw new Error("Sources tab not found");
 
   await sourcesTab.click();
   await page.waitForTimeout(800);
 
-  const bodyText = await page.textContent('body') || '';
-  const hasSrd = bodyText.includes('SRD');
+  const bodyText = (await page.textContent("body")) || "";
+  const hasSrd = bodyText.includes("SRD");
 
   const checkboxes = page.locator('input[type="checkbox"], [role="switch"], [role="checkbox"]');
   const checkboxCount = await checkboxes.count();
 
-  if (checkboxCount === 0 && !hasSrd) throw new Error('No data source toggles found');
+  if (checkboxCount === 0 && !hasSrd) throw new Error("No data source toggles found");
 
   const firstCheckbox = checkboxes.first();
-  let toggleResult = 'N/A';
+  let toggleResult = "N/A";
   if (await firstCheckbox.isVisible().catch(() => false)) {
     const initialState = await firstCheckbox.isChecked().catch(() => false);
     await firstCheckbox.click();
@@ -194,19 +224,23 @@ export async function testDataSourceToggles({ page, consoleErrors, screenshotDir
 
   await page.screenshot({ path: `${screenshotDir}/test-06-data-sources.png` });
 
-  return { screenshotPath: `${screenshotDir}/test-06-data-sources.png`, errors: [...consoleErrors], extraInfo: `SRD found: ${hasSrd}, Checkboxes: ${checkboxCount}, Toggle: ${toggleResult}` };
+  return {
+    screenshotPath: `${screenshotDir}/test-06-data-sources.png`,
+    errors: [...consoleErrors],
+    extraInfo: `SRD found: ${hasSrd}, Checkboxes: ${checkboxCount}, Toggle: ${toggleResult}`,
+  };
 }
 
 export async function testSampleWorldEntities({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
 
-  await page.goto(baseUrl, { waitUntil: 'load' });
+  await page.goto(baseUrl, { waitUntil: "load" });
   await page.waitForTimeout(2500);
 
-  const startEl = page.getByText('Start', { exact: true }).first();
-  if (!await startEl.isVisible().catch(() => false)) {
-    const altStart = page.locator('text=Start').first();
-    if (!await altStart.isVisible().catch(() => false)) throw new Error('Start Session button not found');
+  const startEl = page.getByText("Start", { exact: true }).first();
+  if (!(await startEl.isVisible().catch(() => false))) {
+    const altStart = page.locator("text=Start").first();
+    if (!(await altStart.isVisible().catch(() => false))) throw new Error("Start Session button not found");
     await altStart.click();
   } else {
     await startEl.click();
@@ -214,11 +248,15 @@ export async function testSampleWorldEntities({ page, consoleErrors, screenshotD
 
   await page.waitForTimeout(1500);
 
-  const bodyText = await page.textContent('body') || '';
-  const hasListening = bodyText.includes('Listening');
-  const hasAwaiting = bodyText.includes('Awaiting');
+  const bodyText = (await page.textContent("body")) || "";
+  const hasListening = bodyText.includes("Listening");
+  const hasAwaiting = bodyText.includes("Awaiting");
 
   await page.screenshot({ path: `${screenshotDir}/test-07-sample-world.png` });
 
-  return { screenshotPath: `${screenshotDir}/test-07-sample-world.png`, errors: [...consoleErrors], extraInfo: `Session started. Listening: ${hasListening}, Awaiting entities: ${hasAwaiting}` };
+  return {
+    screenshotPath: `${screenshotDir}/test-07-sample-world.png`,
+    errors: [...consoleErrors],
+    extraInfo: `Session started. Listening: ${hasListening}, Awaiting entities: ${hasAwaiting}`,
+  };
 }

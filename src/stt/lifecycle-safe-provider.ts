@@ -1,4 +1,4 @@
-import type { STTProvider } from './index';
+import type { STTProvider } from "./index";
 
 export type STTProviderFactory = (
   onTranscript: (text: string) => void,
@@ -39,9 +39,15 @@ export class LateEventSafeSTTProvider implements STTProvider {
     return command;
   }
 
-  pause(): Promise<void> { return this.stopCurrentCapture(); }
-  resume(): Promise<void> { return this.start(); }
-  stop(): Promise<void> { return this.stopCurrentCapture(); }
+  pause(): Promise<void> {
+    return this.stopCurrentCapture();
+  }
+  resume(): Promise<void> {
+    return this.start();
+  }
+  stop(): Promise<void> {
+    return this.stopCurrentCapture();
+  }
 
   private createCapture(): CaptureInstance {
     this.nextGeneration += 1;
@@ -75,7 +81,9 @@ export class LateEventSafeSTTProvider implements STTProvider {
     );
   }
 
-  private emitTranscript(text: string, generation: number): void { if (this.canDeliver(generation)) this.onTranscript(text); }
+  private emitTranscript(text: string, generation: number): void {
+    if (this.canDeliver(generation)) this.onTranscript(text);
+  }
 
   private emitError(error: string, generation: number): void {
     if (!this.canDeliver(generation)) return;
@@ -83,7 +91,9 @@ export class LateEventSafeSTTProvider implements STTProvider {
     this.onError(error);
   }
 
-  private canDeliver(generation: number): boolean { return this.deliveryGeneration === generation && this.currentCapture?.generation === generation; }
+  private canDeliver(generation: number): boolean {
+    return this.deliveryGeneration === generation && this.currentCapture?.generation === generation;
+  }
 
   private isCurrentCapture(capture: CaptureInstance): boolean {
     const current = this.currentCapture;
@@ -99,11 +109,21 @@ export class LateEventSafeSTTProvider implements STTProvider {
     return this.stopProvider(capture.provider);
   }
 
-  private async stopProvider(provider: STTProvider): Promise<void> { try { await provider.stop(); } catch {} }
+  private async stopProvider(provider: STTProvider): Promise<void> {
+    try {
+      await provider.stop();
+    } catch {}
+  }
 
-  private clearStartInFlight(command: Promise<void>): void { if (this.startInFlight === command) this.startInFlight = null; }
+  private clearStartInFlight(command: Promise<void>): void {
+    if (this.startInFlight === command) this.startInFlight = null;
+  }
 }
 
-export function createLateEventSafeSTTProvider(createProvider: STTProviderFactory, onTranscript: (text: string) => void, onError: (error: string) => void): STTProvider {
+export function createLateEventSafeSTTProvider(
+  createProvider: STTProviderFactory,
+  onTranscript: (text: string) => void,
+  onError: (error: string) => void,
+): STTProvider {
   return new LateEventSafeSTTProvider(createProvider, onTranscript, onError);
 }

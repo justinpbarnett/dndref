@@ -1,13 +1,13 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from "@playwright/test";
 
-import { DETECT_WAIT_MS, setupTest, speak, startSession, waitForSettings, } from '../helpers';
+import { DETECT_WAIT_MS, setupTest, speak, startSession, waitForSettings } from "../helpers";
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 360, height: 640 };
 
 async function expectInsideViewport(page: Page, text: string) {
   const viewport = page.viewportSize();
-  if (!viewport) throw new Error('viewport is required for layout assertions');
+  if (!viewport) throw new Error("viewport is required for layout assertions");
 
   const item = page.getByText(text, { exact: true }).last();
   await expect(item).toBeVisible();
@@ -31,38 +31,38 @@ async function expectTabLabelReadable(page: Page, text: string) {
   });
 
   expect(metrics.height).toBeGreaterThanOrEqual(14);
-  expect(metrics.overflow).toBe('visible');
+  expect(metrics.overflow).toBe("visible");
 }
 
 async function populateCards(page: Page) {
   await startSession(page);
   await speak(
     page,
-    'Valdrath summoned Malachar and Seraphine to Ironspire. Gorm carries the Sundering Blade through Silvermarsh.',
+    "Valdrath summoned Malachar and Seraphine to Ironspire. Gorm carries the Sundering Blade through Silvermarsh.",
   );
   await page.waitForTimeout(DETECT_WAIT_MS);
-  await expect(page.getByTestId('entity-card')).toHaveCount(6);
+  await expect(page.getByTestId("entity-card")).toHaveCount(6);
 }
 
-test.describe('responsive UI coverage', () => {
-  test('empty reference state keeps primary tab labels visible on desktop and mobile', async ({ page }) => {
+test.describe("responsive UI coverage", () => {
+  test("empty reference state keeps primary tab labels visible on desktop and mobile", async ({ page }) => {
     for (const viewport of [DESKTOP, MOBILE]) {
       await page.setViewportSize(viewport);
       await setupTest(page);
 
-      await expect(page.getByText('Session not started')).toBeVisible();
-      await expectTabLabelReadable(page, 'REFERENCE');
-      await expectTabLabelReadable(page, 'SETTINGS');
+      await expect(page.getByText("Session not started")).toBeVisible();
+      await expectTabLabelReadable(page, "REFERENCE");
+      await expectTabLabelReadable(page, "SETTINGS");
     }
   });
 
-  test('mobile populated cards use a readable single-column layout', async ({ page }) => {
+  test("mobile populated cards use a readable single-column layout", async ({ page }) => {
     await page.setViewportSize(MOBILE);
     await setupTest(page);
     await populateCards(page);
 
-    const first = await page.getByTestId('entity-card').nth(0).boundingBox();
-    const second = await page.getByTestId('entity-card').nth(1).boundingBox();
+    const first = await page.getByTestId("entity-card").nth(0).boundingBox();
+    const second = await page.getByTestId("entity-card").nth(1).boundingBox();
 
     expect(first).not.toBeNull();
     expect(second).not.toBeNull();
@@ -73,14 +73,14 @@ test.describe('responsive UI coverage', () => {
     expect(second!.y).toBeGreaterThan(first!.y + first!.height - 1);
   });
 
-  test('desktop populated cards stay constrained and centered', async ({ page }) => {
+  test("desktop populated cards stay constrained and centered", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
     await setupTest(page);
     await populateCards(page);
 
-    const first = await page.getByTestId('entity-card').nth(0).boundingBox();
-    const second = await page.getByTestId('entity-card').nth(1).boundingBox();
-    const third = await page.getByTestId('entity-card').nth(2).boundingBox();
+    const first = await page.getByTestId("entity-card").nth(0).boundingBox();
+    const second = await page.getByTestId("entity-card").nth(1).boundingBox();
+    const third = await page.getByTestId("entity-card").nth(2).boundingBox();
 
     expect(first).not.toBeNull();
     expect(second).not.toBeNull();
@@ -91,65 +91,65 @@ test.describe('responsive UI coverage', () => {
     expect(Math.abs(second!.y - third!.y)).toBeLessThanOrEqual(2);
   });
 
-  test('settings content is constrained on desktop and category tabs fit on mobile', async ({ page }) => {
+  test("settings content is constrained on desktop and category tabs fit on mobile", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
     await setupTest(page);
-    await page.goto('/settings');
+    await page.goto("/settings");
     await waitForSettings(page);
 
-    const desktopContent = await page.getByTestId('settings-content').boundingBox();
+    const desktopContent = await page.getByTestId("settings-content").boundingBox();
     expect(desktopContent).not.toBeNull();
     expect(desktopContent!.width).toBeLessThanOrEqual(900);
 
     await page.setViewportSize(MOBILE);
-    await page.goto('/settings');
+    await page.goto("/settings");
     await waitForSettings(page);
 
-    for (const label of ['DISPLAY', 'VOICE', 'SOURCES', 'FILES', 'AI PARSE']) {
+    for (const label of ["DISPLAY", "VOICE", "SOURCES", "FILES", "AI PARSE"]) {
       await expectInsideViewport(page, label);
     }
   });
 
-  test('settings subviews cover empty and full-content states on mobile', async ({ page }) => {
+  test("settings subviews cover empty and full-content states on mobile", async ({ page }) => {
     await page.setViewportSize(MOBILE);
     await setupTest(page);
-    await page.goto('/settings');
+    await page.goto("/settings");
     await waitForSettings(page);
 
-    await page.getByText('FILES', { exact: true }).click();
-    await expect(page.getByText('UPLOAD FILES')).toBeVisible();
-    await expect(page.getByText('Add', { exact: true })).toBeVisible();
+    await page.getByText("FILES", { exact: true }).click();
+    await expect(page.getByText("UPLOAD FILES")).toBeVisible();
+    await expect(page.getByText("Add", { exact: true })).toBeVisible();
 
-    await page.getByPlaceholder('File name (e.g. my-campaign.md)').fill('long-mobile-layout-check.md');
-    await page.getByPlaceholder('Paste content here...').fill('Valdrath\\nIronspire\\nThe Sundering Blade');
-    await expect(page.getByText('Add', { exact: true })).toBeEnabled();
+    await page.getByPlaceholder("File name (e.g. my-campaign.md)").fill("long-mobile-layout-check.md");
+    await page.getByPlaceholder("Paste content here...").fill("Valdrath\\nIronspire\\nThe Sundering Blade");
+    await expect(page.getByText("Add", { exact: true })).toBeEnabled();
 
-    await page.getByText('SOURCES', { exact: true }).click();
+    await page.getByText("SOURCES", { exact: true }).click();
     await page.getByText(/Critical Role/).scrollIntoViewIfNeeded();
     await expect(page.getByText(/Critical Role/)).toBeVisible();
-    await expectInsideViewport(page, 'SETTINGS');
+    await expectInsideViewport(page, "SETTINGS");
   });
 
-  test('settings file uploads can be removed one at a time', async ({ page }) => {
+  test("settings file uploads can be removed one at a time", async ({ page }) => {
     await setupTest(page);
-    await page.goto('/settings');
+    await page.goto("/settings");
     await waitForSettings(page);
-    await page.getByText('Files', { exact: true }).click();
+    await page.getByText("Files", { exact: true }).click();
 
-    await page.getByPlaceholder('File name (e.g. my-campaign.md)').fill('keep-me.md');
-    await page.getByPlaceholder('Paste content here...').fill('Valdrath');
-    await page.getByText('Add', { exact: true }).click();
-    await expect(page.getByText('keep-me.md')).toBeVisible();
+    await page.getByPlaceholder("File name (e.g. my-campaign.md)").fill("keep-me.md");
+    await page.getByPlaceholder("Paste content here...").fill("Valdrath");
+    await page.getByText("Add", { exact: true }).click();
+    await expect(page.getByText("keep-me.md")).toBeVisible();
 
-    await page.getByPlaceholder('File name (e.g. my-campaign.md)').fill('remove-me.md');
-    await page.getByPlaceholder('Paste content here...').fill('Ironspire');
-    await page.getByText('Add', { exact: true }).click();
+    await page.getByPlaceholder("File name (e.g. my-campaign.md)").fill("remove-me.md");
+    await page.getByPlaceholder("Paste content here...").fill("Ironspire");
+    await page.getByText("Add", { exact: true }).click();
 
-    await expect(page.getByText('UPLOADED (2)')).toBeVisible();
-    await page.getByRole('button', { name: 'Remove upload remove-me.md' }).click();
+    await expect(page.getByText("UPLOADED (2)")).toBeVisible();
+    await page.getByRole("button", { name: "Remove upload remove-me.md" }).click();
 
-    await expect(page.getByText('remove-me.md')).not.toBeVisible();
-    await expect(page.getByText('keep-me.md')).toBeVisible();
-    await expect(page.getByText('UPLOADED (1)')).toBeVisible();
+    await expect(page.getByText("remove-me.md")).not.toBeVisible();
+    await expect(page.getByText("keep-me.md")).toBeVisible();
+    await expect(page.getByText("UPLOADED (1)")).toBeVisible();
   });
 });

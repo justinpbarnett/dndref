@@ -95,11 +95,12 @@ Deepgram is the primary provider on native iPad. On web, falls back to Web Speec
 ### Entity detection
 
 Not NLP -- fuzzy string matching against the known entity list. Uses Fuse.js with:
+
 - Threshold: 0.28 (tuned for false positive balance)
 - Minimum match length: 4 characters
 - Matches single words, 2-word phrases, and 3-word phrases
 
-Runs every 2 seconds on only the *new* transcript text since the last check (`processedUpToRef`).
+Runs every 2 seconds on only the _new_ transcript text since the last check (`processedUpToRef`).
 
 ### Card stack behavior
 
@@ -122,6 +123,7 @@ Runs every 2 seconds on only the *new* transcript text since the last check (`pr
 **Tab 1 -- Reference (default)**
 
 Cards displayed in a responsive grid based on card size setting:
+
 - S: 4 columns (landscape) / 3 columns (portrait)
 - M: 3 columns / 2 columns (default)
 - L: 2 columns / 2 columns
@@ -187,4 +189,3 @@ just build-ios      # EAS build for TestFlight
 - AI parser available in settings for converting campaign notes to entities (uses Claude API)
 - No AI in the live detection path -- all entity matching is deterministic Fuse.js
 - Debug tab only visible in dev builds (`__DEV__` flag)
-

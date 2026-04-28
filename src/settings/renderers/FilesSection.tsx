@@ -1,9 +1,9 @@
-import React from 'react';
-import { Platform, Text, TouchableOpacity, View } from 'react-native';
+import React from "react";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 
-import { Ionicon } from '../../components/Ionicon';
-import { FilesSectionProps } from '../types';
-import { SettingsInput } from './SettingsInput';
+import { Ionicon } from "../../components/Ionicon";
+import { FilesSectionProps } from "../types";
+import { SettingsInput } from "./SettingsInput";
 
 export function FilesSection({
   uploads,
@@ -29,7 +29,7 @@ export function FilesSection({
         <Text style={styles.groupDesc}>
           Upload .md, .txt, or .json from Obsidian, DiceCloud, or any campaign notes.
         </Text>
-        {Platform.OS === 'web' && (
+        {Platform.OS === "web" && (
           <TouchableOpacity style={styles.outlineBtn} onPress={pickFilesWeb} activeOpacity={0.7}>
             <Ionicon name="cloud-upload-outline" size={14} color={C.active} style={{ marginRight: 6 }} />
             <Text style={styles.outlineBtnText}>Choose Files</Text>
@@ -71,7 +71,9 @@ export function FilesSection({
             return (
               <View key={f.id} style={styles.fileRow}>
                 <Ionicon name="document-text-outline" size={13} color={C.textDim} />
-                <Text style={styles.fileName} numberOfLines={1}>{f.name}</Text>
+                <Text style={styles.fileName} numberOfLines={1}>
+                  {f.name}
+                </Text>
                 <TouchableOpacity
                   style={[styles.fileRemoveBtn, removing && styles.fileRemoveBtnDisabled]}
                   onPress={() => handleDeleteUpload(f.id)}
@@ -92,7 +94,8 @@ export function FilesSection({
       <View style={styles.group}>
         <Text style={styles.groupLabel}>DELETE ALL DATA</Text>
         <Text style={styles.groupDesc}>
-          Clears uploads, pasted content, AI parsed files, saved settings, keys, source URLs, and cached SRD data from this device.
+          Clears uploads, pasted content, AI parsed files, saved settings, keys, source URLs, and cached SRD data from
+          this device.
         </Text>
         <TouchableOpacity
           style={[styles.dangerBtn, deleteAllPending && styles.dangerBtnDisabled]}
@@ -101,9 +104,7 @@ export function FilesSection({
           disabled={deleteAllPending}
         >
           <Ionicon name="trash-outline" size={14} color={C.error} style={{ marginRight: 6 }} />
-          <Text style={styles.dangerBtnText}>
-            {deleteAllPending ? 'Deleting...' : 'Delete All Data'}
-          </Text>
+          <Text style={styles.dangerBtnText}>{deleteAllPending ? "Deleting..." : "Delete All Data"}</Text>
         </TouchableOpacity>
         {!!deleteAllStatus && <Text style={styles.fieldHint}>{deleteAllStatus}</Text>}
       </View>

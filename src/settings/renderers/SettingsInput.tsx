@@ -1,5 +1,5 @@
-import React from 'react';
-import { TextInput, type TextInputProps } from 'react-native';
+import React from "react";
+import { TextInput, type TextInputProps } from "react-native";
 
 export function SettingsInput({ styles, style, ...props }: TextInputProps & { styles: any }) {
   return (

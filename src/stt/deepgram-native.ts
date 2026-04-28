@@ -1,15 +1,20 @@
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from "expo-file-system/legacy";
 
-import { assertDeepgramApiKey, DEEPGRAM_HTTP_URL, DEEPGRAM_PARAMS, extractDeepgramTranscript } from './deepgram-shared';
-import { createNativeAudioRecorder, releaseNativeAudioRecorder, requestNativeRecordingAccess, type NativeAudioRecorder } from './native-audio';
+import { assertDeepgramApiKey, DEEPGRAM_HTTP_URL, DEEPGRAM_PARAMS, extractDeepgramTranscript } from "./deepgram-shared";
+import {
+  createNativeAudioRecorder,
+  releaseNativeAudioRecorder,
+  requestNativeRecordingAccess,
+  type NativeAudioRecorder,
+} from "./native-audio";
 
-import type { STTProvider } from './index';
+import type { STTProvider } from "./index";
 
-const NATIVE_AUDIO_CONTENT_TYPE = 'audio/mp4';
+const NATIVE_AUDIO_CONTENT_TYPE = "audio/mp4";
 const NATIVE_CHUNK_INTERVAL_MS = 5000;
 
 export class DeepgramNativeCaptureAdapter implements STTProvider {
-  readonly name = 'Deepgram';
+  readonly name = "Deepgram";
   private active = false;
   private chunkTimer: ReturnType<typeof setInterval> | null = null;
   private nativeOperation: Promise<void> = Promise.resolve();
@@ -38,9 +43,16 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
     await this.startNativeCapture();
   }
 
-  async stop(): Promise<void> { this.active = false; await this.stopNativeCapture(); }
+  async stop(): Promise<void> {
+    this.active = false;
+    await this.stopNativeCapture();
+  }
 
-  private startNativeCapture(): Promise<void> { return this.enqueueNative(async () => { await this.startNativeChunks(); }); }
+  private startNativeCapture(): Promise<void> {
+    return this.enqueueNative(async () => {
+      await this.startNativeChunks();
+    });
+  }
 
   private stopNativeCapture(): Promise<void> {
     return this.enqueueNative(async () => {
@@ -79,7 +91,9 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
     this.clearNativeTimer();
     await this.startChunk();
     if (this.active && this.recording) {
-      this.chunkTimer = setInterval(() => { void this.rotateChunk(); }, NATIVE_CHUNK_INTERVAL_MS);
+      this.chunkTimer = setInterval(() => {
+        void this.rotateChunk();
+      }, NATIVE_CHUNK_INTERVAL_MS);
     }
   }
 
@@ -130,9 +144,13 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
   }
 
   private transcribeCompletedChunk(uri: string): void {
-    void this.transcribeChunk(uri).then((text) => { if (text && this.active) this.onTranscript(text); }).catch((e: unknown) => {
-      if (this.active) this.onError(`Transcription failed: ${e instanceof Error ? e.message : String(e)}`);
-    });
+    void this.transcribeChunk(uri)
+      .then((text) => {
+        if (text && this.active) this.onTranscript(text);
+      })
+      .catch((e: unknown) => {
+        if (this.active) this.onError(`Transcription failed: ${e instanceof Error ? e.message : String(e)}`);
+      });
   }
 
   private async transcribeChunk(uri: string): Promise<string> {
@@ -140,9 +158,9 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
       const result = await FileSystem.uploadAsync(`${DEEPGRAM_HTTP_URL}?${DEEPGRAM_PARAMS}`, uri, {
         headers: {
           Authorization: `Token ${this.apiKey}`,
-          'Content-Type': NATIVE_AUDIO_CONTENT_TYPE,
+          "Content-Type": NATIVE_AUDIO_CONTENT_TYPE,
         },
-        httpMethod: 'POST',
+        httpMethod: "POST",
         uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
       });
       if (result.status < 200 || result.status >= 300) {

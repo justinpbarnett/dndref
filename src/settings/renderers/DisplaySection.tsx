@@ -1,9 +1,9 @@
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
-import { CARD_SIZES, COLOR_SCHEMES } from '../../context/ui-settings';
-import { CARD_SIZE_DESCS, CARD_SIZE_LABELS, COLOR_SCHEME_LABELS } from '../constants';
-import { DisplaySectionProps } from '../types';
+import { CARD_SIZES, COLOR_SCHEMES } from "../../context/ui-settings";
+import { CARD_SIZE_DESCS, CARD_SIZE_LABELS, COLOR_SCHEME_LABELS } from "../constants";
+import { DisplaySectionProps } from "../types";
 
 export function DisplaySection({ cardSize, setCardSize, colorScheme, setColorScheme, styles }: DisplaySectionProps) {
   return (

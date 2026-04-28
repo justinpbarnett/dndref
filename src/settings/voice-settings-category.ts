@@ -1,19 +1,40 @@
-import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
-import { Platform } from 'react-native';
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { Platform } from "react-native";
 
-import { createDefaultVoiceSettings, loadVoiceSettings as loadStoredVoiceSettings, mergeVoiceSettings, saveVoiceSettings as saveStoredVoiceSettings } from '../storage/app-data';
-import type { STTSettings } from '../stt';
+import {
+  createDefaultVoiceSettings,
+  loadVoiceSettings as loadStoredVoiceSettings,
+  mergeVoiceSettings,
+  saveVoiceSettings as saveStoredVoiceSettings,
+} from "../storage/app-data";
+import type { STTSettings } from "../stt";
 
 export const VOICE_SAVED_INDICATOR_MS = 2000;
 
 type SavedTimer = ReturnType<typeof setTimeout>;
 type VoiceSettingsListener = (snapshot: VoiceSettingsCategorySnapshot) => void;
 
-export interface VoiceSettingsCategorySnapshot { sttSettings: STTSettings; voiceSaved: boolean }
+export interface VoiceSettingsCategorySnapshot {
+  sttSettings: STTSettings;
+  voiceSaved: boolean;
+}
 
-export interface VoiceSettingsCategoryControllerOptions { loadVoiceSettings?: () => Promise<STTSettings | null>; saveVoiceSettings?: (settings: STTSettings) => Promise<boolean>; setSavedTimer?: (callback: () => void, ms: number) => SavedTimer; clearSavedTimer?: (timer: SavedTimer) => void }
+export interface VoiceSettingsCategoryControllerOptions {
+  loadVoiceSettings?: () => Promise<STTSettings | null>;
+  saveVoiceSettings?: (settings: STTSettings) => Promise<boolean>;
+  setSavedTimer?: (callback: () => void, ms: number) => SavedTimer;
+  clearSavedTimer?: (timer: SavedTimer) => void;
+}
 
-export interface VoiceSettingsCategoryController { getSnapshot(): VoiceSettingsCategorySnapshot; subscribe(listener: VoiceSettingsListener): () => void; load(): Promise<void>; setSttSettings(update: SetStateAction<STTSettings>): void; save(): Promise<void>; reset(): void; dispose(): void }
+export interface VoiceSettingsCategoryController {
+  getSnapshot(): VoiceSettingsCategorySnapshot;
+  subscribe(listener: VoiceSettingsListener): () => void;
+  load(): Promise<void>;
+  setSttSettings(update: SetStateAction<STTSettings>): void;
+  save(): Promise<void>;
+  reset(): void;
+  dispose(): void;
+}
 
 class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryController {
   private readonly loadVoiceSettings: () => Promise<STTSettings | null>;
@@ -36,11 +57,15 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     this.clearSavedTimer = options.clearSavedTimer ?? clearTimeout;
   }
 
-  getSnapshot(): VoiceSettingsCategorySnapshot { return this.snapshot; }
+  getSnapshot(): VoiceSettingsCategorySnapshot {
+    return this.snapshot;
+  }
 
   subscribe(listener: VoiceSettingsListener): () => void {
     this.listeners.add(listener);
-    return () => { this.listeners.delete(listener); };
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
   async load(): Promise<void> {
@@ -52,9 +77,7 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
   }
 
   setSttSettings(update: SetStateAction<STTSettings>): void {
-    const nextSettings = typeof update === 'function'
-      ? update(this.snapshot.sttSettings)
-      : update;
+    const nextSettings = typeof update === "function" ? update(this.snapshot.sttSettings) : update;
 
     this.updateSnapshot({ sttSettings: mergeVoiceSettings(nextSettings) });
   }
@@ -74,7 +97,12 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     this.replaceSnapshot({ sttSettings: createDefaultVoiceSettings(), voiceSaved: false });
   }
 
-  dispose(): void { this.disposed = true; this.loadGeneration += 1; this.clearSavedIndicatorTimer(); this.listeners.clear(); }
+  dispose(): void {
+    this.disposed = true;
+    this.loadGeneration += 1;
+    this.clearSavedIndicatorTimer();
+    this.listeners.clear();
+  }
 
   private restartSavedTimer(): void {
     this.clearSavedIndicatorTimer();
@@ -91,7 +119,9 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
     this.savedTimer = null;
   }
 
-  private updateSnapshot(patch: Partial<VoiceSettingsCategorySnapshot>): void { this.replaceSnapshot({ ...this.snapshot, ...patch }); }
+  private updateSnapshot(patch: Partial<VoiceSettingsCategorySnapshot>): void {
+    this.replaceSnapshot({ ...this.snapshot, ...patch });
+  }
 
   private replaceSnapshot(snapshot: VoiceSettingsCategorySnapshot): void {
     this.snapshot = snapshot;
@@ -99,7 +129,9 @@ class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryCon
   }
 }
 
-export function createVoiceSettingsCategoryController(options: VoiceSettingsCategoryControllerOptions = {}): VoiceSettingsCategoryController {
+export function createVoiceSettingsCategoryController(
+  options: VoiceSettingsCategoryControllerOptions = {},
+): VoiceSettingsCategoryController {
   return new DefaultVoiceSettingsCategoryController(options);
 }
 
@@ -116,10 +148,20 @@ export function useVoiceSettingsCategory() {
     return () => controller.dispose();
   }, [controller]);
 
-  const setSttSettings = useCallback<Dispatch<SetStateAction<STTSettings>>>((update) => controller.setSttSettings(update), [controller]);
+  const setSttSettings = useCallback<Dispatch<SetStateAction<STTSettings>>>(
+    (update) => controller.setSttSettings(update),
+    [controller],
+  );
 
   const saveVoice = useCallback(() => controller.save(), [controller]);
   const resetVoiceSettings = useCallback(() => controller.reset(), [controller]);
 
-  return { sttSettings: snapshot.sttSettings, setSttSettings, saveVoice, voiceSaved: snapshot.voiceSaved, isWebSpeech: Platform.OS === 'web', resetVoiceSettings };
+  return {
+    sttSettings: snapshot.sttSettings,
+    setSttSettings,
+    saveVoice,
+    voiceSaved: snapshot.voiceSaved,
+    isWebSpeech: Platform.OS === "web",
+    resetVoiceSettings,
+  };
 }

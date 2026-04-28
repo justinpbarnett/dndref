@@ -1,41 +1,35 @@
-import type { Entity } from '../entities';
-import type { STTProvider, STTSettings } from '../stt';
-import { addCard, dismissCard, pinCard, unpinCard } from './card-stack';
-import { buildDetectionInput, nextDetectionContext } from './detection-window';
-import type { CardState, SessionStatus, SttStatus } from './session-types';
+import type { Entity } from "../entities";
+import type { STTProvider } from "../stt";
+import { addCard, dismissCard, pinCard, unpinCard } from "./card-stack";
+import { buildDetectionInput, nextDetectionContext } from "./detection-window";
+import type { CardState } from "./session-types";
+import {
+  INITIAL_SESSION_RUNTIME_SNAPSHOT,
+  type DetectionInterval,
+  type SessionRuntimeDetector,
+  type SessionRuntimeListener,
+  type SessionRuntimeOptions,
+  type SessionRuntimeSnapshot,
+  type SnapshotPatch,
+} from "./session-runtime-types";
 
-export interface SessionRuntimeDetector { detect(transcript: string): Entity[] }
-
-export interface SessionRuntimeSnapshot { status: SessionStatus; sttStatus: SttStatus; sttError: string | null; sttProviderName: string; cards: CardState[]; transcript: string; recentDetections: Entity[] }
-
-type SttSettingsLoader = () => Promise<STTSettings>;
-type SttProviderBuilder = (
-  settings: STTSettings,
-  onTranscript: (text: string) => void,
-  onError: (error: string) => void,
-) => STTProvider;
-
-export interface SessionRuntimeOptions { loadSttSettings?: SttSettingsLoader; buildSttProvider?: SttProviderBuilder; detectIntervalMs?: number }
-
-type SessionRuntimeListener = (snapshot: SessionRuntimeSnapshot) => void;
-type DetectionInterval = ReturnType<typeof setInterval>;
-type SnapshotPatch = Partial<SessionRuntimeSnapshot>;
+export type { SessionRuntimeDetector, SessionRuntimeOptions, SessionRuntimeSnapshot } from "./session-runtime-types";
 
 export class SessionRuntime {
   private acceptingTranscript = false;
   private detector: SessionRuntimeDetector | null = null;
   private detectionInterval: DetectionInterval | null = null;
   private readonly detectIntervalMs: number;
-  private readonly buildSttProvider?: SessionRuntimeOptions['buildSttProvider'];
-  private readonly loadSttSettings?: SessionRuntimeOptions['loadSttSettings'];
-  private lastDetectionKey = '';
+  private readonly buildSttProvider?: SessionRuntimeOptions["buildSttProvider"];
+  private readonly loadSttSettings?: SessionRuntimeOptions["loadSttSettings"];
+  private lastDetectionKey = "";
   private listeners = new Set<SessionRuntimeListener>();
-  private previousDetectionContext = '';
+  private previousDetectionContext = "";
   private processedTranscriptLength = 0;
   private startInFlight: Promise<void> | null = null;
   private sttGeneration = 0;
   private sttProvider: STTProvider | null = null;
-  private snapshot: SessionRuntimeSnapshot = { status: 'idle', sttStatus: 'idle', sttError: null, sttProviderName: '', cards: [], transcript: '', recentDetections: [] };
+  private snapshot: SessionRuntimeSnapshot = INITIAL_SESSION_RUNTIME_SNAPSHOT;
 
   constructor(options: SessionRuntimeOptions = {}) {
     this.loadSttSettings = options.loadSttSettings;
@@ -43,14 +37,20 @@ export class SessionRuntime {
     this.detectIntervalMs = options.detectIntervalMs ?? 0;
   }
 
-  getSnapshot(): SessionRuntimeSnapshot { return this.snapshot; }
+  getSnapshot(): SessionRuntimeSnapshot {
+    return this.snapshot;
+  }
 
   subscribe(listener: SessionRuntimeListener): () => void {
     this.listeners.add(listener);
-    return () => { this.listeners.delete(listener); };
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
-  setDetector(detector: SessionRuntimeDetector | null): void { this.detector = detector; }
+  setDetector(detector: SessionRuntimeDetector | null): void {
+    this.detector = detector;
+  }
 
   start(): Promise<void> {
     if (this.startInFlight) return this.startInFlight;
@@ -67,20 +67,24 @@ export class SessionRuntime {
     return command;
   }
 
-  resume(): Promise<void> { return this.start(); }
-  activate(): void { this.setSessionActive(); }
+  resume(): Promise<void> {
+    return this.start();
+  }
+  activate(): void {
+    this.setSessionActive();
+  }
 
   pause(): void {
     this.acceptingTranscript = false;
     const provider = this.sttProvider;
     if (provider) void Promise.resolve(provider.pause()).catch(() => {});
-    this.setSessionPaused({ sttStatus: 'idle' });
+    this.setSessionPaused({ sttStatus: "idle" });
   }
 
   stop(): void {
     const provider = this.invalidateStt();
     if (provider) void this.stopProvider(provider);
-    this.resetSession({ sttStatus: 'idle', sttError: null, sttProviderName: '' });
+    this.resetSession({ sttStatus: "idle", sttError: null, sttProviderName: "" });
   }
 
   dispose(): void {
@@ -96,7 +100,7 @@ export class SessionRuntime {
   }
 
   processTranscript(): void {
-    if (this.snapshot.status !== 'active') return;
+    if (this.snapshot.status !== "active") return;
     if (!this.detector) return;
     const newText = this.snapshot.transcript.slice(this.processedTranscriptLength);
     if (!newText.trim()) return;
@@ -109,7 +113,7 @@ export class SessionRuntime {
 
     let nextCards = this.snapshot.cards;
     for (const entity of detectedEntities) nextCards = addCard(nextCards, entity);
-    const detectionKey = detectedEntities.map((entity) => entity.id).join(',');
+    const detectionKey = detectedEntities.map((entity) => entity.id).join(",");
     const recentDetectionsChanged = detectionKey !== this.lastDetectionKey;
     if (recentDetectionsChanged) this.lastDetectionKey = detectionKey;
 
@@ -121,9 +125,15 @@ export class SessionRuntime {
     this.updateSnapshot(snapshotPatch);
   }
 
-  pin(instanceId: string): void { this.updateCards(pinCard(this.snapshot.cards, instanceId)); }
-  unpin(instanceId: string): void { this.updateCards(unpinCard(this.snapshot.cards, instanceId)); }
-  dismiss(instanceId: string): void { this.updateCards(dismissCard(this.snapshot.cards, instanceId)); }
+  pin(instanceId: string): void {
+    this.updateCards(pinCard(this.snapshot.cards, instanceId));
+  }
+  unpin(instanceId: string): void {
+    this.updateCards(unpinCard(this.snapshot.cards, instanceId));
+  }
+  dismiss(instanceId: string): void {
+    this.updateCards(dismissCard(this.snapshot.cards, instanceId));
+  }
 
   private updateCards(cards: CardState[]): void {
     if (cards !== this.snapshot.cards) this.updateSnapshot({ cards });
@@ -133,10 +143,10 @@ export class SessionRuntime {
     const generation = this.sttGeneration + 1;
     this.sttGeneration = generation;
     this.acceptingTranscript = false;
-    this.updateSnapshot({ sttStatus: 'connecting', sttError: null });
+    this.updateSnapshot({ sttStatus: "connecting", sttError: null });
 
     try {
-      if (!this.loadSttSettings || !this.buildSttProvider) throw new Error('STT provider factory not configured.');
+      if (!this.loadSttSettings || !this.buildSttProvider) throw new Error("STT provider factory not configured.");
       const settings = await this.loadSttSettings();
       if (this.sttGeneration !== generation) return;
       const provider = this.buildSttProvider(
@@ -153,14 +163,18 @@ export class SessionRuntime {
         return;
       }
       this.acceptingTranscript = true;
-      this.setSessionActive({ sttStatus: 'active', sttError: null });
+      this.setSessionActive({ sttStatus: "active", sttError: null });
     } catch (e) {
       if (this.sttGeneration !== generation) return;
       const provider = this.sttProvider;
       if (provider) void this.stopProvider(provider);
       this.sttProvider = null;
       this.acceptingTranscript = false;
-      this.updateSnapshot({ sttProviderName: '', sttError: `Failed to start mic: ${this.formatError(e)}`, sttStatus: 'error' });
+      this.updateSnapshot({
+        sttProviderName: "",
+        sttError: `Failed to start mic: ${this.formatError(e)}`,
+        sttStatus: "error",
+      });
     }
   }
 
@@ -169,7 +183,7 @@ export class SessionRuntime {
       await Promise.resolve(provider.resume());
       if (this.sttGeneration !== generation || this.sttProvider !== provider) return;
       this.acceptingTranscript = true;
-      this.setSessionActive({ sttStatus: 'active', sttError: null });
+      this.setSessionActive({ sttStatus: "active", sttError: null });
     } catch (e) {
       if (this.sttGeneration !== generation || this.sttProvider !== provider) return;
       this.acceptingTranscript = false;
@@ -177,12 +191,14 @@ export class SessionRuntime {
       if (this.sttProvider === provider) this.sttProvider = null;
       this.setSessionPaused({
         sttError: `Failed to resume mic: ${this.formatError(e)}`,
-        sttStatus: 'error',
+        sttStatus: "error",
       });
     }
   }
 
-  private acceptProviderTranscript(text: string, generation: number): void { if (this.sttGeneration === generation && this.acceptingTranscript) this.appendTranscript(text); }
+  private acceptProviderTranscript(text: string, generation: number): void {
+    if (this.sttGeneration === generation && this.acceptingTranscript) this.appendTranscript(text);
+  }
 
   private handleProviderError(error: string, generation: number): void {
     if (this.sttGeneration !== generation) return;
@@ -190,30 +206,30 @@ export class SessionRuntime {
     const provider = this.sttProvider;
     if (provider) void this.stopProvider(provider);
     this.sttProvider = null;
-    const patch: SnapshotPatch = { sttError: error, sttStatus: 'error' };
-    if (this.snapshot.status === 'active') this.setSessionPaused(patch);
+    const patch: SnapshotPatch = { sttError: error, sttStatus: "error" };
+    if (this.snapshot.status === "active") this.setSessionPaused(patch);
     else this.updateSnapshot(patch);
   }
 
   private setSessionActive(patch: SnapshotPatch = {}): void {
     this.processedTranscriptLength = this.snapshot.transcript.length;
-    this.previousDetectionContext = '';
+    this.previousDetectionContext = "";
     this.startDetectionInterval();
-    this.updateSnapshot({ status: 'active', ...patch });
+    this.updateSnapshot({ status: "active", ...patch });
   }
 
   private setSessionPaused(patch: SnapshotPatch = {}): void {
-    this.previousDetectionContext = '';
+    this.previousDetectionContext = "";
     this.clearDetectionInterval();
-    this.updateSnapshot({ status: 'paused', ...patch });
+    this.updateSnapshot({ status: "paused", ...patch });
   }
 
   private resetSession(patch: SnapshotPatch = {}): void {
     this.processedTranscriptLength = 0;
-    this.previousDetectionContext = '';
-    this.lastDetectionKey = '';
+    this.previousDetectionContext = "";
+    this.lastDetectionKey = "";
     this.clearDetectionInterval();
-    this.updateSnapshot({ status: 'idle', cards: [], transcript: '', recentDetections: [], ...patch });
+    this.updateSnapshot({ status: "idle", cards: [], transcript: "", recentDetections: [], ...patch });
   }
 
   private startDetectionInterval(): void {
@@ -229,7 +245,9 @@ export class SessionRuntime {
     this.detectionInterval = null;
   }
 
-  private clearStartInFlight(command: Promise<void>): void { if (this.startInFlight === command) this.startInFlight = null; }
+  private clearStartInFlight(command: Promise<void>): void {
+    if (this.startInFlight === command) this.startInFlight = null;
+  }
 
   private invalidateStt(): STTProvider | null {
     this.sttGeneration += 1;
@@ -241,10 +259,14 @@ export class SessionRuntime {
   }
 
   private async stopProvider(provider: STTProvider): Promise<void> {
-    try { await Promise.resolve(provider.stop()); } catch {}
+    try {
+      await Promise.resolve(provider.stop());
+    } catch {}
   }
 
-  private formatError(error: unknown): string { return error instanceof Error ? error.message : String(error); }
+  private formatError(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+  }
 
   private updateSnapshot(patch: SnapshotPatch): void {
     if (Object.keys(patch).length === 0) return;

@@ -1,5 +1,5 @@
-import type { Entity } from '../entities';
-import type { CardState } from './session-types';
+import type { Entity } from "../entities";
+import type { CardState } from "./session-types";
 
 export const MAX_CARDS = 6;
 
@@ -55,4 +55,6 @@ export function unpinCard(cards: CardState[], instanceId: string): CardState[] {
   return insertAfterPinned(rest, { ...card, pinned: false });
 }
 
-export function dismissCard(cards: CardState[], instanceId: string): CardState[] { return cards.filter((card) => card.instanceId !== instanceId); }
+export function dismissCard(cards: CardState[], instanceId: string): CardState[] {
+  return cards.filter((card) => card.instanceId !== instanceId);
+}

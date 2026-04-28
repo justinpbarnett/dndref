@@ -1,16 +1,18 @@
-import React from 'react';
-import { Switch, Text, TouchableOpacity, View } from 'react-native';
+import React from "react";
+import { Switch, Text, TouchableOpacity, View } from "react-native";
 
-import { Ionicon } from '../../components/Ionicon';
-import { SRD_SOURCES } from '../../entities/providers/srd';
-import { KeyLink } from '../KeyLink';
-import { DataSectionProps } from '../types';
-import { SettingsInput } from './SettingsInput';
+import { Ionicon } from "../../components/Ionicon";
+import { SRD_SOURCES } from "../../entities/providers/srd";
+import { KeyLink } from "../KeyLink";
+import { DataSectionProps } from "../types";
+import { SettingsInput } from "./SettingsInput";
 
-const SRD_PUBLISHER_GROUPS = Array.from(SRD_SOURCES.reduce((map, src) => {
-  map.set(src.publisher, [...(map.get(src.publisher) ?? []), { slug: src.slug, label: src.label }]);
-  return map;
-}, new Map<string, { slug: string; label: string }[]>()).entries());
+const SRD_PUBLISHER_GROUPS = Array.from(
+  SRD_SOURCES.reduce((map, src) => {
+    map.set(src.publisher, [...(map.get(src.publisher) ?? []), { slug: src.slug, label: src.label }]);
+    return map;
+  }, new Map<string, { slug: string; label: string }[]>()).entries(),
+);
 
 export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }: DataSectionProps) {
   const C = styles.__colors;
@@ -18,9 +20,7 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
   const toggleSrdSource = (slug: string) => {
     setDsLocal((s) => {
       const current = s.srdSources;
-      const next = current.includes(slug)
-        ? current.filter((x) => x !== slug)
-        : [...current, slug];
+      const next = current.includes(slug) ? current.filter((x) => x !== slug) : [...current, slug];
       return { ...s, srdSources: next };
     });
   };
@@ -37,7 +37,7 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
           <Switch
             value={dsLocal.srdEnabled}
             onValueChange={(v) => setDsLocal((s) => ({ ...s, srdEnabled: v }))}
-            trackColor={{ false: C.border, true: C.active + '80' }}
+            trackColor={{ false: C.border, true: C.active + "80" }}
             thumbColor={dsLocal.srdEnabled ? C.active : C.textSecondary}
           />
         </View>
@@ -59,9 +59,7 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
                       <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
                         {checked && <Ionicon name="checkmark" size={9} color={C.bg} />}
                       </View>
-                      <Text style={[styles.checkRowLabel, checked && styles.checkRowLabelChecked]}>
-                        {src.label}
-                      </Text>
+                      <Text style={[styles.checkRowLabel, checked && styles.checkRowLabelChecked]}>{src.label}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -84,7 +82,7 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
         <SettingsInput
           styles={styles}
           value={dsLocal.kankaCampaignId}
-          onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaCampaignId: v.replace(/\D/g, '') }))}
+          onChangeText={(v) => setDsLocal((s) => ({ ...s, kankaCampaignId: v.replace(/\D/g, "") }))}
           placeholder="Campaign ID (from kanka.io/en/campaign/12345)"
           keyboardType="numeric"
           autoCapitalize={undefined}
@@ -135,9 +133,8 @@ export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }
       </View>
 
       <TouchableOpacity style={styles.saveBtn} onPress={saveData} activeOpacity={0.7}>
-        <Text style={styles.saveBtnText}>{dataSaved ? 'Saved' : 'Save'}</Text>
+        <Text style={styles.saveBtnText}>{dataSaved ? "Saved" : "Save"}</Text>
       </TouchableOpacity>
     </View>
   );
 }
-

@@ -1,10 +1,19 @@
-import { STTProvider } from './index';
+import { STTProvider } from "./index";
 
 // Web Speech API types are vendor-prefixed and not always in lib.dom.d.ts
-type AnyRecognition = { continuous: boolean; interimResults: boolean; lang: string; onresult: ((event: any) => void) | null; onerror: ((event: any) => void) | null; onend: (() => void) | null; start(): void; abort(): void };
+type AnyRecognition = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: any) => void) | null;
+  onerror: ((event: any) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  abort(): void;
+};
 
 export class WebSpeechProvider implements STTProvider {
-  readonly name = 'Web Speech';
+  readonly name = "Web Speech";
   private recognition: AnyRecognition | null = null;
   private active = false;
   private restartTimer: ReturnType<typeof setTimeout> | null = null;
@@ -18,17 +27,23 @@ export class WebSpeechProvider implements STTProvider {
   }
 
   private isPermissionError(e: unknown): boolean {
-    if (e instanceof DOMException && e.name === 'NotAllowedError') return true;
+    if (e instanceof DOMException && e.name === "NotAllowedError") return true;
     const msg = e instanceof Error ? e.message : String(e);
-    return msg.toLowerCase().includes('not-allowed') || msg.toLowerCase().includes('permission');
+    return msg.toLowerCase().includes("not-allowed") || msg.toLowerCase().includes("permission");
   }
 
   private isAlreadyStartedError(e: unknown): boolean {
     const msg = e instanceof Error ? e.message : String(e);
-    return msg.includes('already started') || msg.includes('already starting') || msg.includes('recognition has already started');
+    return (
+      msg.includes("already started") ||
+      msg.includes("already starting") ||
+      msg.includes("recognition has already started")
+    );
   }
 
-  private actionError(e: unknown, permissionMessage: string, prefix: string): string { return this.isPermissionError(e) ? permissionMessage : `${prefix}: ${e instanceof Error ? e.message : String(e)}`; }
+  private actionError(e: unknown, permissionMessage: string, prefix: string): string {
+    return this.isPermissionError(e) ? permissionMessage : `${prefix}: ${e instanceof Error ? e.message : String(e)}`;
+  }
 
   private clearRestartTimer(): void {
     if (this.restartTimer === null) return;
@@ -52,7 +67,7 @@ export class WebSpeechProvider implements STTProvider {
           return;
         }
         this.active = false;
-        this.onError(this.actionError(e, 'Mic paused. Tap Resume to continue listening.', 'Failed to restart mic'));
+        this.onError(this.actionError(e, "Mic paused. Tap Resume to continue listening.", "Failed to restart mic"));
       }
     }, delay);
   }
@@ -61,14 +76,17 @@ export class WebSpeechProvider implements STTProvider {
     const SR: (new () => AnyRecognition) | undefined =
       (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
 
-    if (!SR) throw new Error('Web Speech API not available. Firefox: enable media.webspeech.recognition.enable in about:config. Or go to Settings and configure a Deepgram API key.');
+    if (!SR)
+      throw new Error(
+        "Web Speech API not available. Firefox: enable media.webspeech.recognition.enable in about:config. Or go to Settings and configure a Deepgram API key.",
+      );
 
     this.active = true;
     this.restartAttempts = 0;
     this.recognition = new SR();
     this.recognition.continuous = true;
     this.recognition.interimResults = false;
-    this.recognition.lang = 'en-US';
+    this.recognition.lang = "en-US";
 
     this.recognition.onresult = (event: any) => {
       this.restartAttempts = 0;
@@ -83,14 +101,16 @@ export class WebSpeechProvider implements STTProvider {
 
     this.recognition.onerror = (event: any) => {
       const err: string = event.error;
-      if (err === 'no-speech' || err === 'aborted') return;
+      if (err === "no-speech" || err === "aborted") return;
       // Prevent onend from attempting a restart after a fatal permission/hardware error
-      if (err === 'not-allowed' || err === 'service-not-allowed' || err === 'audio-capture') this.active = false;
+      if (err === "not-allowed" || err === "service-not-allowed" || err === "audio-capture") this.active = false;
       this.onError(`Mic error: ${err}`);
     };
 
     // Chrome stops recognition after silence -- restart automatically
-    this.recognition.onend = () => { this.scheduleRestart(); };
+    this.recognition.onend = () => {
+      this.scheduleRestart();
+    };
 
     try {
       this.recognition.start();
@@ -104,7 +124,9 @@ export class WebSpeechProvider implements STTProvider {
   pause(): void {
     this.active = false;
     this.clearRestartTimer();
-    try { this.recognition?.abort(); } catch {}
+    try {
+      this.recognition?.abort();
+    } catch {}
   }
 
   resume(): void {
@@ -116,14 +138,22 @@ export class WebSpeechProvider implements STTProvider {
     } catch (e) {
       if (this.isAlreadyStartedError(e)) return;
       this.active = false;
-      this.onError(this.actionError(e, 'Mic permission required. Allow microphone access in browser settings.', 'Failed to resume mic'));
+      this.onError(
+        this.actionError(
+          e,
+          "Mic permission required. Allow microphone access in browser settings.",
+          "Failed to resume mic",
+        ),
+      );
     }
   }
 
   stop(): void {
     this.active = false;
     this.clearRestartTimer();
-    try { this.recognition?.abort(); } catch {}
+    try {
+      this.recognition?.abort();
+    } catch {}
     this.recognition = null;
   }
 }

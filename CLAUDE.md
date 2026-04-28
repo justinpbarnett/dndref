@@ -50,11 +50,12 @@ Providers live in `src/entities/providers/`: `MarkdownProvider` (sample world + 
 
 The combined `EntityIndex` is fed into `EntityDetector` (Fuse.js, `src/entities/detector.ts`). Detection searches single words, 2-word, and 3-word phrases from the transcript against entity names and aliases. Threshold is 0.28; minimum 4 chars.
 
-Every 2 seconds while active, the detector runs against only the *new* transcript text since last check (`processedUpToRef`). Matches are added to the card stack (max 6 cards). Pinned cards are sorted to the front. When the stack is full, the rightmost unpinned card is evicted.
+Every 2 seconds while active, the detector runs against only the _new_ transcript text since last check (`processedUpToRef`). Matches are added to the card stack (max 6 cards). Pinned cards are sorted to the front. When the stack is full, the rightmost unpinned card is evicted.
 
 ### STT abstraction
 
 `src/stt/index.ts` defines `STTProvider` (start/pause/resume/stop). Two implementations:
+
 - `WebSpeechProvider` -- browser Web Speech API, zero config, web only
 - `DeepgramProvider` -- Deepgram WebSocket streaming, works on web and native
 

@@ -1,8 +1,11 @@
-import Fuse from 'fuse.js';
+import Fuse from "fuse.js";
 
-import { Entity, EntityIndex } from './index';
+import { Entity, EntityIndex } from "./index";
 
-interface SearchTerm { term: string; entity: Entity }
+interface SearchTerm {
+  term: string;
+  entity: Entity;
+}
 
 const THRESHOLD = 0.28;
 const MIN_CHARS = 4;
@@ -17,7 +20,7 @@ export class EntityDetector {
     ]);
 
     this.fuse = new Fuse(terms, {
-      keys: ['term'],
+      keys: ["term"],
       threshold: THRESHOLD,
       minMatchCharLength: MIN_CHARS,
       includeScore: true,
@@ -25,7 +28,7 @@ export class EntityDetector {
   }
 
   detect(transcript: string): Entity[] {
-    const words = transcript.split(/\s+/).filter((w) => w.replace(/[^a-z]/gi, '').length >= MIN_CHARS);
+    const words = transcript.split(/\s+/).filter((w) => w.replace(/[^a-z]/gi, "").length >= MIN_CHARS);
     const found = new Map<string, { entity: Entity; score: number }>();
 
     const phrases: string[] = [...words];

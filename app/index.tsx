@@ -1,9 +1,9 @@
-import React from 'react';
-import { View } from 'react-native';
+import React from "react";
+import { View } from "react-native";
 
-import { CardGrid } from '../src/components/CardGrid';
-import { SessionControls } from '../src/components/SessionControls';
-import { useColors } from '../src/context/ui-settings';
+import { CardGrid } from "../src/components/CardGrid";
+import { SessionControls } from "../src/components/SessionControls";
+import { useColors } from "../src/context/ui-settings";
 
 export default function ReferenceScreen() {
   const C = useColors();
@@ -14,4 +14,3 @@ export default function ReferenceScreen() {
     </View>
   );
 }
-

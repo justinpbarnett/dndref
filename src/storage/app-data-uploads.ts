@@ -1,24 +1,36 @@
-import { canPersistAppData, createAppDataWriteToken, getAppDataItem, setAppDataItem } from './app-data-core';
-import { UPLOADS_KEY } from './keys';
+import { canPersistAppData, createAppDataWriteToken, getAppDataItem, setAppDataItem } from "./app-data-core";
+import { UPLOADS_KEY } from "./keys";
 
-export interface UploadedFile { id: string; name: string; content: string }
+export interface UploadedFile {
+  id: string;
+  name: string;
+  content: string;
+}
 
 let uploadMutationQueue: Promise<unknown> = Promise.resolve();
 
-export async function getUploadedFiles(): Promise<UploadedFile[]> { return readUploadedFiles(createAppDataWriteToken()); }
-export async function addUploadedFile(name: string, content: string): Promise<boolean> { return mutateUploadedFiles((uploads) => [...uploads, createUploadedFile(name, content)]); }
-export async function removeUploadedFile(id: string): Promise<boolean> { return mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id)); }
-export async function waitForUploadedFileMutations(): Promise<void> { await uploadMutationQueue.catch(() => undefined); }
+export async function getUploadedFiles(): Promise<UploadedFile[]> {
+  return readUploadedFiles(createAppDataWriteToken());
+}
+export async function addUploadedFile(name: string, content: string): Promise<boolean> {
+  return mutateUploadedFiles((uploads) => [...uploads, createUploadedFile(name, content)]);
+}
+export async function removeUploadedFile(id: string): Promise<boolean> {
+  return mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id));
+}
+export async function waitForUploadedFileMutations(): Promise<void> {
+  await uploadMutationQueue.catch(() => undefined);
+}
 
 function createUploadedFile(name: string, content: string): UploadedFile {
   return { id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, content };
 }
 
 function isUploadedFile(value: unknown): value is UploadedFile {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== "object") return false;
 
   const file = value as Record<keyof UploadedFile, unknown>;
-  return (['id', 'name', 'content'] as const).every((key) => typeof file[key] === 'string');
+  return (["id", "name", "content"] as const).every((key) => typeof file[key] === "string");
 }
 
 async function readUploadedFiles(token: number): Promise<UploadedFile[]> {
@@ -28,7 +40,7 @@ async function readUploadedFiles(token: number): Promise<UploadedFile[]> {
     const parsed = JSON.parse(raw) as unknown;
     return Array.isArray(parsed) ? parsed.filter(isUploadedFile) : [];
   } catch (e) {
-    console.warn('[dnd-ref] Failed to read uploads from storage:', e);
+    console.warn("[dnd-ref] Failed to read uploads from storage:", e);
     return [];
   }
 }

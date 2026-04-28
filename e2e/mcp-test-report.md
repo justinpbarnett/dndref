@@ -113,14 +113,14 @@
 
 ## Summary Table
 
-| Test | Status | Duration | Screenshot | Errors |
-|------|--------|----------|------------|--------|
-| Test 1: App loads correctly | PASS | 2723ms | ✓ | 0 |
-| Test 2: Navigate to Settings | PASS | 2095ms | ✓ | 8 |
-| Test 3: Card size switching | PASS | 4724ms | ✓ | 8 |
-| Test 4: Theme switching | PASS | 5217ms | ✓ | 8 |
-| Test 5: STT provider selection | PASS | 4633ms | ✓ | 8 |
-| Test 6: Data source toggles | PASS | 3431ms | ✓ | 8 |
-| Test 7: Sample world entities | PASS | 4086ms | ✓ | 0 |
+| Test                           | Status | Duration | Screenshot | Errors |
+| ------------------------------ | ------ | -------- | ---------- | ------ |
+| Test 1: App loads correctly    | PASS   | 2723ms   | ✓          | 0      |
+| Test 2: Navigate to Settings   | PASS   | 2095ms   | ✓          | 8      |
+| Test 3: Card size switching    | PASS   | 4724ms   | ✓          | 8      |
+| Test 4: Theme switching        | PASS   | 5217ms   | ✓          | 8      |
+| Test 5: STT provider selection | PASS   | 4633ms   | ✓          | 8      |
+| Test 6: Data source toggles    | PASS   | 3431ms   | ✓          | 8      |
+| Test 7: Sample world entities  | PASS   | 4086ms   | ✓          | 0      |
 
 **Overall Result:** ✅ ALL TESTS PASSED

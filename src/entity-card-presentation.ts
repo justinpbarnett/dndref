@@ -1,30 +1,56 @@
-import type { CardState } from './context/session-types';
-import type { EntityType } from './entities';
+import type { CardState } from "./context/session-types";
+import type { EntityType } from "./entities";
 
 export const ENTITY_CARD_MAX_SUMMARY_BULLETS = 5;
-export const ENTITY_CARD_BULLET_MARKER = '>';
+export const ENTITY_CARD_BULLET_MARKER = ">";
 
-type EntityCardPinToggleKind = 'pin' | 'unpin';
-type EntityCardPinToggleIconName = 'bookmark' | 'bookmark-outline';
-type EntityCardPinToggleLabel = 'Pin' | 'Unpin';
+type EntityCardPinToggleKind = "pin" | "unpin";
+type EntityCardPinToggleIconName = "bookmark" | "bookmark-outline";
+type EntityCardPinToggleLabel = "Pin" | "Unpin";
 
-export interface EntityCardPinTogglePresentation { kind: EntityCardPinToggleKind; accessibilityLabel: EntityCardPinToggleLabel; iconName: EntityCardPinToggleIconName }
-export interface EntityCardDismissActionPresentation { kind: 'dismiss'; accessibilityLabel: 'Dismiss'; iconName: 'close' }
-export interface EntityCardActionsPresentation { pinToggle: EntityCardPinTogglePresentation; dismiss: EntityCardDismissActionPresentation }
+export interface EntityCardPinTogglePresentation {
+  kind: EntityCardPinToggleKind;
+  accessibilityLabel: EntityCardPinToggleLabel;
+  iconName: EntityCardPinToggleIconName;
+}
+export interface EntityCardDismissActionPresentation {
+  kind: "dismiss";
+  accessibilityLabel: "Dismiss";
+  iconName: "close";
+}
+export interface EntityCardActionsPresentation {
+  pinToggle: EntityCardPinTogglePresentation;
+  dismiss: EntityCardDismissActionPresentation;
+}
 
-export interface EntityCardPresentation { instanceId: string; name: string; type: EntityType; typeLabel: string; accentColor: string; pinned: boolean; imageUri: string | null; bulletMarker: typeof ENTITY_CARD_BULLET_MARKER; summaryBullets: string[]; details: string; actions: EntityCardActionsPresentation }
+export interface EntityCardPresentation {
+  instanceId: string;
+  name: string;
+  type: EntityType;
+  typeLabel: string;
+  accentColor: string;
+  pinned: boolean;
+  imageUri: string | null;
+  bulletMarker: typeof ENTITY_CARD_BULLET_MARKER;
+  summaryBullets: string[];
+  details: string;
+  actions: EntityCardActionsPresentation;
+}
 
-export interface DeriveEntityCardPresentationInput { card: CardState; accentColor: string }
+export interface DeriveEntityCardPresentationInput {
+  card: CardState;
+  accentColor: string;
+}
 
 export function extractEntityCardSummaryBullets(summary: string): string[] {
   return extractEntityDetailBullets(summary)
-    .map((bullet) => bullet.replace(/[.!?]$/, '').trim())
+    .map((bullet) => bullet.replace(/[.!?]$/, "").trim())
     .slice(0, ENTITY_CARD_MAX_SUMMARY_BULLETS);
 }
 
 export function extractEntityDetailBullets(details: string): string[] {
   return details
-    .split('\n')
+    .split("\n")
     .flatMap((line) => {
       const trimmed = line.trim();
       if (!trimmed) return [];
@@ -41,7 +67,9 @@ export function extractEntityDetailBullets(details: string): string[] {
 }
 
 function derivePinTogglePresentation(pinned: boolean): EntityCardPinTogglePresentation {
-  return pinned ? { kind: 'unpin', accessibilityLabel: 'Unpin', iconName: 'bookmark' } : { kind: 'pin', accessibilityLabel: 'Pin', iconName: 'bookmark-outline' };
+  return pinned
+    ? { kind: "unpin", accessibilityLabel: "Unpin", iconName: "bookmark" }
+    : { kind: "pin", accessibilityLabel: "Pin", iconName: "bookmark-outline" };
 }
 
 export function deriveEntityCardPresentation({
@@ -64,7 +92,7 @@ export function deriveEntityCardPresentation({
     details: entity.details || entity.summary,
     actions: {
       pinToggle: derivePinTogglePresentation(pinned),
-      dismiss: { kind: 'dismiss', accessibilityLabel: 'Dismiss', iconName: 'close' },
+      dismiss: { kind: "dismiss", accessibilityLabel: "Dismiss", iconName: "close" },
     },
   };
 }

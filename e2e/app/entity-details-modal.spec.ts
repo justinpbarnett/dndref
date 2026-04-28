@@ -1,42 +1,44 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-import { setupTestWithSession, speak, DETECT_WAIT_MS, } from '../helpers';
+import { setupTestWithSession, speak, DETECT_WAIT_MS } from "../helpers";
 
-test.describe('entity details modal', () => {
-  test.beforeEach(async ({ page }) => { await setupTestWithSession(page); });
+test.describe("entity details modal", () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestWithSession(page);
+  });
 
-  test('clicking a card opens full details and closing keeps the card visible', async ({ page }) => {
-    await speak(page, 'Scarab of Protection');
+  test("clicking a card opens full details and closing keeps the card visible", async ({ page }) => {
+    await speak(page, "Scarab of Protection");
     await page.waitForTimeout(DETECT_WAIT_MS);
 
-    const card = page.getByTestId('entity-card').filter({ hasText: 'Scarab of Protection' });
+    const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
     await expect(card).toBeVisible();
 
     await card.click();
 
-    const dialog = page.getByRole('dialog', { name: 'Scarab of Protection details' });
+    const dialog = page.getByRole("dialog", { name: "Scarab of Protection details" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText('ITEM')).toBeVisible();
-    await expect(dialog.getByText('Legendary.')).toBeVisible();
-    await expect(dialog.getByText('If you hold this beetle-shaped medallion')).toBeVisible();
-    await expect(dialog.getByText('The scarab has 12 charges')).toBeVisible();
-    await expect(dialog.getByText('>').first()).toBeVisible();
+    await expect(dialog.getByText("ITEM")).toBeVisible();
+    await expect(dialog.getByText("Legendary.")).toBeVisible();
+    await expect(dialog.getByText("If you hold this beetle-shaped medallion")).toBeVisible();
+    await expect(dialog.getByText("The scarab has 12 charges")).toBeVisible();
+    await expect(dialog.getByText(">").first()).toBeVisible();
 
-    await dialog.getByRole('button', { name: 'Close details' }).click();
+    await dialog.getByRole("button", { name: "Close details" }).click();
 
     await expect(dialog).not.toBeVisible();
     await expect(card).toBeVisible();
   });
 
-  test('clicking outside the modal closes details without dismissing the card', async ({ page }) => {
-    await speak(page, 'Scarab of Protection');
+  test("clicking outside the modal closes details without dismissing the card", async ({ page }) => {
+    await speak(page, "Scarab of Protection");
     await page.waitForTimeout(DETECT_WAIT_MS);
 
-    const card = page.getByTestId('entity-card').filter({ hasText: 'Scarab of Protection' });
+    const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
     await expect(card).toBeVisible();
 
     await card.click();
-    const dialog = page.getByRole('dialog', { name: 'Scarab of Protection details' });
+    const dialog = page.getByRole("dialog", { name: "Scarab of Protection details" });
     await expect(dialog).toBeVisible();
 
     await page.mouse.click(20, 20);
@@ -45,19 +47,19 @@ test.describe('entity details modal', () => {
     await expect(card).toBeVisible();
   });
 
-  test('pinning and dismissing cards do not open details', async ({ page }) => {
-    await speak(page, 'Scarab of Protection');
+  test("pinning and dismissing cards do not open details", async ({ page }) => {
+    await speak(page, "Scarab of Protection");
     await page.waitForTimeout(DETECT_WAIT_MS);
 
-    const card = page.getByTestId('entity-card').filter({ hasText: 'Scarab of Protection' });
+    const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
     await expect(card).toBeVisible();
 
     await card.locator('[aria-label="Pin"]').click();
-    await expect(page.getByRole('dialog', { name: 'Scarab of Protection details' })).not.toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Scarab of Protection details" })).not.toBeVisible();
     await expect(card.locator('[aria-label="Unpin"]')).toBeVisible();
 
     await card.locator('[aria-label="Dismiss"]').click();
-    await expect(page.getByRole('dialog', { name: 'Scarab of Protection details' })).not.toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Scarab of Protection details" })).not.toBeVisible();
     await expect(card).not.toBeVisible();
   });
 });

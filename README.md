@@ -18,26 +18,29 @@ Detection runs every 2 seconds using fuzzy matching against your loaded entities
 
 You can have multiple sources active at once. Mix and match as needed.
 
-| Source | What it loads | Notes |
-|---|---|---|
-| D&D 5e SRD | ~350 monsters + magic items | Enable per-source in Settings |
-| Kanka | Characters, locations, factions, items | Requires API token + campaign ID |
-| Homebrewery | Any public brew | Paste the share URL |
-| Notion | Pages from your workspace | Requires integration token + page URLs |
-| Google Docs | Any public doc | Paste the share URL |
-| File upload | `.md`, `.txt`, `.json` files | Obsidian exports, campaign notes, etc. |
-| AI parsing | Paste text, Claude extracts entities | Requires Anthropic API key |
+| Source      | What it loads                          | Notes                                  |
+| ----------- | -------------------------------------- | -------------------------------------- |
+| D&D 5e SRD  | ~350 monsters + magic items            | Enable per-source in Settings          |
+| Kanka       | Characters, locations, factions, items | Requires API token + campaign ID       |
+| Homebrewery | Any public brew                        | Paste the share URL                    |
+| Notion      | Pages from your workspace              | Requires integration token + page URLs |
+| Google Docs | Any public doc                         | Paste the share URL                    |
+| File upload | `.md`, `.txt`, `.json` files           | Obsidian exports, campaign notes, etc. |
+| AI parsing  | Paste text, Claude extracts entities   | Requires Anthropic API key             |
 
 ### Kanka setup
+
 1. Get your API token at kanka.io/en/profile/api
 2. Find your campaign ID in the URL: `kanka.io/en/campaign/12345`
 
 ### Notion setup
+
 1. Create an integration at notion.so/my-integrations
 2. Share each target page with the integration
 3. Paste page URLs (comma-separated) in Settings
 
 ### AI parsing
+
 Paste any campaign text and Claude pulls out named entities into a structured upload. Uses Haiku (~$0.001 per parse). Requires an Anthropic API key from console.anthropic.com.
 
 ## STT options

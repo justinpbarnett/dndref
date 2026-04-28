@@ -1,9 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { STT_SETTINGS_KEY } from '../stt';
-import { CARD_SIZE_KEY, COLOR_SCHEME_KEY, DATA_SOURCES_KEY, SRD_CACHE_KEY_PREFIX, UPLOADS_KEY } from './keys';
+import { STT_SETTINGS_KEY } from "../stt";
+import { CARD_SIZE_KEY, COLOR_SCHEME_KEY, DATA_SOURCES_KEY, SRD_CACHE_KEY_PREFIX, UPLOADS_KEY } from "./keys";
 
-const APP_STORAGE_PREFIXES = ['dndref:', '@dnd-ref/'];
+const APP_STORAGE_PREFIXES = ["dndref:", "@dnd-ref/"];
 const INVALID_APP_DATA_TOKEN = -1;
 
 let appDataResetGeneration = 0;
@@ -21,19 +21,28 @@ export function isAppStorageKey(key: string): boolean {
   );
 }
 
-export function createAppDataWriteToken(): number { return appDataResetActive ? INVALID_APP_DATA_TOKEN : appDataResetGeneration; }
-
-export function isAppDataWriteTokenCurrent(token: number): boolean {
-  return token !== INVALID_APP_DATA_TOKEN &&
-    token === appDataResetGeneration &&
-    !appDataResetActive;
+export function createAppDataWriteToken(): number {
+  return appDataResetActive ? INVALID_APP_DATA_TOKEN : appDataResetGeneration;
 }
 
-export function canPersistAppData(token: number): boolean { return isAppDataWriteTokenCurrent(token); }
-export function canPersistAppDataCache(token: number): boolean { return canPersistAppData(token) && cacheWritesBlockedForGeneration !== token; }
-export function allowAppDataCacheWrites(): void { cacheWritesBlockedForGeneration = null; }
+export function isAppDataWriteTokenCurrent(token: number): boolean {
+  return token !== INVALID_APP_DATA_TOKEN && token === appDataResetGeneration && !appDataResetActive;
+}
 
-export interface AppDataCacheSession { getItem: (key: string) => Promise<string | null>; setItem: (key: string, value: string) => Promise<boolean> }
+export function canPersistAppData(token: number): boolean {
+  return isAppDataWriteTokenCurrent(token);
+}
+export function canPersistAppDataCache(token: number): boolean {
+  return canPersistAppData(token) && cacheWritesBlockedForGeneration !== token;
+}
+export function allowAppDataCacheWrites(): void {
+  cacheWritesBlockedForGeneration = null;
+}
+
+export interface AppDataCacheSession {
+  getItem: (key: string) => Promise<string | null>;
+  setItem: (key: string, value: string) => Promise<boolean>;
+}
 
 export function createAppDataCacheSession(): AppDataCacheSession {
   const token = createAppDataWriteToken();
@@ -43,10 +52,7 @@ export function createAppDataCacheSession(): AppDataCacheSession {
   };
 }
 
-export async function getAppDataItem(
-  key: string,
-  token = createAppDataWriteToken(),
-): Promise<string | null> {
+export async function getAppDataItem(key: string, token = createAppDataWriteToken()): Promise<string | null> {
   const value = await AsyncStorage.getItem(key);
   return isAppDataWriteTokenCurrent(token) ? value : null;
 }
@@ -73,7 +79,9 @@ export async function setAppDataItem(
   return operation;
 }
 
-export async function waitForAppDataWrites(): Promise<void> { await appDataWriteQueue.catch(() => undefined); }
+export async function waitForAppDataWrites(): Promise<void> {
+  await appDataWriteQueue.catch(() => undefined);
+}
 
 export function beginAppDataReset(): number {
   appDataResetGeneration += 1;

@@ -1,22 +1,34 @@
-import { addUploadedFile, getUploadedFiles, removeUploadedFile, type UploadedFile } from '../../storage/app-data';
-import { EntityIndex, WorldDataProvider } from '../index';
-import { ingestUploadedFile } from '../ingestion';
+import { addUploadedFile, getUploadedFiles, removeUploadedFile, type UploadedFile } from "../../storage/app-data";
+import { EntityIndex, WorldDataProvider } from "../index";
+import { ingestUploadedFile } from "../ingestion";
 
-export type { UploadedFile } from '../../storage/app-data';
+export type { UploadedFile } from "../../storage/app-data";
 
-export async function getUploads(): Promise<UploadedFile[]> { return getUploadedFiles(); }
-export async function addUpload(name: string, content: string): Promise<void> { await addUploadedFile(name, content); }
-export async function removeUpload(id: string): Promise<void> { await removeUploadedFile(id); }
+export async function getUploads(): Promise<UploadedFile[]> {
+  return getUploadedFiles();
+}
+export async function addUpload(name: string, content: string): Promise<void> {
+  await addUploadedFile(name, content);
+}
+export async function removeUpload(id: string): Promise<void> {
+  await removeUploadedFile(id);
+}
 
 export class FileUploadProvider implements WorldDataProvider {
-  readonly name = 'Uploaded Files';
+  readonly name = "Uploaded Files";
 
   async load(): Promise<EntityIndex> {
     const uploads = await getUploads();
-    return uploads.flatMap((upload) => ingestUploadedFile(upload, {
-      onJsonParseError: () => { console.warn(`[dnd-ref] Failed to parse JSON upload: ${upload.name}`); },
-    }));
+    return uploads.flatMap((upload) =>
+      ingestUploadedFile(upload, {
+        onJsonParseError: () => {
+          console.warn(`[dnd-ref] Failed to parse JSON upload: ${upload.name}`);
+        },
+      }),
+    );
   }
 
-  getName(): string { return this.name; }
+  getName(): string {
+    return this.name;
+  }
 }
