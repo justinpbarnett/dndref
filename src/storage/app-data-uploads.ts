@@ -52,6 +52,4 @@ function mutateUploadedFiles(mutator: (uploads: UploadedFile[]) => UploadedFile[
   return operation;
 }
 
-export function resetUploadedFileMutationQueueForTests(): void {
-  uploadMutationQueue = Promise.resolve();
-}
+export const resetUploadedFileMutationQueueForTests = (): void => void (uploadMutationQueue = Promise.resolve());
