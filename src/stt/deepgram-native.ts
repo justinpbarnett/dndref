@@ -6,9 +6,6 @@ import * as FileSystem from "expo-file-system/legacy";
 import { assertDeepgramApiKey, DEEPGRAM_HTTP_URL, DEEPGRAM_PARAMS, extractDeepgramTranscript } from "./deepgram-shared";
 import type { STTProvider } from "./index";
 
-const NATIVE_AUDIO_CONTENT_TYPE = "audio/mp4";
-const NATIVE_CHUNK_INTERVAL_MS = 5000;
-const NATIVE_RECORDING_OPTIONS = createRecordingOptions(RecordingPresets.HIGH_QUALITY);
 type NativeAudioRecorder = AudioRecorder;
 
 async function requestNativeRecordingAccess(): Promise<void> {
@@ -18,7 +15,7 @@ async function requestNativeRecordingAccess(): Promise<void> {
 }
 
 function createNativeAudioRecorder(): NativeAudioRecorder {
-  return new AudioModule.AudioRecorder(NATIVE_RECORDING_OPTIONS);
+  return new AudioModule.AudioRecorder(createRecordingOptions(RecordingPresets.HIGH_QUALITY));
 }
 
 function releaseNativeAudioRecorder(rec: NativeAudioRecorder): void {
@@ -107,7 +104,7 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
     if (this.active && this.recording) {
       this.chunkTimer = setInterval(() => {
         void this.rotateChunk();
-      }, NATIVE_CHUNK_INTERVAL_MS);
+      }, 5000);
     }
   }
 
@@ -172,7 +169,7 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
       const result = await FileSystem.uploadAsync(`${DEEPGRAM_HTTP_URL}?${DEEPGRAM_PARAMS}`, uri, {
         headers: {
           Authorization: `Token ${this.apiKey}`,
-          "Content-Type": NATIVE_AUDIO_CONTENT_TYPE,
+          "Content-Type": "audio/mp4",
         },
         httpMethod: "POST",
         uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
