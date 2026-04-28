@@ -47,9 +47,7 @@ export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
     super(INITIAL_SESSION_RUNTIME_SNAPSHOT);
   }
 
-  setDetector(detector: SessionRuntimeDetector | null): void {
-    this.detector = detector;
-  }
+  setDetector = (detector: SessionRuntimeDetector | null): void => void (this.detector = detector);
 
   start(): Promise<void> {
     if (this.startInFlight) return this.startInFlight;
@@ -66,12 +64,8 @@ export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
     return command;
   }
 
-  resume(): Promise<void> {
-    return this.start();
-  }
-  activate(): void {
-    this.setSessionActive();
-  }
+  resume = (): Promise<void> => this.start();
+  activate = (): void => this.setSessionActive();
 
   pause(): void {
     this.acceptingTranscript = false;
@@ -123,15 +117,9 @@ export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
     this.updateSnapshot(snapshotPatch);
   }
 
-  pin(instanceId: string): void {
-    this.updateCards(pinCard(this.snapshot.cards, instanceId));
-  }
-  unpin(instanceId: string): void {
-    this.updateCards(unpinCard(this.snapshot.cards, instanceId));
-  }
-  dismiss(instanceId: string): void {
-    this.updateCards(dismissCard(this.snapshot.cards, instanceId));
-  }
+  pin = (instanceId: string): void => this.updateCards(pinCard(this.snapshot.cards, instanceId));
+  unpin = (instanceId: string): void => this.updateCards(unpinCard(this.snapshot.cards, instanceId));
+  dismiss = (instanceId: string): void => this.updateCards(dismissCard(this.snapshot.cards, instanceId));
 
   private updateCards(cards: CardState[]): void {
     if (cards !== this.snapshot.cards) this.updateSnapshot({ cards });
