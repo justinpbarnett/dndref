@@ -10,7 +10,6 @@ export {
   isAppDataWriteTokenCurrent,
   isAppStorageKey,
   setAppDataItem,
-  type AppDataCacheSession,
 } from "./app-data-core";
 export {
   DEFAULT_DATA_SOURCES_SETTINGS,
@@ -35,11 +34,7 @@ import {
 } from "./app-data-core";
 import { resetUploadedFileMutationQueueForTests, waitForUploadedFileMutations } from "./app-data-uploads";
 
-export async function resetStoredAppData(
-  options: {
-    beforeClear?: () => Promise<void>;
-  } = {},
-): Promise<string[]> {
+export async function resetStoredAppData(options: { beforeClear?: () => Promise<void> } = {}): Promise<string[]> {
   const generation = beginAppDataReset();
   try {
     await waitForUploadedFileMutations();

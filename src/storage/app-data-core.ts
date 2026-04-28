@@ -27,16 +27,11 @@ export const canPersistAppDataCache = (token: number): boolean =>
   isAppDataWriteTokenCurrent(token) && cacheWritesBlockedForGeneration !== token;
 export const allowAppDataCacheWrites = (): void => void (cacheWritesBlockedForGeneration = null);
 
-export type AppDataCacheSession = {
-  getItem: (key: string) => Promise<string | null>;
-  setItem: (key: string, value: string) => Promise<boolean>;
-};
-
-export function createAppDataCacheSession(): AppDataCacheSession {
+export function createAppDataCacheSession() {
   const token = createAppDataWriteToken();
   return {
-    getItem: (key) => getAppDataItem(key, token),
-    setItem: (key, value) => setAppDataItem(key, value, { cache: true, token }),
+    getItem: (key: string) => getAppDataItem(key, token),
+    setItem: (key: string, value: string) => setAppDataItem(key, value, { cache: true, token }),
   };
 }
 
