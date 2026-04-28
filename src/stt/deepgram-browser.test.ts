@@ -60,11 +60,10 @@ class MockWebSocket {
     installedBrowserMocks?.sockets.push(this);
   }
 
-  close(): void {
-    this.closeCalls += 1;
-    this.readyState = MockWebSocket.CLOSED;
-    this.onclose?.({ code: 1000 } as CloseEvent);
-  }
+  close = () =>
+    void ((this.closeCalls += 1),
+    (this.readyState = MockWebSocket.CLOSED),
+    this.onclose?.({ code: 1000 } as CloseEvent));
   open = () => void ((this.readyState = MockWebSocket.OPEN), this.onopen?.());
   send = (data: unknown) => void this.sent.push(data);
   receive = (data: string) => this.onmessage?.({ data });
