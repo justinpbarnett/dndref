@@ -34,9 +34,8 @@ export const CARD_SIZE_CONFIGS: Record<CardSize, CardSizeConfig> = {
 export const DEFAULT_CARD_SIZE: CardSize = "M";
 export const DEFAULT_COLOR_SCHEME: ColorScheme = "dark";
 
-function isColorScheme(value: unknown): value is ColorScheme {
-  return typeof value === "string" && (COLOR_SCHEMES as readonly string[]).includes(value);
-}
+const isColorScheme = (value: unknown): value is ColorScheme =>
+  typeof value === "string" && (COLOR_SCHEMES as readonly string[]).includes(value);
 
 // Read synchronously from localStorage on web so the first render matches
 // the stored preference -- avoids SSR/client hydration mismatch.

@@ -26,6 +26,5 @@ export function extractDeepgramFinalTranscript(message: string): string {
   return getFirstTranscript(data.channel);
 }
 
-function getFirstTranscript(channel: DeepgramTranscriptChannel | undefined): string {
-  return channel?.alternatives?.[0]?.transcript ?? "";
-}
+const getFirstTranscript = (channel: DeepgramTranscriptChannel | undefined) =>
+  channel?.alternatives?.[0]?.transcript ?? "";

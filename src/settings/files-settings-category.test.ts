@@ -11,9 +11,7 @@ import type { UploadedFile } from "../entities/providers/file-upload";
 
 const controllers: FilesSettingsCategoryController[] = [];
 
-function makeUpload(id: string, name: string, content = `# ${name}`): UploadedFile {
-  return { id, name, content };
-}
+const makeUpload = (id: string, name: string, content = `# ${name}`): UploadedFile => ({ id, name, content });
 
 function createController(options: FilesSettingsCategoryControllerOptions) {
   const controller = createFilesSettingsCategoryController(options);

@@ -14,9 +14,8 @@ async function requestNativeRecordingAccess(): Promise<void> {
   await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
 }
 
-function createNativeAudioRecorder(): NativeAudioRecorder {
-  return new AudioModule.AudioRecorder(createRecordingOptions(RecordingPresets.HIGH_QUALITY));
-}
+const createNativeAudioRecorder = (): NativeAudioRecorder =>
+  new AudioModule.AudioRecorder(createRecordingOptions(RecordingPresets.HIGH_QUALITY));
 
 function releaseNativeAudioRecorder(rec: NativeAudioRecorder): void {
   try {

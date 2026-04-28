@@ -84,6 +84,4 @@ Open only under the new moon.
   });
 });
 
-function textResponse(body: string, status = 200): Response {
-  return new Response(body, { status });
-}
+const textResponse = (body: string, status = 200) => new Response(body, { status });

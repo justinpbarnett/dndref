@@ -46,11 +46,10 @@ export function extractEntityDetailBullets(details: string): string[] {
     .filter((bullet) => bullet.length > 0);
 }
 
-function derivePinTogglePresentation(pinned: boolean): EntityCardPinTogglePresentation {
-  return pinned
+const derivePinTogglePresentation = (pinned: boolean): EntityCardPinTogglePresentation =>
+  pinned
     ? { kind: "unpin", accessibilityLabel: "Unpin", iconName: "bookmark" }
     : { kind: "pin", accessibilityLabel: "Pin", iconName: "bookmark-outline" };
-}
 
 export function deriveEntityCardPresentation({
   card,
