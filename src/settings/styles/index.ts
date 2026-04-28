@@ -1,6 +1,7 @@
 import { Colors, F } from "../../theme";
 
 export function createStyles(C: Colors, isWide: boolean) {
+  const cardBorder = { backgroundColor: C.bgCard, borderRadius: 4, borderWidth: 1, borderColor: C.border };
   return {
     root: { flex: 1, flexDirection: isWide ? "row" : "column", backgroundColor: C.bg },
     sidebar: {
@@ -63,10 +64,7 @@ export function createStyles(C: Colors, isWide: boolean) {
       alignItems: "center",
       paddingVertical: 11,
       paddingHorizontal: 4,
-      backgroundColor: C.bgCard,
-      borderRadius: 4,
-      borderWidth: 1,
-      borderColor: C.border,
+      ...cardBorder,
       gap: 3,
     },
     segmentActive: { borderColor: C.active + "70", backgroundColor: C.bgCardPinned },
@@ -79,10 +77,7 @@ export function createStyles(C: Colors, isWide: boolean) {
       alignItems: "flex-start",
       gap: 12,
       padding: 14,
-      backgroundColor: C.bgCard,
-      borderRadius: 4,
-      borderWidth: 1,
-      borderColor: C.border,
+      ...cardBorder,
     },
     optionRowActive: { borderColor: C.active + "60", backgroundColor: C.bgCardPinned },
     radio: { width: 16, height: 16, borderRadius: 8, borderWidth: 1, borderColor: C.borderStrong, marginTop: 2 },
@@ -95,10 +90,7 @@ export function createStyles(C: Colors, isWide: boolean) {
       alignItems: "center",
       gap: 12,
       padding: 14,
-      backgroundColor: C.bgCard,
-      borderRadius: 4,
-      borderWidth: 1,
-      borderColor: C.border,
+      ...cardBorder,
     },
     toggleBody: { flex: 1, gap: 3 },
     input: {
