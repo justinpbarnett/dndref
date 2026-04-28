@@ -35,15 +35,7 @@ export class SessionRuntime {
   private startInFlight: Promise<void> | null = null;
   private sttGeneration = 0;
   private sttProvider: STTProvider | null = null;
-  private snapshot: SessionRuntimeSnapshot = {
-    status: 'idle',
-    sttStatus: 'idle',
-    sttError: null,
-    sttProviderName: '',
-    cards: [],
-    transcript: '',
-    recentDetections: [],
-  };
+  private snapshot: SessionRuntimeSnapshot = { status: 'idle', sttStatus: 'idle', sttError: null, sttProviderName: '', cards: [], transcript: '', recentDetections: [] };
 
   constructor(options: SessionRuntimeOptions = {}) {
     this.loadSttSettings = options.loadSttSettings;
