@@ -50,9 +50,7 @@ export function DataSourcesProvider({ children }: { children: React.ReactNode })
     [replaceSettings],
   );
 
-  const bumpUploads = useCallback(() => {
-    setUploadsVersion((v) => v + 1);
-  }, []);
+  const bumpUploads = useCallback(() => setUploadsVersion((v) => v + 1), []);
 
   const reset = useCallback(() => {
     replaceSettings(createDefaultDataSourceSettings());
