@@ -31,8 +31,7 @@ module.exports = {
           return {};
         }
 
-        const sourceCode = context.getSourceCode();
-        const lineCount = sourceCode.lines.length;
+        const lineCount = context.getSourceCode().lines.length;
 
         if (lineCount > max) {
           context.report({
