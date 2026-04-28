@@ -1,5 +1,3 @@
-import type { CardSize } from "../context/ui-settings";
-
 export const CATEGORIES = [
   { id: "display", label: "Display", icon: "grid-outline", iconFocused: "grid" },
   { id: "voice", label: "Voice", icon: "mic-outline", iconFocused: "mic" },
@@ -10,9 +8,9 @@ export const CATEGORIES = [
 
 export type Category = (typeof CATEGORIES)[number]["id"];
 
-export const CARD_SIZE_DESCS: Record<CardSize, string> = {
+export const CARD_SIZE_DESCS = {
   S: "up to 4/3",
   M: "up to 3/2",
   L: "up to 2/2",
   XL: "up to 2/1",
-};
+} as const;
