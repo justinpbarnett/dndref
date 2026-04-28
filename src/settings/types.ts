@@ -2,9 +2,7 @@ import { DataSourcesSettings } from "../context/data-sources";
 import { UploadedFile } from "../entities/providers/file-upload";
 import { STTSettings } from "../stt/index";
 
-interface StyledSectionProps {
-  styles: any;
-}
+type StyledSectionProps = { styles: any };
 
 export interface DisplaySectionProps extends StyledSectionProps {
   cardSize: import("../context/ui-settings").CardSize;
