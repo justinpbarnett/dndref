@@ -33,44 +33,12 @@ Open only under the new moon.
 Commands the east watch.
 `);
 
-    expect(entities).toEqual([
-      {
-        id: 'moonlit-bazaar',
-        name: 'Moonlit Bazaar',
-        type: 'Location',
-        aliases: ['Night Market', 'Bazaar', 'moon market'],
-        summary: 'Open only under the new moon.',
-      },
-      {
-        id: 'captain-aria',
-        name: 'Captain Aria',
-        type: 'NPC',
-        aliases: ['Aria', 'the captain'],
-        summary: 'Commands the east watch.',
-      },
-    ]);
+    expect(entities).toEqual([{ id: 'moonlit-bazaar', name: 'Moonlit Bazaar', type: 'Location', aliases: ['Night Market', 'Bazaar', 'moon market'], summary: 'Open only under the new moon.' }, { id: 'captain-aria', name: 'Captain Aria', type: 'NPC', aliases: ['Aria', 'the captain'], summary: 'Commands the east watch.' }]);
   });
 
   it('ingests JSON arrays with upload-style ids and description fallback summaries', () => {
-    const entities = ingestJsonContent(JSON.stringify([
-      {
-        name: 'Lady Seraphine Voss',
-        type: 'person',
-        aliases: ['Seraphine', ' Lady Voss '],
-        description: 'Spymaster of the Dawnwarden Order.',
-      },
-      { name: '', type: 'npc' },
-      { nope: 'missing name' },
-    ]), { idPrefix: 'upload', idNamespace: 1234 });
+    const entities = ingestJsonContent(JSON.stringify([{ name: 'Lady Seraphine Voss', type: 'person', aliases: ['Seraphine', ' Lady Voss '], description: 'Spymaster of the Dawnwarden Order.' }, { name: '', type: 'npc' }, { nope: 'missing name' }]), { idPrefix: 'upload', idNamespace: 1234 });
 
-    expect(entities).toEqual([
-      {
-        id: 'upload-lady-seraphine-voss-1234-0',
-        name: 'Lady Seraphine Voss',
-        type: 'NPC',
-        aliases: ['Seraphine', 'Lady Voss'],
-        summary: 'Spymaster of the Dawnwarden Order.',
-      },
-    ]);
+    expect(entities).toEqual([{ id: 'upload-lady-seraphine-voss-1234-0', name: 'Lady Seraphine Voss', type: 'NPC', aliases: ['Seraphine', 'Lady Voss'], summary: 'Spymaster of the Dawnwarden Order.' }]);
   });
 });
