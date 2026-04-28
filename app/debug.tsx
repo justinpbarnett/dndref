@@ -6,14 +6,7 @@ import { useSession } from '../src/context/session';
 import { useColors } from '../src/context/ui-settings';
 import { Colors, F, typeAccent } from '../src/theme';
 
-const EXAMPLES = [
-  "Alright, you're moving through the Ashen Vale toward Ironspire. The air is dead quiet.",
-  "Malachar is still in the dungeons on level two. Seraphine said he might cooperate if we get to him.",
-  "The Obsidian Compact has people inside Silvermarsh. Gorm warned us about that.",
-  "Valdrath's crown is somewhere on level six. We destroy it, we weaken him before we even find the phylactery.",
-  "Thornwall is three days east. That's where the Dawnwarden Order had their original keep before the siege.",
-  "The Sundering Blade is in pieces in the armory on level four. Gorm thinks he can reforge it.",
-];
+const EXAMPLES = ["Alright, you're moving through the Ashen Vale toward Ironspire. The air is dead quiet.", "Malachar is still in the dungeons on level two. Seraphine said he might cooperate if we get to him.", "The Obsidian Compact has people inside Silvermarsh. Gorm warned us about that.", "Valdrath's crown is somewhere on level six. We destroy it, we weaken him before we even find the phylactery.", "Thornwall is three days east. That's where the Dawnwarden Order had their original keep before the siege.", "The Sundering Blade is in pieces in the armory on level four. Gorm thinks he can reforge it."];
 
 const STT_STATUS_LABELS = { idle: 'Mic off', connecting: 'Connecting...', active: 'Listening', error: 'Error' };
 
