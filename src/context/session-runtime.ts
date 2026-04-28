@@ -15,15 +15,13 @@ export interface SessionRuntimeSnapshot {
   transcript: string;
   recentDetections: Entity[];
 }
-type SttSettingsLoader = () => Promise<STTSettings>;
-type SttProviderBuilder = (
-  settings: STTSettings,
-  onTranscript: (text: string) => void,
-  onError: (error: string) => void,
-) => STTProvider;
 export interface SessionRuntimeOptions {
-  loadSttSettings?: SttSettingsLoader;
-  buildSttProvider?: SttProviderBuilder;
+  loadSttSettings?: () => Promise<STTSettings>;
+  buildSttProvider?: (
+    settings: STTSettings,
+    onTranscript: (text: string) => void,
+    onError: (error: string) => void,
+  ) => STTProvider;
   detectIntervalMs?: number;
 }
 type DetectionInterval = ReturnType<typeof setInterval>;
