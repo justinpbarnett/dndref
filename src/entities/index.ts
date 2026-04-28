@@ -1,14 +1,11 @@
 export type EntityType = "Location" | "NPC" | "Faction" | "Item" | "Unknown";
 
-export interface Entity {
-  id: string;
-  name: string;
+export type Entity = Record<"id" | "name" | "summary", string> & {
   type: EntityType;
   aliases: string[];
-  summary: string;
   details?: string;
   image?: string;
-}
+};
 
 export type EntityIndex = Entity[];
 
