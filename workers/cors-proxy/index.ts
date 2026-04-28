@@ -9,11 +9,6 @@ const ALLOWED_ORIGINS = new Set([
   'https://www.dndref.com',
 ]);
 
-function isAllowedOrigin(origin: string): boolean {
-  if (ALLOWED_ORIGINS.has(origin)) return true;
-  return origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1');
-}
-
 const CORS_HEADERS = 'Content-Type, Authorization, x-api-key, anthropic-version, Notion-Version';
 
 function corsHeaders(origin: string): Record<string, string> {
@@ -30,7 +25,7 @@ export default {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') ?? '';
 
-    if (!isAllowedOrigin(origin)) {
+    if (!ALLOWED_ORIGINS.has(origin) && !origin.startsWith('http://localhost') && !origin.startsWith('http://127.0.0.1')) {
       return new Response('Forbidden', { status: 403 });
     }
 
