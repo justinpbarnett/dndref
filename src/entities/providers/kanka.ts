@@ -12,10 +12,7 @@ const TYPE_MAP: Record<KankaResourceType, EntityType> = {
   items: 'Item',
 };
 
-export interface KankaCampaign {
-  id: number;
-  name: string;
-}
+export interface KankaCampaign { id: number; name: string }
 
 export async function listKankaCampaigns(token: string): Promise<KankaCampaign[]> {
   const res = await fetch(`${KANKA_BASE}/campaigns`, {
@@ -28,13 +25,7 @@ export async function listKankaCampaigns(token: string): Promise<KankaCampaign[]
 
 export class KankaProvider implements WorldDataProvider {
   readonly name = 'Kanka';
-  private token: string;
-  private campaignId: number;
-
-  constructor(token: string, campaignId: number) {
-    this.token = token;
-    this.campaignId = campaignId;
-  }
+  constructor(private token: string, private campaignId: number) {}
 
   async load(): Promise<EntityIndex> {
     const types: KankaResourceType[] = ['characters', 'locations', 'organisations', 'items'];
