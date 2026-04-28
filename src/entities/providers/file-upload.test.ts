@@ -105,26 +105,7 @@ Commands the east watch.`);
 
     const entities = await new FileUploadProvider().load();
 
-    expect(entities.map(({ name, type, aliases, summary }) => ({ name, type, aliases, summary }))).toEqual([
-      {
-        name: 'Moonlit Bazaar',
-        type: 'Location',
-        aliases: ['Night Market', 'Bazaar'],
-        summary: 'Open only under the new moon.',
-      },
-      {
-        name: 'Captain Aria',
-        type: 'NPC',
-        aliases: ['Aria', 'the captain'],
-        summary: 'Commands the east watch.',
-      },
-      {
-        name: 'The Sundering Blade',
-        type: 'Item',
-        aliases: ['Sundering Blade', 'the blade'],
-        summary: 'Can destroy a lich phylactery.',
-      },
-    ]);
+    expect(entities.map(({ name, type, aliases, summary }) => ({ name, type, aliases, summary }))).toEqual([{ name: 'Moonlit Bazaar', type: 'Location', aliases: ['Night Market', 'Bazaar'], summary: 'Open only under the new moon.' }, { name: 'Captain Aria', type: 'NPC', aliases: ['Aria', 'the captain'], summary: 'Commands the east watch.' }, { name: 'The Sundering Blade', type: 'Item', aliases: ['Sundering Blade', 'the blade'], summary: 'Can destroy a lich phylactery.' }]);
     expect(entities[2].id).toMatch(/^upload-the-sundering-blade-\d+-0$/);
   });
 
@@ -141,13 +122,6 @@ Rules the cinder court.
     const entities = await new FileUploadProvider().load();
 
     expect(warn).toHaveBeenCalledWith('[dnd-ref] Failed to parse JSON upload: fallback.json');
-    expect(entities.map(({ name, type, aliases, summary }) => ({ name, type, aliases, summary }))).toEqual([
-      {
-        name: 'Lord Ember',
-        type: 'NPC',
-        aliases: ['Ember'],
-        summary: 'Rules the cinder court.',
-      },
-    ]);
+    expect(entities.map(({ name, type, aliases, summary }) => ({ name, type, aliases, summary }))).toEqual([{ name: 'Lord Ember', type: 'NPC', aliases: ['Ember'], summary: 'Rules the cinder court.' }]);
   });
 });
