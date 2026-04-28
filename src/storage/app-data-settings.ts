@@ -51,8 +51,7 @@ function normalizeVoiceSettings(settings: unknown): STTSettings {
   return { provider, deepgramApiKey };
 }
 
-export const mergeVoiceSettings = (settings?: Partial<STTSettings> | null): STTSettings =>
-  normalizeVoiceSettings(settings);
+export const mergeVoiceSettings: (settings?: Partial<STTSettings> | null) => STTSettings = normalizeVoiceSettings;
 export const loadVoiceSettings = (): Promise<STTSettings | null> =>
   loadJsonSetting(STT_SETTINGS_KEY, normalizeVoiceSettings, "voice settings");
 export const saveVoiceSettings = (settings: STTSettings): Promise<boolean> =>
