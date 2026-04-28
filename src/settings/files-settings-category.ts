@@ -131,11 +131,7 @@ class DefaultFilesSettingsCategoryController extends SnapshotStore<FilesSettings
     }
   }
 
-  dispose(): void {
-    this.disposed = true;
-    this.refreshGeneration += 1;
-    this.clearSnapshotListeners();
-  }
+  dispose = (): void => void ((this.disposed = true), (this.refreshGeneration += 1), this.clearSnapshotListeners());
 
   private async refreshUploads(): Promise<void> {
     const generation = ++this.refreshGeneration;
