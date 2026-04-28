@@ -252,7 +252,5 @@ export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
     } catch {}
   }
 
-  private formatError(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
-  }
+  private formatError = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 }
