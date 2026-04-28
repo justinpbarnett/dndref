@@ -85,16 +85,7 @@ function generateReport() {
     report += `\n---\n\n`;
   }
 
-  report += `## Summary Table\n\n`;
-  report += `| Test | Status | Duration | Screenshot | Errors |\n`;
-  report += `|------|--------|----------|------------|--------|\n`;
-  for (const result of results) {
-    const hasScreenshots = result.screenshotPath ? "✓" : "✗";
-    const hasErrors = result.errors.length > 0 ? `${result.errors.length}` : "0";
-    report += `| ${result.name} | ${result.status} | ${result.duration}ms | ${hasScreenshots} | ${hasErrors} |\n`;
-  }
-
-  report += `\n**Overall Result:** ${failCount === 0 ? "✅ ALL TESTS PASSED" : `⚠️ ${failCount} TEST(S) FAILED`}\n`;
+  report += `## Overall Result\n\n${failCount === 0 ? "✅ ALL TESTS PASSED" : `⚠️ ${failCount} TEST(S) FAILED`}\n`;
 
   fs.writeFileSync("e2e/mcp-test-report.md", report);
   console.log(`\n📊 Test report saved to: e2e/mcp-test-report.md`);
