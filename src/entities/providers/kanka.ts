@@ -1,8 +1,6 @@
 import { fetchAll } from "../../utils/providers";
 import { Entity, EntityIndex, EntityType, WorldDataProvider, stripHtml } from "../index";
 
-const KANKA_BASE = "https://api.kanka.io/1.0";
-
 type KankaResourceType = "characters" | "locations" | "organisations" | "items";
 
 const TYPE_MAP: Record<KankaResourceType, EntityType> = {
@@ -28,7 +26,7 @@ export class KankaProvider implements WorldDataProvider {
   private async fetchType(resource: KankaResourceType): Promise<Entity[]> {
     const entityType = TYPE_MAP[resource];
     const items = await fetchAll(
-      `${KANKA_BASE}/campaigns/${this.campaignId}/${resource}`,
+      `https://api.kanka.io/1.0/campaigns/${this.campaignId}/${resource}`,
       (data) => data.links?.next ?? null,
       {
         headers: { Authorization: `Bearer ${this.token}` },
