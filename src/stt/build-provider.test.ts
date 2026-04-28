@@ -34,12 +34,8 @@ const sttMocks = vi.hoisted(() => {
       pause(): void {}
       resume(): void {}
       stop(): void {}
-      emitTranscript(text: string): void {
-        this.onTranscript(text);
-      }
-      emitError(error: string): void {
-        this.onError(error);
-      }
+      emitTranscript = (text: string) => this.onTranscript(text);
+      emitError = (error: string) => this.onError(error);
     };
   return Object.assign(state, {
     DeepgramProvider: createProvider("Deepgram", state.deepgramInstances, "deepgramStartError"),
