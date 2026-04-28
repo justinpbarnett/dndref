@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 
-import { chromium, Browser, Page, ConsoleMessage } from "playwright";
+import { chromium, ConsoleMessage } from "playwright";
 
 import { runTest, TestContext, TestResult } from "./mcp/runner";
 import {

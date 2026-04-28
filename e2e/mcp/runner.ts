@@ -1,11 +1,6 @@
 import { Page } from "playwright";
 
-export interface TestContext {
-  page: Page;
-  consoleErrors: string[];
-  screenshotDir: string;
-  baseUrl: string;
-}
+export type TestContext = { page: Page; consoleErrors: string[]; screenshotDir: string; baseUrl: string };
 
 export interface TestResult {
   name: string;
