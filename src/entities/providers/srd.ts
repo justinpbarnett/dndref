@@ -31,10 +31,7 @@ export const SRD_SOURCES: SRDSource[] = [
 
 export const DEFAULT_SRD_SOURCES = ['wotc-srd'];
 
-interface SRDCache {
-  ts: number;
-  entities: EntityIndex;
-}
+interface SRDCache { ts: number; entities: EntityIndex }
 
 export class SRDProvider implements WorldDataProvider {
   readonly name = 'D&D 5e SRD';

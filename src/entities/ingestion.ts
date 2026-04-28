@@ -3,10 +3,7 @@ import { Entity, EntityIndex, EntityType, normalizeEntityType, slugify } from '.
 const JSON_UPLOAD_EXTENSION = '.json';
 const UPLOAD_ENTITY_ID_PREFIX = 'upload';
 
-interface MarkdownBlock {
-  name: string;
-  body: string;
-}
+interface MarkdownBlock { name: string; body: string }
 
 export interface IngestedEntityRecord { name?: unknown; type?: unknown; aliases?: unknown; summary?: unknown; description?: unknown; image?: unknown }
 export interface NormalizeIngestedEntityOptions { idPrefix?: string; idNamespace?: string | number; index?: number }

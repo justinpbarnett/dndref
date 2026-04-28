@@ -36,13 +36,7 @@ function readStoredSetting<T>(key: string, isValue: (value: unknown) => value is
 function readStoredColorScheme(): ColorScheme { return readStoredSetting(COLOR_SCHEME_KEY, isColorScheme, DEFAULT_COLOR_SCHEME); }
 function readStoredCardSize(): CardSize { return readStoredSetting(CARD_SIZE_KEY, isCardSize, DEFAULT_CARD_SIZE); }
 
-interface UISettingsContextType {
-  cardSize: CardSize;
-  setCardSize: (size: CardSize) => void;
-  colorScheme: ColorScheme;
-  setColorScheme: (scheme: ColorScheme) => void;
-  resetUISettings: () => void;
-}
+interface UISettingsContextType { cardSize: CardSize; setCardSize: (size: CardSize) => void; colorScheme: ColorScheme; setColorScheme: (scheme: ColorScheme) => void; resetUISettings: () => void }
 
 const UISettingsContext = createContext<UISettingsContextType | null>(null);
 

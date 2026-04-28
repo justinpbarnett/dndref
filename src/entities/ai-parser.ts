@@ -2,12 +2,7 @@ import { CORS_PROXY } from '../proxy';
 
 import { Entity, EntityIndex, normalizeEntityType, slugify } from './index';
 
-interface AIEntityInput {
-  name: string;
-  type?: string;
-  aliases?: string[];
-  summary?: string;
-}
+interface AIEntityInput { name: string; type?: string; aliases?: string[]; summary?: string }
 
 const ANTHROPIC_API = CORS_PROXY
   ? `${CORS_PROXY}/anthropic/v1/messages`

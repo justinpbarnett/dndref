@@ -4,13 +4,7 @@ import { createDefaultDataSourceSettings, loadDataSourceSettings, mergeDataSourc
 
 export { DEFAULT_DATA_SOURCES_SETTINGS, createDefaultDataSourceSettings, type DataSourcesSettings } from '../storage/app-data';
 
-interface DataSourcesContextType {
-  settings: DataSourcesSettings;
-  uploadsVersion: number;
-  update: (patch: Partial<DataSourcesSettings>) => Promise<void>;
-  bumpUploads: () => void;
-  reset: () => void;
-}
+interface DataSourcesContextType { settings: DataSourcesSettings; uploadsVersion: number; update: (patch: Partial<DataSourcesSettings>) => Promise<void>; bumpUploads: () => void; reset: () => void }
 
 const DataSourcesContext = createContext<DataSourcesContextType | null>(null);
 
