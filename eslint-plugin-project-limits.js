@@ -76,11 +76,8 @@ module.exports = {
 
         try {
           const entries = fs.readdirSync(directory, { withFileTypes: true });
-          const flatFiles = entries.filter(entry => 
-            entry.isFile() && 
-            !entry.name.startsWith('.') &&
-            (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx') || 
-             entry.name.endsWith('.js') || entry.name.endsWith('.jsx'))
+          const flatFiles = entries.filter(
+            entry => entry.isFile() && !entry.name.startsWith('.') && /\.[jt]sx?$/.test(entry.name),
           );
 
           if (flatFiles.length > max) {
