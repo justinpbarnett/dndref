@@ -1,14 +1,10 @@
 import type { CardState } from "./context/session-types";
 import type { EntityType } from "./entities";
 
-type EntityCardPinToggleKind = "pin" | "unpin";
-type EntityCardPinToggleIconName = "bookmark" | "bookmark-outline";
-type EntityCardPinToggleLabel = "Pin" | "Unpin";
-
 export interface EntityCardPinTogglePresentation {
-  kind: EntityCardPinToggleKind;
-  accessibilityLabel: EntityCardPinToggleLabel;
-  iconName: EntityCardPinToggleIconName;
+  kind: "pin" | "unpin";
+  accessibilityLabel: "Pin" | "Unpin";
+  iconName: "bookmark" | "bookmark-outline";
 }
 export interface EntityCardPresentation {
   instanceId: string;
