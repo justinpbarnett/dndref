@@ -37,12 +37,11 @@ export type FilesSectionProps = StyledSectionProps &
     deleteAllPending: boolean;
   } & Record<"handlePasteAdd" | "handleDeleteAllData", () => Promise<void>>;
 
-export interface AISectionProps extends StyledSectionProps {
-  dsLocal: DataSourcesSettings;
-  setDsLocal: React.Dispatch<React.SetStateAction<DataSourcesSettings>>;
-  aiContent: string;
-  setAiContent: React.Dispatch<React.SetStateAction<string>>;
-  aiParsing: boolean;
-  aiResult: string;
-  handleAIParse: () => Promise<void>;
-}
+export type AISectionProps = StyledSectionProps &
+  Record<"aiContent" | "aiResult", string> & {
+    dsLocal: DataSourcesSettings;
+    setDsLocal: React.Dispatch<React.SetStateAction<DataSourcesSettings>>;
+    setAiContent: React.Dispatch<React.SetStateAction<string>>;
+    aiParsing: boolean;
+    handleAIParse: () => Promise<void>;
+  };
