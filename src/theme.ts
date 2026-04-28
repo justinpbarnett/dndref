@@ -59,12 +59,11 @@ export const LIGHT: Colors = {
   error: "#b03060",
 };
 
-export function typeAccent(type: EntityType, colors: Colors): string {
-  return {
+export const typeAccent = (type: EntityType, colors: Colors): string =>
+  ({
     Location: colors.location,
     NPC: colors.npc,
     Faction: colors.faction,
     Item: colors.item,
     Unknown: colors.unknown,
-  }[type];
-}
+  })[type];
