@@ -69,7 +69,6 @@ export function UISettingsProvider({ children }: { children: React.ReactNode }) 
   );
 
   useEffect(() => {
-    // On native (no localStorage), still load from AsyncStorage
     if (Platform.OS !== "web") {
       const token = createAppDataWriteToken();
       Promise.all([getAppDataItem(CARD_SIZE_KEY, token), getAppDataItem(COLOR_SCHEME_KEY, token)])
