@@ -19,9 +19,6 @@ export class SessionRuntime {
   private acceptingTranscript = false;
   private detector: SessionRuntimeDetector | null = null;
   private detectionInterval: DetectionInterval | null = null;
-  private readonly detectIntervalMs: number;
-  private readonly buildSttProvider?: SessionRuntimeOptions["buildSttProvider"];
-  private readonly loadSttSettings?: SessionRuntimeOptions["loadSttSettings"];
   private lastDetectionKey = "";
   private listeners = new Set<SessionRuntimeListener>();
   private previousDetectionContext = "";
@@ -31,11 +28,7 @@ export class SessionRuntime {
   private sttProvider: STTProvider | null = null;
   private snapshot: SessionRuntimeSnapshot = INITIAL_SESSION_RUNTIME_SNAPSHOT;
 
-  constructor(options: SessionRuntimeOptions = {}) {
-    this.loadSttSettings = options.loadSttSettings;
-    this.buildSttProvider = options.buildSttProvider;
-    this.detectIntervalMs = options.detectIntervalMs ?? 0;
-  }
+  constructor(private readonly options: SessionRuntimeOptions = {}) {}
 
   getSnapshot(): SessionRuntimeSnapshot {
     return this.snapshot;
@@ -146,10 +139,11 @@ export class SessionRuntime {
     this.updateSnapshot({ sttStatus: "connecting", sttError: null });
 
     try {
-      if (!this.loadSttSettings || !this.buildSttProvider) throw new Error("STT provider factory not configured.");
-      const settings = await this.loadSttSettings();
+      const { loadSttSettings, buildSttProvider } = this.options;
+      if (!loadSttSettings || !buildSttProvider) throw new Error("STT provider factory not configured.");
+      const settings = await loadSttSettings();
       if (this.sttGeneration !== generation) return;
-      const provider = this.buildSttProvider(
+      const provider = buildSttProvider(
         settings,
         (text) => this.acceptProviderTranscript(text, generation),
         (error) => this.handleProviderError(error, generation),
@@ -234,8 +228,9 @@ export class SessionRuntime {
 
   private startDetectionInterval(): void {
     this.clearDetectionInterval();
-    if (this.detectIntervalMs <= 0) return;
-    this.detectionInterval = setInterval(() => this.processTranscript(), this.detectIntervalMs);
+    const detectIntervalMs = this.options.detectIntervalMs ?? 0;
+    if (detectIntervalMs <= 0) return;
+    this.detectionInterval = setInterval(() => this.processTranscript(), detectIntervalMs);
     (this.detectionInterval as { unref?: () => void }).unref?.();
   }
 
