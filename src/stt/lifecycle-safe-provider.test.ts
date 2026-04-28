@@ -4,10 +4,7 @@ import { createLateEventSafeSTTProvider } from './lifecycle-safe-provider';
 
 import type { STTProvider } from './index';
 
-type RejectablePromise = {
-  promise: Promise<void>;
-  reject: (error: unknown) => void;
-};
+type RejectablePromise = { promise: Promise<void>; reject: (error: unknown) => void };
 
 function rejectablePromise(): RejectablePromise {
   let reject!: (error: unknown) => void;

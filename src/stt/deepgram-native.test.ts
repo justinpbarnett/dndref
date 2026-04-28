@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-type Deferred = {
-  promise: Promise<void>;
-  resolve: () => void;
-};
+type Deferred = { promise: Promise<void>; resolve: () => void };
 
 const nativeState = vi.hoisted(() => {
   class MockRecording {

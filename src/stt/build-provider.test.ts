@@ -3,10 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const storage = vi.hoisted(() => new Map<string, string>());
 const platform = vi.hoisted(() => ({ OS: 'web' }));
 
-type MockProviderInstance = {
-  emitError(error: string): void;
-  emitTranscript(text: string): void;
-};
+type MockProviderInstance = { emitError(error: string): void; emitTranscript(text: string): void };
 
 const sttMocks = vi.hoisted(() => ({
   deepgramInstances: [] as MockProviderInstance[],

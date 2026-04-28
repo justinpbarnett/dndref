@@ -5,10 +5,7 @@ export type STTProviderFactory = (
   onError: (error: string) => void,
 ) => STTProvider;
 
-type CaptureInstance = {
-  readonly generation: number;
-  readonly provider: STTProvider;
-};
+type CaptureInstance = { readonly generation: number; readonly provider: STTProvider };
 
 export class LateEventSafeSTTProvider implements STTProvider {
   readonly name: string;
