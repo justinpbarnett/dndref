@@ -15,12 +15,7 @@ const EXAMPLES = [
   "The Sundering Blade is in pieces in the armory on level four. Gorm thinks he can reforge it.",
 ];
 
-const STT_STATUS_LABELS = {
-  idle: 'Mic off',
-  connecting: 'Connecting...',
-  active: 'Listening',
-  error: 'Error',
-};
+const STT_STATUS_LABELS = { idle: 'Mic off', connecting: 'Connecting...', active: 'Listening', error: 'Error' };
 
 export default function DebugScreen() {
   const C = useColors();

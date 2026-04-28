@@ -5,12 +5,7 @@ const KANKA_BASE = 'https://api.kanka.io/1.0';
 
 type KankaResourceType = 'characters' | 'locations' | 'organisations' | 'items';
 
-const TYPE_MAP: Record<KankaResourceType, EntityType> = {
-  characters: 'NPC',
-  locations: 'Location',
-  organisations: 'Faction',
-  items: 'Item',
-};
+const TYPE_MAP: Record<KankaResourceType, EntityType> = { characters: 'NPC', locations: 'Location', organisations: 'Faction', items: 'Item' };
 
 export interface KankaCampaign { id: number; name: string }
 

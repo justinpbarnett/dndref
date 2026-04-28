@@ -27,12 +27,5 @@ export const DARK: Colors = { bg: '#080706', bgCard: '#111009', bgCardPinned: '#
 export const LIGHT: Colors = { bg: '#f2ece0', bgCard: '#ebe4d6', bgCardPinned: '#e4dbc8', bgSurface: '#ece5d5', bgInput: '#e4dcc8', border: '#c8b898', borderMed: '#b4a480', borderStrong: '#9e8e68', textPrimary: '#1c1408', textSecondary: '#4a3820', textDim: '#7a6040', textMuted: '#a08060', location: '#2878b0', npc: '#1e8050', faction: '#b03060', item: '#9a5018', unknown: '#6a5030', active: '#1e8050', paused: '#9a5018', error: '#b03060' };
 
 export function typeAccent(type: EntityType, colors: Colors): string {
-  const map: Record<EntityType, string> = {
-    Location: colors.location,
-    NPC: colors.npc,
-    Faction: colors.faction,
-    Item: colors.item,
-    Unknown: colors.unknown,
-  };
-  return map[type];
+  return { Location: colors.location, NPC: colors.npc, Faction: colors.faction, Item: colors.item, Unknown: colors.unknown }[type];
 }
