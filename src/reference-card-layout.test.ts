@@ -68,13 +68,7 @@ describe('computeReferenceCardLayout', () => {
     });
 
     expect(layout.columns).toBe(3);
-    expect(layout.positions).toEqual({
-      a: { x: 135, y: 5 },
-      b: { x: 525, y: 5 },
-      c: { x: 915, y: 5 },
-      d: { x: 135, y: 245 },
-      e: { x: 525, y: 245 },
-    });
+    expect(layout.positions).toEqual({ a: { x: 135, y: 5 }, b: { x: 525, y: 5 }, c: { x: 915, y: 5 }, d: { x: 135, y: 245 }, e: { x: 525, y: 245 } });
     expect(layout.totalHeight).toBe(570);
   });
 

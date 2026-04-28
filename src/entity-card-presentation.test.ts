@@ -58,16 +58,8 @@ describe('deriveEntityCardPresentation', () => {
       summaryBullets: ['Ancient dwarven stronghold', 'Seven levels deep'],
       details: 'Ancient dwarven stronghold. Seven levels deep.',
       actions: {
-        pinToggle: {
-          kind: 'pin',
-          accessibilityLabel: 'Pin',
-          iconName: 'bookmark-outline',
-        },
-        dismiss: {
-          kind: 'dismiss',
-          accessibilityLabel: 'Dismiss',
-          iconName: 'close',
-        },
+        pinToggle: { kind: 'pin', accessibilityLabel: 'Pin', iconName: 'bookmark-outline' },
+        dismiss: { kind: 'dismiss', accessibilityLabel: 'Dismiss', iconName: 'close' },
       },
     });
   });
@@ -98,16 +90,8 @@ describe('deriveEntityCardPresentation', () => {
       summaryBullets: [],
       details: 'Full lich details.',
       actions: {
-        pinToggle: {
-          kind: 'unpin',
-          accessibilityLabel: 'Unpin',
-          iconName: 'bookmark',
-        },
-        dismiss: {
-          kind: 'dismiss',
-          accessibilityLabel: 'Dismiss',
-          iconName: 'close',
-        },
+        pinToggle: { kind: 'unpin', accessibilityLabel: 'Unpin', iconName: 'bookmark' },
+        dismiss: { kind: 'dismiss', accessibilityLabel: 'Dismiss', iconName: 'close' },
       },
     });
   });
