@@ -14,7 +14,6 @@ const DELETE_ALL_MESSAGE =
   "This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.";
 const PASTED_CONTENT_FILE_NAME = "Pasted Content.md";
 
-type MaybePromise<T = unknown> = T | Promise<T>;
 type FilesSettingsServices = Required<FilesSettingsCategoryControllerOptions>;
 
 export type PickedTextFile = { name: string; text: () => Promise<string> };
@@ -30,8 +29,8 @@ export interface FilesSettingsCategorySnapshot {
 
 export interface FilesSettingsCategoryControllerOptions {
   getUploads?: () => Promise<UploadedFile[]>;
-  addUpload?: (name: string, content: string) => MaybePromise;
-  removeUpload?: (id: string) => MaybePromise;
+  addUpload?: (name: string, content: string) => unknown | Promise<unknown>;
+  removeUpload?: (id: string) => unknown | Promise<unknown>;
   bumpUploads?: () => void;
   pickFiles?: () => Promise<PickedTextFile[]>;
   confirmDeleteAllData?: () => Promise<boolean>;
