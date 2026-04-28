@@ -33,17 +33,13 @@ describe("EntityDetector", () => {
   ];
   const detector = new EntityDetector(entities);
 
-  it("detects entities by exact name match", () => {
-    expect(detector.detect("Gimble").map((e) => e.name)).toContain("Gimble Lock");
-  });
-
-  it("detects entities by alias", () => {
-    expect(detector.detect("the bard").map((e) => e.name)).toContain("Gimble Lock");
-  });
-
-  it("detects multi-word entity names", () => {
-    expect(detector.detect("The Prancing Pony").map((e) => e.name)).toContain("The Prancing Pony");
-  });
+  it.each([
+    ["Gimble", "Gimble Lock"],
+    ["the bard", "Gimble Lock"],
+    ["The Prancing Pony", "The Prancing Pony"],
+  ])("detects %s as %s", (input, expectedName) =>
+    expect(detector.detect(input).map((e) => e.name)).toContain(expectedName),
+  );
 
   it.each(["the", "xyzzyplugh", ""])("returns no entities for %p", (input) =>
     expect(detector.detect(input)).toHaveLength(0),
