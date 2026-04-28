@@ -16,12 +16,8 @@ const nativeState = vi.hoisted(() => {
     async prepareToRecordAsync(): Promise<void> {
       if (state.nextPrepare) await state.nextPrepare.promise;
     }
-    record(): void {
-      this.recordCalls += 1;
-    }
-    async stop(): Promise<void> {
-      this.stopCalls += 1;
-    }
+    record = () => void (this.recordCalls += 1);
+    stop = async () => void (this.stopCalls += 1);
     release(): void {}
   }
 
@@ -64,8 +60,7 @@ function deferred(): Deferred {
 }
 
 async function flush(): Promise<void> {
-  await Promise.resolve();
-  await Promise.resolve();
+  await Promise.all([Promise.resolve(), Promise.resolve()]);
 }
 
 async function flushUntil(predicate: () => boolean): Promise<void> {
