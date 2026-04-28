@@ -40,11 +40,7 @@ describe('files settings category controller', () => {
 
     expect(addUpload).toHaveBeenCalledWith('villains.md', '# Lord Ember');
     expect(events).toEqual(['add:villains.md:# Lord Ember', 'get', 'bump']);
-    expect(controller.getSnapshot()).toMatchObject({
-      uploads: [makeUpload('pasted', 'villains.md', '# Lord Ember')],
-      pasteFileName: '',
-      pasteContent: '',
-    });
+    expect(controller.getSnapshot()).toMatchObject({ uploads: [makeUpload('pasted', 'villains.md', '# Lord Ember')], pasteFileName: '', pasteContent: '' });
   });
 
   it('chooses web files through the picker and stores every selected file', async () => {
@@ -118,12 +114,6 @@ describe('files settings category controller', () => {
     await deletion;
 
     expect(events).toEqual(['confirm', 'stop-session', 'reset-storage', 'reset-settings']);
-    expect(controller.getSnapshot()).toMatchObject({
-      uploads: [],
-      pasteFileName: '',
-      pasteContent: '',
-      deleteAllPending: false,
-      deleteAllStatus: 'All local app data was deleted.',
-    });
+    expect(controller.getSnapshot()).toMatchObject({ uploads: [], pasteFileName: '', pasteContent: '', deleteAllPending: false, deleteAllStatus: 'All local app data was deleted.' });
   });
 });

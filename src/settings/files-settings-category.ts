@@ -107,13 +107,7 @@ class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryCon
 
       this.onDeleteAllDataReset();
       this.refreshGeneration += 1;
-      this.updateSnapshot({
-        uploads: [],
-        removingUploadId: null,
-        pasteFileName: '',
-        pasteContent: '',
-        deleteAllStatus: 'All local app data was deleted.',
-      });
+      this.updateSnapshot({ uploads: [], removingUploadId: null, pasteFileName: '', pasteContent: '', deleteAllStatus: 'All local app data was deleted.' });
     } catch (e: unknown) {
       if (!this.disposed) {
         this.updateSnapshot({ deleteAllStatus: `Delete failed: ${e instanceof Error ? e.message : String(e)}` });
