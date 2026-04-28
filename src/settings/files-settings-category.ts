@@ -151,9 +151,8 @@ class DefaultFilesSettingsCategoryController extends SnapshotStore<FilesSettings
 
 function noop(): void {}
 
-function resolveStringUpdate(update: SetStateAction<string>, current: string): string {
-  return typeof update === "function" ? update(current) : update;
-}
+const resolveStringUpdate = (update: SetStateAction<string>, current: string) =>
+  typeof update === "function" ? update(current) : update;
 
 function pickFilesWithWebInput(): Promise<PickedTextFile[]> {
   if (Platform.OS !== "web" || typeof document === "undefined") return Promise.resolve([]);

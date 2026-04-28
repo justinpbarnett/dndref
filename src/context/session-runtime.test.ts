@@ -4,9 +4,13 @@ import type { Entity } from "../entities";
 import type { STTProvider } from "../stt";
 import { SessionRuntime, type SessionRuntimeDetector } from "./session-runtime";
 
-function makeEntity(id: string, name: string): Entity {
-  return { id, name, type: "NPC", aliases: [], summary: `${name} summary` };
-}
+const makeEntity = (id: string, name: string): Entity => ({
+  id,
+  name,
+  type: "NPC",
+  aliases: [],
+  summary: `${name} summary`,
+});
 
 class FakeDetector implements SessionRuntimeDetector {
   inputs: string[] = [];
@@ -70,9 +74,7 @@ function makeRuntimeWithFakeStt(configure?: (provider: FakeSTTProvider) => void)
   return { providers, runtime };
 }
 
-function normalizeSpaces(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
-}
+const normalizeSpaces = (value: string) => value.replace(/\s+/g, " ").trim();
 
 describe("SessionRuntime", () => {
   it("carries active transcript context so split entity names are detected", () => {

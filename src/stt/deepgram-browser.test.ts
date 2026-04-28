@@ -93,9 +93,7 @@ class MockWebSocket {
 
 let installedBrowserMocks: BrowserCaptureMocks | null = null;
 
-function flush(): Promise<void> {
-  return Promise.resolve().then(() => undefined);
-}
+const flush = () => Promise.resolve().then(() => undefined);
 
 function restoreGlobalProperty(key: string, descriptor: PropertyDescriptor | undefined): void {
   if (descriptor) Object.defineProperty(globalThis, key, descriptor);
