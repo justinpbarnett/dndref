@@ -150,6 +150,4 @@ export async function setupTest(page: Page) {
   await waitForApp(page);
 }
 
-export async function setupTestWithSession(page: Page) {
-  await setupTest(page).then(() => startSession(page));
-}
+export const setupTestWithSession = (page: Page) => setupTest(page).then(() => startSession(page));
