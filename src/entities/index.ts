@@ -11,18 +11,16 @@ export type EntityIndex = Entity[];
 
 export type WorldDataProvider = { readonly name: string; load(): Promise<EntityIndex> };
 
-export function slugify(name: string): string {
-  return name
+export const slugify = (name: string): string =>
+  name
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-]/g, "");
-}
-export function stripHtml(s: string): string {
-  return s
+export const stripHtml = (s: string): string =>
+  s
     .replace(/<[^>]+>/g, " ")
     .replace(/\s{2,}/g, " ")
     .trim();
-}
 
 export function normalizeEntityType(raw: string): EntityType {
   const s = String(raw).toLowerCase();
