@@ -51,8 +51,7 @@ test.describe("session controls", () => {
     await page.getByText("Start", { exact: true }).click();
     await expect(page.getByText("Listening", { exact: true })).toBeVisible();
 
-    const startCount = await getSpeechStartCount(page);
-    expect(startCount).toBe(2);
+    expect(await getSpeechStartCount(page)).toBe(2);
   });
 
   test("active: empty grid shows Awaiting entities", async ({ page }) => {
@@ -94,8 +93,7 @@ test.describe("session controls", () => {
 
     await emitSpeechEnd(page);
     await page.waitForTimeout(300);
-    const startCount = await getSpeechStartCount(page);
-    expect(startCount).toBe(1);
+    expect(await getSpeechStartCount(page)).toBe(1);
   });
 
   test("stop: resets to idle, clears session", async ({ page }) => {
