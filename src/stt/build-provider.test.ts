@@ -5,12 +5,47 @@ const platform = vi.hoisted(() => ({ OS: "web" }));
 
 type MockProviderInstance = { emitError(error: string): void; emitTranscript(text: string): void };
 
-const sttMocks = vi.hoisted(() => ({
-  deepgramInstances: [] as MockProviderInstance[],
-  deepgramStartError: null as Error | null,
-  webSpeechInstances: [] as MockProviderInstance[],
-  webSpeechStartError: null as Error | null,
-}));
+const sttMocks = vi.hoisted(() => {
+  const state = {
+    deepgramInstances: [] as MockProviderInstance[],
+    deepgramStartError: null as Error | null,
+    webSpeechInstances: [] as MockProviderInstance[],
+    webSpeechStartError: null as Error | null,
+  };
+  const createProvider = (
+    name: string,
+    instances: MockProviderInstance[],
+    errorKey: "deepgramStartError" | "webSpeechStartError",
+  ) =>
+    class {
+      readonly name = name;
+      private readonly onTranscript: (text: string) => void;
+      private readonly onError: (error: string) => void;
+
+      constructor(...args: unknown[]) {
+        this.onTranscript = args.at(-2) as (text: string) => void;
+        this.onError = args.at(-1) as (error: string) => void;
+        instances.push(this);
+      }
+
+      async start(): Promise<void> {
+        if (state[errorKey]) throw state[errorKey];
+      }
+      pause(): void {}
+      resume(): void {}
+      stop(): void {}
+      emitTranscript(text: string): void {
+        this.onTranscript(text);
+      }
+      emitError(error: string): void {
+        this.onError(error);
+      }
+    };
+  return Object.assign(state, {
+    DeepgramProvider: createProvider("Deepgram", state.deepgramInstances, "deepgramStartError"),
+    WebSpeechProvider: createProvider("Web Speech", state.webSpeechInstances, "webSpeechStartError"),
+  });
+});
 
 vi.mock("@react-native-async-storage/async-storage", () => ({
   default: {
@@ -19,59 +54,8 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
   },
 }));
 vi.mock("react-native", () => ({ Platform: platform }));
-vi.mock("./deepgram", () => ({
-  DeepgramProvider: class {
-    readonly name = "Deepgram";
-
-    constructor(
-      readonly apiKey: string,
-      readonly onTranscript: (text: string) => void,
-      readonly onError: (error: string) => void,
-    ) {
-      sttMocks.deepgramInstances.push(this);
-    }
-
-    async start(): Promise<void> {
-      if (sttMocks.deepgramStartError) throw sttMocks.deepgramStartError;
-    }
-    pause(): void {}
-    resume(): void {}
-    stop(): void {}
-
-    emitTranscript(text: string): void {
-      this.onTranscript(text);
-    }
-    emitError(error: string): void {
-      this.onError(error);
-    }
-  },
-}));
-vi.mock("./web-speech", () => ({
-  WebSpeechProvider: class {
-    readonly name = "Web Speech";
-
-    constructor(
-      readonly onTranscript: (text: string) => void,
-      readonly onError: (error: string) => void,
-    ) {
-      sttMocks.webSpeechInstances.push(this);
-    }
-
-    async start(): Promise<void> {
-      if (sttMocks.webSpeechStartError) throw sttMocks.webSpeechStartError;
-    }
-    pause(): void {}
-    resume(): void {}
-    stop(): void {}
-
-    emitTranscript(text: string): void {
-      this.onTranscript(text);
-    }
-    emitError(error: string): void {
-      this.onError(error);
-    }
-  },
-}));
+vi.mock("./deepgram", () => ({ DeepgramProvider: sttMocks.DeepgramProvider }));
+vi.mock("./web-speech", () => ({ WebSpeechProvider: sttMocks.WebSpeechProvider }));
 
 import { buildProvider, loadSettings } from "./build-provider";
 import { resetAppDataControlsForTests, saveVoiceSettings } from "../storage/app-data";
