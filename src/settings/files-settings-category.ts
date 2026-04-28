@@ -64,13 +64,11 @@ class DefaultFilesSettingsCategoryController extends SnapshotStore<FilesSettings
     await this.refreshUploads();
   }
 
-  setPasteFileName(update: SetStateAction<string>): void {
+  setPasteFileName = (update: SetStateAction<string>): void =>
     this.updateSnapshot({ pasteFileName: resolveStringUpdate(update, this.snapshot.pasteFileName) });
-  }
 
-  setPasteContent(update: SetStateAction<string>): void {
+  setPasteContent = (update: SetStateAction<string>): void =>
     this.updateSnapshot({ pasteContent: resolveStringUpdate(update, this.snapshot.pasteContent) });
-  }
 
   async saveUpload(name: string, content: string): Promise<void> {
     await this.services.addUpload(name, content);
