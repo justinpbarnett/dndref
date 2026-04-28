@@ -27,10 +27,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
     await this.startBrowserCapture();
   }
 
-  pause(): void {
-    this.active = false;
-    if (this.recorder?.state === "recording") this.recorder.pause();
-  }
+  pause = (): void => void ((this.active = false), this.recorder?.state === "recording" && this.recorder.pause());
 
   async resume(): Promise<void> {
     this.active = true;
