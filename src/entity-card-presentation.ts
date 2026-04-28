@@ -6,22 +6,19 @@ export interface EntityCardPinTogglePresentation {
   accessibilityLabel: "Pin" | "Unpin";
   iconName: "bookmark" | "bookmark-outline";
 }
-export interface EntityCardPresentation {
-  instanceId: string;
-  name: string;
+export type EntityCardPresentation = Record<
+  "instanceId" | "name" | "typeLabel" | "accentColor" | "bulletMarker" | "details",
+  string
+> & {
   type: EntityType;
-  typeLabel: string;
-  accentColor: string;
   pinned: boolean;
   imageUri: string | null;
-  bulletMarker: string;
   summaryBullets: string[];
-  details: string;
   actions: {
     pinToggle: EntityCardPinTogglePresentation;
     dismiss: { kind: "dismiss"; accessibilityLabel: "Dismiss"; iconName: "close" };
   };
-}
+};
 
 export type DeriveEntityCardPresentationInput = { card: CardState; accentColor: string };
 
