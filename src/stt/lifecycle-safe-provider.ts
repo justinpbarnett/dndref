@@ -85,13 +85,10 @@ export class LateEventSafeSTTProvider implements STTProvider {
     this.onError(error);
   }
 
-  private canDeliver(generation: number): boolean {
-    return this.deliveryGeneration === generation && this.currentCapture?.generation === generation;
-  }
+  private canDeliver = (generation: number): boolean =>
+    this.deliveryGeneration === generation && this.currentCapture?.generation === generation;
 
-  private isCurrentCapture(capture: CaptureInstance): boolean {
-    return this.currentCapture === capture;
-  }
+  private isCurrentCapture = (capture: CaptureInstance): boolean => this.currentCapture === capture;
 
   private stopCurrentCapture(): Promise<void> {
     const capture = this.currentCapture;
