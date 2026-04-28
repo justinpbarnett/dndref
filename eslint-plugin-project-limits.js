@@ -36,10 +36,7 @@ module.exports = {
           context.report({
             loc: { line: 1, column: 0 },
             messageId: 'maxLines',
-            data: {
-              lineCount,
-              max,
-            },
+            data: { lineCount, max },
           });
         }
 
@@ -81,11 +78,7 @@ module.exports = {
             context.report({
               loc: { line: 1, column: 0 },
               messageId: 'maxFiles',
-              data: {
-                directory,
-                fileCount: flatFiles.length,
-                max,
-              },
+              data: { directory, fileCount: flatFiles.length, max },
             });
           }
         } catch (error) {}
