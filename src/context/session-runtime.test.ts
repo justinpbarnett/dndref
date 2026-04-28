@@ -1,10 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { Entity } from "../entities";
-import type { STTProvider, STTSettings } from "../stt";
+import type { STTProvider } from "../stt";
 import { SessionRuntime, type SessionRuntimeDetector } from "./session-runtime";
-
-const TEST_STT_SETTINGS: STTSettings = { provider: "web-speech", deepgramApiKey: "" };
 
 function makeEntity(id: string, name: string): Entity {
   return { id, name, type: "NPC", aliases: [], summary: `${name} summary` };
@@ -64,7 +62,7 @@ function makeRuntimeWithFakeStt(configure?: (provider: FakeSTTProvider) => void)
 } {
   const providers: FakeSTTProvider[] = [];
   const runtime = new SessionRuntime({
-    loadSttSettings: async () => TEST_STT_SETTINGS,
+    loadSttSettings: async () => ({ provider: "web-speech", deepgramApiKey: "" }),
     buildSttProvider: (_settings, onTranscript, onError) => {
       const provider = new FakeSTTProvider(onTranscript, onError);
       configure?.(provider);
