@@ -2,6 +2,7 @@ import { Colors, F } from "../../theme";
 
 export function createStyles(C: Colors, isWide: boolean) {
   const cardBorder = { backgroundColor: C.bgCard, borderRadius: 4, borderWidth: 1, borderColor: C.border };
+  const compactCardBorder = { ...cardBorder, borderRadius: 3 };
   const actionBorder = {
     flexDirection: "row",
     alignItems: "center",
@@ -145,10 +146,7 @@ export function createStyles(C: Colors, isWide: boolean) {
       gap: 10,
       paddingVertical: 8,
       paddingHorizontal: 10,
-      backgroundColor: C.bgCard,
-      borderRadius: 3,
-      borderWidth: 1,
-      borderColor: C.border,
+      ...compactCardBorder,
     },
     checkRowActive: { borderColor: C.active + "50" },
     checkbox: {
@@ -169,10 +167,7 @@ export function createStyles(C: Colors, isWide: boolean) {
       gap: 8,
       paddingHorizontal: 12,
       paddingVertical: 9,
-      backgroundColor: C.bgCard,
-      borderRadius: 3,
-      borderWidth: 1,
-      borderColor: C.border,
+      ...compactCardBorder,
     },
     fileName: { flex: 1, color: C.textSecondary, fontSize: 12, fontFamily: F.mono },
     fileRemoveBtn: {
