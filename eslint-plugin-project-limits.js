@@ -69,15 +69,10 @@ module.exports = {
           return {};
         }
 
-        if (!context.settings || !context.settings._checkedDirs) {
-          context.settings = context.settings || {};
-          context.settings._checkedDirs = new Set();
-        }
-
-        if (context.settings._checkedDirs.has(directory)) {
-          return {};
-        }
-        context.settings._checkedDirs.add(directory);
+        context.settings ||= {};
+        const checkedDirs = (context.settings._checkedDirs ||= new Set());
+        if (checkedDirs.has(directory)) return {};
+        checkedDirs.add(directory);
 
         try {
           const entries = fs.readdirSync(directory, { withFileTypes: true });
