@@ -79,9 +79,7 @@ async function saveCache(key: string, entities: EntityIndex, cacheSession: AppDa
 
   try {
     await cacheSession.setItem(key, JSON.stringify(cache));
-  } catch {
-    // Storage full -- skip caching
-  }
+  } catch {}
 }
 
 function monsterToEntity(m: any): Entity {
