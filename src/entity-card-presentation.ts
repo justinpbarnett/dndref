@@ -22,14 +22,13 @@ export type EntityCardPresentation = Record<
 
 export type DeriveEntityCardPresentationInput = { card: CardState; accentColor: string };
 
-export function extractEntityCardSummaryBullets(summary: string): string[] {
-  return extractEntityDetailBullets(summary)
+export const extractEntityCardSummaryBullets = (summary: string): string[] =>
+  extractEntityDetailBullets(summary)
     .map((bullet) => bullet.replace(/[.!?]$/, "").trim())
     .slice(0, 5);
-}
 
-export function extractEntityDetailBullets(details: string): string[] {
-  return details
+export const extractEntityDetailBullets = (details: string): string[] =>
+  details
     .split("\n")
     .flatMap((line) => {
       const trimmed = line.trim();
@@ -44,7 +43,6 @@ export function extractEntityDetailBullets(details: string): string[] {
         .filter(Boolean);
     })
     .filter((bullet) => bullet.length > 0);
-}
 
 const derivePinTogglePresentation = (pinned: boolean): EntityCardPinTogglePresentation =>
   pinned
