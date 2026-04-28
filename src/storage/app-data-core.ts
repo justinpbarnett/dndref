@@ -12,25 +12,19 @@ let appDataWriteQueue: Promise<unknown> = Promise.resolve();
 
 export const APP_STORAGE_KEYS = [DATA_SOURCES_KEY, UPLOADS_KEY, STT_SETTINGS_KEY, CARD_SIZE_KEY, COLOR_SCHEME_KEY];
 
-export function isAppStorageKey(key: string): boolean {
-  return (
-    APP_STORAGE_KEYS.includes(key) ||
-    key.startsWith(SRD_CACHE_KEY_PREFIX) ||
-    ["dndref:", "@dnd-ref/"].some((prefix) => key.startsWith(prefix))
-  );
-}
+export const isAppStorageKey = (key: string): boolean =>
+  APP_STORAGE_KEYS.includes(key) ||
+  key.startsWith(SRD_CACHE_KEY_PREFIX) ||
+  ["dndref:", "@dnd-ref/"].some((prefix) => key.startsWith(prefix));
 
-export function createAppDataWriteToken(): number {
-  return appDataResetActive ? INVALID_APP_DATA_TOKEN : appDataResetGeneration;
-}
+export const createAppDataWriteToken = (): number =>
+  appDataResetActive ? INVALID_APP_DATA_TOKEN : appDataResetGeneration;
 
-export function isAppDataWriteTokenCurrent(token: number): boolean {
-  return token !== INVALID_APP_DATA_TOKEN && token === appDataResetGeneration && !appDataResetActive;
-}
+export const isAppDataWriteTokenCurrent = (token: number): boolean =>
+  token !== INVALID_APP_DATA_TOKEN && token === appDataResetGeneration && !appDataResetActive;
 
-export function canPersistAppDataCache(token: number): boolean {
-  return isAppDataWriteTokenCurrent(token) && cacheWritesBlockedForGeneration !== token;
-}
+export const canPersistAppDataCache = (token: number): boolean =>
+  isAppDataWriteTokenCurrent(token) && cacheWritesBlockedForGeneration !== token;
 export function allowAppDataCacheWrites(): void {
   cacheWritesBlockedForGeneration = null;
 }
