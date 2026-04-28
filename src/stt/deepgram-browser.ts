@@ -42,10 +42,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
     await this.startBrowserCapture();
   }
 
-  stop(): void {
-    this.active = false;
-    this.cleanup();
-  }
+  stop = (): void => void ((this.active = false), this.cleanup());
 
   private getRecorderOptions(): MediaRecorderOptions | undefined {
     if (typeof MediaRecorder === "undefined") return undefined;
