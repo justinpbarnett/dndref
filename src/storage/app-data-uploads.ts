@@ -1,4 +1,4 @@
-import { canPersistAppData, createAppDataWriteToken, getAppDataItem, setAppDataItem } from "./app-data-core";
+import { createAppDataWriteToken, getAppDataItem, isAppDataWriteTokenCurrent, setAppDataItem } from "./app-data-core";
 import { UPLOADS_KEY } from "./keys";
 
 export type UploadedFile = { id: string; name: string; content: string };
@@ -45,9 +45,9 @@ function mutateUploadedFiles(mutator: (uploads: UploadedFile[]) => UploadedFile[
   const operation = uploadMutationQueue
     .catch(() => undefined)
     .then(async () => {
-      if (!canPersistAppData(token)) return false;
+      if (!isAppDataWriteTokenCurrent(token)) return false;
       const currentUploads = await readUploadedFiles(token);
-      if (!canPersistAppData(token)) return false;
+      if (!isAppDataWriteTokenCurrent(token)) return false;
 
       const nextUploads = mutator(currentUploads);
       return setAppDataItem(UPLOADS_KEY, JSON.stringify(nextUploads), { token });

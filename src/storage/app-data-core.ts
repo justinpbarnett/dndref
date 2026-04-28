@@ -29,11 +29,8 @@ export function isAppDataWriteTokenCurrent(token: number): boolean {
   return token !== INVALID_APP_DATA_TOKEN && token === appDataResetGeneration && !appDataResetActive;
 }
 
-export function canPersistAppData(token: number): boolean {
-  return isAppDataWriteTokenCurrent(token);
-}
 export function canPersistAppDataCache(token: number): boolean {
-  return canPersistAppData(token) && cacheWritesBlockedForGeneration !== token;
+  return isAppDataWriteTokenCurrent(token) && cacheWritesBlockedForGeneration !== token;
 }
 export function allowAppDataCacheWrites(): void {
   cacheWritesBlockedForGeneration = null;
@@ -66,7 +63,7 @@ export async function setAppDataItem(
   const operation = appDataWriteQueue
     .catch(() => undefined)
     .then(async () => {
-      const canPersist = cache ? canPersistAppDataCache : canPersistAppData;
+      const canPersist = cache ? canPersistAppDataCache : isAppDataWriteTokenCurrent;
       if (!canPersist(token)) return false;
 
       await AsyncStorage.setItem(key, value);
