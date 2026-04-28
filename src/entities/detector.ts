@@ -2,10 +2,7 @@ import Fuse from "fuse.js";
 
 import { Entity, EntityIndex } from "./index";
 
-interface SearchTerm {
-  term: string;
-  entity: Entity;
-}
+type SearchTerm = { term: string; entity: Entity };
 
 const THRESHOLD = 0.28;
 const MIN_CHARS = 4;

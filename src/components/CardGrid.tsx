@@ -8,10 +8,7 @@ import { Colors, F } from "../theme";
 import { EntityCard } from "./EntityCard";
 import { EntityDetailsModal } from "./EntityDetailsModal";
 
-interface AnimPair {
-  left: Animated.Value;
-  top: Animated.Value;
-}
+type AnimPair = { left: Animated.Value; top: Animated.Value };
 
 const SPRING_CONFIG = { friction: 22, tension: 55, useNativeDriver: false } as const;
 
