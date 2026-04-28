@@ -7,9 +7,8 @@ import { createDefaultVoiceSettings, loadVoiceSettings } from "../storage/app-da
 
 import type { STTProvider, STTSettings } from "./index";
 
-export async function loadSettings(): Promise<STTSettings> {
-  return (await loadVoiceSettings()) ?? createDefaultVoiceSettings();
-}
+export const loadSettings = async (): Promise<STTSettings> =>
+  (await loadVoiceSettings()) ?? createDefaultVoiceSettings();
 
 export function buildProvider(
   settings: STTSettings,
