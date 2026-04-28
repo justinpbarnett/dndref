@@ -1,6 +1,5 @@
 import { Ionicons as ExpoIonicons } from "@expo/vector-icons";
 import glyphMap from "@expo/vector-icons/build/vendor/react-native-vector-icons/glyphmaps/Ionicons.json";
-import React from "react";
 import { Platform, StyleProp, Text, TextProps, TextStyle } from "react-native";
 
 export type IoniconName = keyof typeof glyphMap;

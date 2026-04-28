@@ -1,4 +1,3 @@
-import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import { CARD_SIZES, COLOR_SCHEMES } from "../../context/ui-settings";

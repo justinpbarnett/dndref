@@ -1,4 +1,3 @@
-import React from "react";
 import { Switch, Text, TouchableOpacity, View } from "react-native";
 
 import { Ionicon } from "../../components/Ionicon";
