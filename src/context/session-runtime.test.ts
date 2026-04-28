@@ -154,12 +154,7 @@ describe('SessionRuntime', () => {
 
     await runtime.start();
     const provider = providers[0];
-    expect(runtime.getSnapshot()).toMatchObject({
-      status: 'active',
-      sttStatus: 'active',
-      sttError: null,
-      sttProviderName: 'Fake STT',
-    });
+    expect(runtime.getSnapshot()).toMatchObject({ status: 'active', sttStatus: 'active', sttError: null, sttProviderName: 'Fake STT' });
 
     provider.emitTranscript('Valdrath spoke first');
     runtime.processTranscript();
@@ -178,15 +173,7 @@ describe('SessionRuntime', () => {
 
     runtime.stop();
     expect(provider.stopCalls).toBe(1);
-    expect(runtime.getSnapshot()).toMatchObject({
-      status: 'idle',
-      sttStatus: 'idle',
-      sttError: null,
-      sttProviderName: '',
-      cards: [],
-      recentDetections: [],
-      transcript: '',
-    });
+    expect(runtime.getSnapshot()).toMatchObject({ status: 'idle', sttStatus: 'idle', sttError: null, sttProviderName: '', cards: [], recentDetections: [], transcript: '' });
     provider.emitTranscript('late speech');
     provider.emitError('late error');
     expect(runtime.getSnapshot()).toMatchObject({ sttError: null, transcript: '' });
@@ -204,12 +191,7 @@ describe('SessionRuntime', () => {
     await runtime.start();
     expect(providers[0].startCalls).toBe(1);
     expect(providers[0].stopCalls).toBe(1);
-    expect(runtime.getSnapshot()).toMatchObject({
-      status: 'idle',
-      sttStatus: 'error',
-      sttError: 'Failed to start mic: permission denied',
-      sttProviderName: '',
-    });
+    expect(runtime.getSnapshot()).toMatchObject({ status: 'idle', sttStatus: 'error', sttError: 'Failed to start mic: permission denied', sttProviderName: '' });
 
     await runtime.start();
     expect(providers).toHaveLength(2);
@@ -227,11 +209,7 @@ describe('SessionRuntime', () => {
     await runtime.resume();
     expect(provider.resumeCalls).toBe(1);
     expect(provider.stopCalls).toBe(1);
-    expect(runtime.getSnapshot()).toMatchObject({
-      status: 'paused',
-      sttStatus: 'error',
-      sttError: 'Failed to resume mic: device lost',
-    });
+    expect(runtime.getSnapshot()).toMatchObject({ status: 'paused', sttStatus: 'error', sttError: 'Failed to resume mic: device lost' });
 
     provider.emitTranscript('stale speech after resume failure');
     expect(runtime.getSnapshot().transcript).toBe('');
@@ -249,11 +227,7 @@ describe('SessionRuntime', () => {
     provider.emitError('Mic error: audio-capture');
 
     expect(provider.stopCalls).toBe(1);
-    expect(runtime.getSnapshot()).toMatchObject({
-      status: 'paused',
-      sttStatus: 'error',
-      sttError: 'Mic error: audio-capture',
-    });
+    expect(runtime.getSnapshot()).toMatchObject({ status: 'paused', sttStatus: 'error', sttError: 'Mic error: audio-capture' });
     provider.emitTranscript('speech after fatal error');
     expect(runtime.getSnapshot().transcript).toBe('');
 
