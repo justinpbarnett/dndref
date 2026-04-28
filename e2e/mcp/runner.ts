@@ -1,20 +1,8 @@
 import { Page, ConsoleMessage } from 'playwright';
 
-export interface TestContext {
-  page: Page;
-  consoleErrors: string[];
-  screenshotDir: string;
-  baseUrl: string;
-}
+export interface TestContext { page: Page; consoleErrors: string[]; screenshotDir: string; baseUrl: string }
 
-export interface TestResult {
-  name: string;
-  status: 'PASS' | 'FAIL';
-  screenshotPath?: string;
-  errors: string[];
-  duration: number;
-  errorMessage?: string;
-}
+export interface TestResult { name: string; status: 'PASS' | 'FAIL'; screenshotPath?: string; errors: string[]; duration: number; errorMessage?: string }
 
 export async function runTest(
   results: TestResult[],
