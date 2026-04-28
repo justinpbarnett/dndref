@@ -1,16 +1,20 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 import { setupTestWithSession, speak, DETECT_WAIT_MS } from "../helpers";
+
+async function showScarabCard(page: Page) {
+  await speak(page, "Scarab of Protection");
+  await page.waitForTimeout(DETECT_WAIT_MS);
+  const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
+  await expect(card).toBeVisible();
+  return card;
+}
 
 test.describe("entity details modal", () => {
   test.beforeEach(async ({ page }) => setupTestWithSession(page));
 
   test("clicking a card opens full details and closing keeps the card visible", async ({ page }) => {
-    await speak(page, "Scarab of Protection");
-    await page.waitForTimeout(DETECT_WAIT_MS);
-
-    const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
-    await expect(card).toBeVisible();
+    const card = await showScarabCard(page);
 
     await card.click();
 
@@ -29,11 +33,7 @@ test.describe("entity details modal", () => {
   });
 
   test("clicking outside the modal closes details without dismissing the card", async ({ page }) => {
-    await speak(page, "Scarab of Protection");
-    await page.waitForTimeout(DETECT_WAIT_MS);
-
-    const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
-    await expect(card).toBeVisible();
+    const card = await showScarabCard(page);
 
     await card.click();
     const dialog = page.getByRole("dialog", { name: "Scarab of Protection details" });
@@ -46,11 +46,7 @@ test.describe("entity details modal", () => {
   });
 
   test("pinning and dismissing cards do not open details", async ({ page }) => {
-    await speak(page, "Scarab of Protection");
-    await page.waitForTimeout(DETECT_WAIT_MS);
-
-    const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
-    await expect(card).toBeVisible();
+    const card = await showScarabCard(page);
 
     await card.locator('[aria-label="Pin"]').click();
     await expect(page.getByRole("dialog", { name: "Scarab of Protection details" })).not.toBeVisible();
