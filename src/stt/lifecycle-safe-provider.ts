@@ -39,15 +39,9 @@ export class LateEventSafeSTTProvider implements STTProvider {
     return command;
   }
 
-  pause(): Promise<void> {
-    return this.stopCurrentCapture();
-  }
-  resume(): Promise<void> {
-    return this.start();
-  }
-  stop(): Promise<void> {
-    return this.stopCurrentCapture();
-  }
+  pause = (): Promise<void> => this.stopCurrentCapture();
+  resume = (): Promise<void> => this.start();
+  stop = (): Promise<void> => this.stopCurrentCapture();
 
   private createCapture(): CaptureInstance {
     this.nextGeneration += 1;

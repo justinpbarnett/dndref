@@ -29,13 +29,7 @@ export class DeepgramProvider implements STTProvider {
     await this.adapter.start();
   }
 
-  pause(): void | Promise<void> {
-    return this.adapter.pause();
-  }
-  resume(): void | Promise<void> {
-    return this.adapter.resume();
-  }
-  stop(): void | Promise<void> {
-    return this.adapter.stop();
-  }
+  pause = (): void | Promise<void> => this.adapter.pause();
+  resume = (): void | Promise<void> => this.adapter.resume();
+  stop = (): void | Promise<void> => this.adapter.stop();
 }
