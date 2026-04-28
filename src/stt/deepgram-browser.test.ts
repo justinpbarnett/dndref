@@ -116,8 +116,7 @@ describe("Deepgram browser capture adapter", () => {
     sockets[0].open();
     await startPromise;
 
-    expect(recorders).toHaveLength(1);
-    expect(recorders[0].startMs).toBe(250);
+    expect(recorders).toMatchObject([{ startMs: 250 }]);
 
     const chunk = { size: 42 };
     recorders[0].emitChunk(chunk);
@@ -149,8 +148,7 @@ describe("Deepgram browser capture adapter", () => {
     const rejectedStart = expect(startPromise).rejects.toThrow("Deepgram connection closed");
     provider.stop();
     await rejectedStart;
-    expect(sockets).toHaveLength(1);
-    expect(sockets[0].closeCalls).toBe(1);
+    expect(sockets).toMatchObject([{ closeCalls: 1 }]);
     expect(trackStop).toHaveBeenCalledTimes(1);
   });
 
