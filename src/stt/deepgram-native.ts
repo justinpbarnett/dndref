@@ -60,9 +60,7 @@ export class DeepgramNativeCaptureAdapter implements STTProvider {
   }
 
   private startNativeCapture(): Promise<void> {
-    return this.enqueueNative(async () => {
-      await this.startNativeChunks();
-    });
+    return this.enqueueNative(() => this.startNativeChunks());
   }
 
   private stopNativeCapture(): Promise<void> {
