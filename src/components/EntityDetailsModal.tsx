@@ -57,20 +57,4 @@ export function EntityDetailsModal({ card, visible, onClose }: Props) {
   );
 }
 
-function createStyles(C: Colors) {
-  return StyleSheet.create({
-    backdrop: { flex: 1, backgroundColor: '#00000099', alignItems: 'center', justifyContent: 'center', padding: 18 },
-    dialog: { width: '100%', maxWidth: 720, maxHeight: '86%', backgroundColor: C.bgCard, borderRadius: 10, borderWidth: 1, overflow: 'hidden' },
-    topStrip: { height: 4, width: '100%' },
-    header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: 18, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.border },
-    titleGroup: { flex: 1, gap: 6 },
-    name: { color: C.textPrimary, fontSize: 22, lineHeight: 28, fontWeight: '600', fontFamily: F.display, letterSpacing: 0.6 },
-    typeLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 2.2, fontFamily: F.mono },
-    closeButton: { paddingTop: 2 },
-    body: { maxHeight: 520 },
-    bodyContent: { padding: 18, paddingTop: 14 },
-    details: { color: C.textSecondary, fontSize: 15, lineHeight: 23, fontFamily: F.body, flex: 1 },
-    detailBulletRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 7, marginBottom: 8 },
-    detailBulletMark: { fontSize: 13, lineHeight: 23, fontWeight: '700', fontFamily: F.mono },
-  });
-}
+function createStyles(C: Colors) { return StyleSheet.create({ backdrop: { flex: 1, backgroundColor: '#00000099', alignItems: 'center', justifyContent: 'center', padding: 18 }, dialog: { width: '100%', maxWidth: 720, maxHeight: '86%', backgroundColor: C.bgCard, borderRadius: 10, borderWidth: 1, overflow: 'hidden' }, topStrip: { height: 4, width: '100%' }, header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: 18, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.border }, titleGroup: { flex: 1, gap: 6 }, name: { color: C.textPrimary, fontSize: 22, lineHeight: 28, fontWeight: '600', fontFamily: F.display, letterSpacing: 0.6 }, typeLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 2.2, fontFamily: F.mono }, closeButton: { paddingTop: 2 }, body: { maxHeight: 520 }, bodyContent: { padding: 18, paddingTop: 14 }, details: { color: C.textSecondary, fontSize: 15, lineHeight: 23, fontFamily: F.body, flex: 1 }, detailBulletRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 7, marginBottom: 8 }, detailBulletMark: { fontSize: 13, lineHeight: 23, fontWeight: '700', fontFamily: F.mono } }); }

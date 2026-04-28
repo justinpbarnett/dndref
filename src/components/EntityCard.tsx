@@ -128,23 +128,4 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss, onOpenDetai
   );
 }
 
-function createStyles(C: Colors) {
-  return StyleSheet.create({
-    card: { backgroundColor: C.bgCard, borderRadius: 6, margin: 5, borderWidth: 1, borderColor: C.border, overflow: 'hidden', minHeight: 160 },
-    cardPinned: { backgroundColor: C.bgCardPinned },
-    topStrip: { height: 3, width: '100%' },
-    header: { paddingHorizontal: 12, paddingTop: 10, paddingBottom: 10 },
-    headerTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-    headerLeft: { flex: 1, gap: 5 },
-    headerRight: { alignItems: 'flex-end', gap: 6 },
-    portrait: { width: 48, height: 64, borderRadius: 4, borderWidth: 1 },
-    name: { color: C.textPrimary, fontWeight: '600', letterSpacing: 0.6, fontFamily: F.display },
-    typeLabel: { fontWeight: '700', letterSpacing: 2.2, fontFamily: F.mono },
-    actions: { flexDirection: 'row', gap: 12, paddingTop: 1 },
-    divider: { height: 1 },
-    bullets: { padding: 12, paddingTop: 9, gap: 6 },
-    bulletRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 5 },
-    bulletMark: { fontWeight: '700', fontFamily: F.mono },
-    bulletText: { color: C.textSecondary, flex: 1, fontFamily: F.body },
-  });
-}
+function createStyles(C: Colors) { return StyleSheet.create({ card: { backgroundColor: C.bgCard, borderRadius: 6, margin: 5, borderWidth: 1, borderColor: C.border, overflow: 'hidden', minHeight: 160 }, cardPinned: { backgroundColor: C.bgCardPinned }, topStrip: { height: 3, width: '100%' }, header: { paddingHorizontal: 12, paddingTop: 10, paddingBottom: 10 }, headerTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 }, headerLeft: { flex: 1, gap: 5 }, headerRight: { alignItems: 'flex-end', gap: 6 }, portrait: { width: 48, height: 64, borderRadius: 4, borderWidth: 1 }, name: { color: C.textPrimary, fontWeight: '600', letterSpacing: 0.6, fontFamily: F.display }, typeLabel: { fontWeight: '700', letterSpacing: 2.2, fontFamily: F.mono }, actions: { flexDirection: 'row', gap: 12, paddingTop: 1 }, divider: { height: 1 }, bullets: { padding: 12, paddingTop: 9, gap: 6 }, bulletRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 5 }, bulletMark: { fontWeight: '700', fontFamily: F.mono }, bulletText: { color: C.textSecondary, flex: 1, fontFamily: F.body } }); }
