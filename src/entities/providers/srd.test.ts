@@ -61,13 +61,7 @@ describe('SRD cache persistence', () => {
 
     const entities = await new SRDProvider(['wotc-srd']).load();
 
-    expect(entities).toEqual([
-      expect.objectContaining({
-        name: 'Scarab of Protection',
-        summary: expect.stringMatching(/^Legendary\. If you hold this beetle-shaped medallion/),
-        details: expect.stringMatching(/^Legendary\. If you hold this beetle-shaped medallion/),
-      }),
-    ]);
+    expect(entities).toEqual([expect.objectContaining({ name: 'Scarab of Protection', summary: expect.stringMatching(/^Legendary\. If you hold this beetle-shaped medallion/), details: expect.stringMatching(/^Legendary\. If you hold this beetle-shaped medallion/) })]);
     expect(entities[0].details).toContain('* The scarab has 12 charges');
     expect(entities[0].summary.length).toBeLessThan(entities[0].details!.length);
   });

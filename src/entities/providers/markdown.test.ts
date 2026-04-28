@@ -40,21 +40,6 @@ Commands the east watch.
 
     const entities = await new MarkdownProvider(content, 'Imported Doc').load();
 
-    expect(entities).toEqual([
-      {
-        id: 'moonlit-bazaar',
-        name: 'Moonlit Bazaar',
-        type: 'Location',
-        aliases: ['Night Market', 'Bazaar'],
-        summary: 'Open only under the new moon.',
-      },
-      {
-        id: 'captain-aria',
-        name: 'Captain Aria',
-        type: 'NPC',
-        aliases: ['Aria', 'the captain'],
-        summary: 'Commands the east watch.',
-      },
-    ]);
+    expect(entities).toEqual([{ id: 'moonlit-bazaar', name: 'Moonlit Bazaar', type: 'Location', aliases: ['Night Market', 'Bazaar'], summary: 'Open only under the new moon.' }, { id: 'captain-aria', name: 'Captain Aria', type: 'NPC', aliases: ['Aria', 'the captain'], summary: 'Commands the east watch.' }]);
   });
 });
