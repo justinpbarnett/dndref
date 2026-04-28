@@ -11,10 +11,11 @@ import { NotionProvider, extractNotionId } from "../entities/providers/notion";
 import { SRDProvider } from "../entities/providers/srd";
 import { SAMPLE_WORLD } from "../sample-world";
 import { useDataSources } from "./data-sources";
-import { DETECT_INTERVAL_MS, buildProvider, loadSettings } from "./session-helpers";
+import { buildProvider, loadSettings } from "../stt/build-provider";
 import { SessionRuntime } from "./session-runtime";
 import type { EntityStatus, SessionContextType } from "./session-types";
 
+const DETECT_INTERVAL_MS = 2000;
 const SessionContext = createContext<SessionContextType | null>(null);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
