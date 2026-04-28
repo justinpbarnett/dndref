@@ -8,7 +8,7 @@ import {
   saveVoiceSettings as saveStoredVoiceSettings,
 } from "../storage/app-data";
 import type { STTSettings } from "../stt";
-import { SnapshotStore, type SnapshotListener } from "../utils/snapshot-store";
+import { SnapshotStore } from "../utils/snapshot-store";
 
 export const VOICE_SAVED_INDICATOR_MS = 2000;
 
@@ -27,20 +27,9 @@ export interface VoiceSettingsCategoryControllerOptions {
   clearSavedTimer?: (timer: SavedTimer) => void;
 }
 
-export interface VoiceSettingsCategoryController {
-  getSnapshot(): VoiceSettingsCategorySnapshot;
-  subscribe(listener: SnapshotListener<VoiceSettingsCategorySnapshot>): () => void;
-  load(): Promise<void>;
-  setSttSettings(update: SetStateAction<STTSettings>): void;
-  save(): Promise<void>;
-  reset(): void;
-  dispose(): void;
-}
+export type VoiceSettingsCategoryController = DefaultVoiceSettingsCategoryController;
 
-class DefaultVoiceSettingsCategoryController
-  extends SnapshotStore<VoiceSettingsCategorySnapshot>
-  implements VoiceSettingsCategoryController
-{
+class DefaultVoiceSettingsCategoryController extends SnapshotStore<VoiceSettingsCategorySnapshot> {
   private readonly services: VoiceSettingsServices;
   private savedTimer: SavedTimer | null = null;
   private loadGeneration = 0;

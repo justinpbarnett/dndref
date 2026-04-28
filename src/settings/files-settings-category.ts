@@ -8,7 +8,7 @@ import {
   type UploadedFile,
 } from "../entities/providers/file-upload";
 import { resetStoredAppData as resetStoredLocalAppData } from "../storage/app-data";
-import { SnapshotStore, type SnapshotListener } from "../utils/snapshot-store";
+import { SnapshotStore } from "../utils/snapshot-store";
 
 const DELETE_ALL_MESSAGE =
   "This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.";
@@ -43,24 +43,9 @@ export interface FilesSettingsCategoryControllerOptions {
   onDeleteAllDataReset?: () => void;
 }
 
-export interface FilesSettingsCategoryController {
-  getSnapshot(): FilesSettingsCategorySnapshot;
-  subscribe(listener: SnapshotListener<FilesSettingsCategorySnapshot>): () => void;
-  load(): Promise<void>;
-  setPasteFileName(update: SetStateAction<string>): void;
-  setPasteContent(update: SetStateAction<string>): void;
-  saveUpload(name: string, content: string): Promise<void>;
-  pickFilesWeb(): Promise<void>;
-  addPastedContent(): Promise<void>;
-  deleteUpload(id: string): Promise<void>;
-  deleteAllData(): Promise<void>;
-  dispose(): void;
-}
+export type FilesSettingsCategoryController = DefaultFilesSettingsCategoryController;
 
-class DefaultFilesSettingsCategoryController
-  extends SnapshotStore<FilesSettingsCategorySnapshot>
-  implements FilesSettingsCategoryController
-{
+class DefaultFilesSettingsCategoryController extends SnapshotStore<FilesSettingsCategorySnapshot> {
   private readonly services: FilesSettingsServices;
   private refreshGeneration = 0;
   private disposed = false;
