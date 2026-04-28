@@ -14,12 +14,7 @@ export type ColorScheme = (typeof COLOR_SCHEMES)[number];
 
 export interface CardSizeConfig extends CardSizeLayoutConfig { fontScale: number }
 
-export const CARD_SIZE_CONFIGS: Record<CardSize, CardSizeConfig> = {
-  S:  { ...CARD_SIZE_LAYOUT_CONFIGS.S, fontScale: 0.85 },
-  M:  { ...CARD_SIZE_LAYOUT_CONFIGS.M, fontScale: 1.0 },
-  L:  { ...CARD_SIZE_LAYOUT_CONFIGS.L, fontScale: 1.15 },
-  XL: { ...CARD_SIZE_LAYOUT_CONFIGS.XL, fontScale: 1.35 },
-};
+export const CARD_SIZE_CONFIGS: Record<CardSize, CardSizeConfig> = { S: { ...CARD_SIZE_LAYOUT_CONFIGS.S, fontScale: 0.85 }, M: { ...CARD_SIZE_LAYOUT_CONFIGS.M, fontScale: 1.0 }, L: { ...CARD_SIZE_LAYOUT_CONFIGS.L, fontScale: 1.15 }, XL: { ...CARD_SIZE_LAYOUT_CONFIGS.XL, fontScale: 1.35 } };
 
 export const DEFAULT_CARD_SIZE: CardSize = 'M';
 export const DEFAULT_COLOR_SCHEME: ColorScheme = 'dark';
