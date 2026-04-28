@@ -26,18 +26,16 @@ export interface DataSectionProps extends StyledSectionProps {
   dataSaved: boolean;
 }
 
-export type FilesSectionProps = StyledSectionProps & {
-  uploads: UploadedFile[];
-  removingUploadId: string | null;
-  pasteFileName: string;
-  setPasteFileName: React.Dispatch<React.SetStateAction<string>>;
-  pasteContent: string;
-  setPasteContent: React.Dispatch<React.SetStateAction<string>>;
-  handleDeleteUpload: (id: string) => Promise<void>;
-  pickFilesWeb: () => void;
-  deleteAllPending: boolean;
-  deleteAllStatus: string;
-} & Record<"handlePasteAdd" | "handleDeleteAllData", () => Promise<void>>;
+export type FilesSectionProps = StyledSectionProps &
+  Record<"pasteFileName" | "pasteContent" | "deleteAllStatus", string> & {
+    uploads: UploadedFile[];
+    removingUploadId: string | null;
+    setPasteFileName: React.Dispatch<React.SetStateAction<string>>;
+    setPasteContent: React.Dispatch<React.SetStateAction<string>>;
+    handleDeleteUpload: (id: string) => Promise<void>;
+    pickFilesWeb: () => void;
+    deleteAllPending: boolean;
+  } & Record<"handlePasteAdd" | "handleDeleteAllData", () => Promise<void>>;
 
 export interface AISectionProps extends StyledSectionProps {
   dsLocal: DataSourcesSettings;
