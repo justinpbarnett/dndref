@@ -23,8 +23,7 @@ module.exports = {
         },
       },
       create(context) {
-        const options = context.options[0] || {};
-        const max = options.max || 300;
+        const max = context.options[0]?.max || 300;
         const filename = context.getFilename();
 
         if (filename.includes('node_modules') || path.basename(filename).startsWith('.')) {
@@ -59,8 +58,7 @@ module.exports = {
         },
       },
       create(context) {
-        const options = context.options[0] || {};
-        const max = options.max || 20;
+        const max = context.options[0]?.max || 20;
         const filename = context.getFilename();
         const directory = path.dirname(filename);
 
