@@ -81,9 +81,7 @@ export function ingestUploadedFile(
   return ingestMarkdownContent(upload.content);
 }
 
-export function isJsonUploadName(name: string): boolean {
-  return name.toLowerCase().endsWith(".json");
-}
+export const isJsonUploadName = (name: string): boolean => name.toLowerCase().endsWith(".json");
 
 function normalizeMarkdownBlock(block: MarkdownBlock): Entity | null {
   const name = cleanHeading(block.name);

@@ -45,6 +45,5 @@ export function unpinCard(cards: CardState[], instanceId: string): CardState[] {
   return insertAfterPinned(rest, { ...card, pinned: false });
 }
 
-export function dismissCard(cards: CardState[], instanceId: string): CardState[] {
-  return cards.filter((card) => card.instanceId !== instanceId);
-}
+export const dismissCard = (cards: CardState[], instanceId: string): CardState[] =>
+  cards.filter((card) => card.instanceId !== instanceId);

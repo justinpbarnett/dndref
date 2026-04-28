@@ -1,6 +1,4 @@
-export function nextDetectionContext(transcript: string): string {
-  return transcript.slice(-80);
-}
+export const nextDetectionContext = (transcript: string): string => transcript.slice(-80);
 
 export function buildDetectionInput(previousContext: string, newText: string): string {
   if (!previousContext.trim()) return newText;
