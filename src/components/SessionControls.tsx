@@ -42,11 +42,7 @@ function PulseDot({ status }: { status: 'idle' | 'active' | 'paused' }) {
   );
 }
 
-const dot = StyleSheet.create({
-  wrapper: { width: 14, height: 14, alignItems: 'center', justifyContent: 'center' },
-  ring: { position: 'absolute', width: 10, height: 10, borderRadius: 5 },
-  core: { width: 6, height: 6, borderRadius: 3 },
-});
+const dot = StyleSheet.create({ wrapper: { width: 14, height: 14, alignItems: 'center', justifyContent: 'center' }, ring: { position: 'absolute', width: 10, height: 10, borderRadius: 5 }, core: { width: 6, height: 6, borderRadius: 3 } });
 
 export function SessionControls() {
   const C = useColors();
