@@ -57,18 +57,8 @@ export function computeReferenceCardLayout({
   for (let i = 0; i < cards.length; i++) {
     const col = i % columns;
     const row = Math.floor(i / columns);
-    positions[cards[i].instanceId] = {
-      x: xOffset + gridPad + col * columnWidth,
-      y: rowTops[row],
-    };
+    positions[cards[i].instanceId] = { x: xOffset + gridPad + col * columnWidth, y: rowTops[row] };
   }
 
-  return {
-    columns,
-    cardWidth,
-    gridWidth,
-    xOffset,
-    positions,
-    totalHeight: rowTops[rowHeights.length] + gridPad,
-  };
+  return { columns, cardWidth, gridWidth, xOffset, positions, totalHeight: rowTops[rowHeights.length] + gridPad };
 }
