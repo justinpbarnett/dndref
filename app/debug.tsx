@@ -84,9 +84,7 @@ export default function DebugScreen() {
           placeholder={isEditable ? 'e.g. "the party arrives at Ironspire..."' : "(session not active)"}
           placeholderTextColor={C.textMuted}
           editable={isEditable}
-          onChangeText={(text) => {
-            if (text.length > (transcript ?? "").length) appendTranscript(text.slice((transcript ?? "").length));
-          }}
+          onChangeText={(text) => text.length > transcript.length && appendTranscript(text.slice(transcript.length))}
           value={transcript}
           textAlignVertical="top"
         />
