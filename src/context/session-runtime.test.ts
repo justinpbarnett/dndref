@@ -17,10 +17,7 @@ class FakeDetector implements SessionRuntimeDetector {
 
   constructor(private readonly respond: (input: string) => Entity[]) {}
 
-  detect(input: string): Entity[] {
-    this.inputs.push(input);
-    return this.respond(input);
-  }
+  detect = (input: string): Entity[] => (this.inputs.push(input), this.respond(input));
 }
 
 class FakeSTTProvider implements STTProvider {
