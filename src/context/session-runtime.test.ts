@@ -126,15 +126,11 @@ describe("SessionRuntime", () => {
     runtime.appendTranscript("Valdrath summoned Malachar to the fortress");
     runtime.processTranscript();
 
-    expect(
-      runtime
-        .getSnapshot()
-        .cards.map((card) => card.entity.id)
-        .sort(),
-    ).toEqual(["malachar", "valdrath"]);
-    expect(runtime.getSnapshot().cards).toHaveLength(2);
-    expect(runtime.getSnapshot().cards.every((card) => !card.pinned)).toBe(true);
-    expect(runtime.getSnapshot().recentDetections).toEqual([valdrath, malachar]);
+    const { cards, recentDetections } = runtime.getSnapshot();
+    expect(cards.map((card) => card.entity.id).sort()).toEqual(["malachar", "valdrath"]);
+    expect(cards).toHaveLength(2);
+    expect(cards.every((card) => !card.pinned)).toBe(true);
+    expect(recentDetections).toEqual([valdrath, malachar]);
   });
 
   it("runs detection from its own active interval and clears the interval when paused", () => {
