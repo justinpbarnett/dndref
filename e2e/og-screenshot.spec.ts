@@ -1,27 +1,10 @@
-import * as fs from "fs";
-import * as path from "path";
-
 import { test, Page } from "@playwright/test";
 
-import { injectSpeechMock } from "./helpers";
-
-const IONICONS_TTF = path.join(
-  __dirname,
-  "../node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf",
-);
+import { injectSpeechMock, mockExternalRoutes } from "./helpers";
 
 async function setup(page: Page) {
   await injectSpeechMock(page);
-  await page.route("**/cdn.jsdelivr.net/**", async (route) => {
-    await route.fulfill({ status: 200, contentType: "font/ttf", body: fs.readFileSync(IONICONS_TTF) });
-  });
-  await page.route("**open5e**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ count: 0, next: null, previous: null, results: [] }),
-    });
-  });
+  await mockExternalRoutes(page);
 }
 
 test("og image", async ({ page }) => {

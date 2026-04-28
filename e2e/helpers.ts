@@ -119,8 +119,7 @@ export async function stopSession(page: Page) {
 
 export const DETECT_WAIT_MS = 2500;
 
-export async function setupTest(page: Page) {
-  await injectSpeechMock(page);
+export async function mockExternalRoutes(page: Page) {
   await page.route("**/cdn.jsdelivr.net/**", async (route) => {
     const body = fs.readFileSync(
       path.join(
@@ -137,6 +136,11 @@ export async function setupTest(page: Page) {
       body: JSON.stringify({ count: 0, next: null, previous: null, results: [] }),
     });
   });
+}
+
+export async function setupTest(page: Page) {
+  await injectSpeechMock(page);
+  await mockExternalRoutes(page);
   await page.goto("/");
   await waitForApp(page);
 }
