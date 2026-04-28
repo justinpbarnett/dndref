@@ -6,15 +6,13 @@ import { buildDetectionInput, nextDetectionContext } from "./detection-window";
 import type { CardState, SessionStatus, SttStatus } from "./session-types";
 
 export type SessionRuntimeDetector = { detect(transcript: string): Entity[] };
-export interface SessionRuntimeSnapshot {
+export type SessionRuntimeSnapshot = {
   status: SessionStatus;
   sttStatus: SttStatus;
   sttError: string | null;
-  sttProviderName: string;
   cards: CardState[];
-  transcript: string;
   recentDetections: Entity[];
-}
+} & Record<"sttProviderName" | "transcript", string>;
 export interface SessionRuntimeOptions {
   loadSttSettings?: () => Promise<STTSettings>;
   buildSttProvider?: (
