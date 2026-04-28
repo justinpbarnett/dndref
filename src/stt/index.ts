@@ -1,10 +1,7 @@
-export interface STTProvider {
+export type STTProvider = {
   readonly name: string;
   start(): Promise<void>;
-  pause(): void | Promise<void>;
-  resume(): void | Promise<void>;
-  stop(): void | Promise<void>;
-}
+} & Record<"pause" | "resume" | "stop", () => void | Promise<void>>;
 
 export type STTSettings = { provider: "web-speech" | "deepgram"; deepgramApiKey: string };
 
