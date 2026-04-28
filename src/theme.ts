@@ -20,32 +20,7 @@ export const F = {
   }),
 };
 
-export interface Colors {
-  bg: string;
-  bgCard: string;
-  bgCardPinned: string;
-  bgSurface: string;
-  bgInput: string;
-
-  border: string;
-  borderMed: string;
-  borderStrong: string;
-
-  textPrimary: string;
-  textSecondary: string;
-  textDim: string;
-  textMuted: string;
-
-  location: string;
-  npc: string;
-  faction: string;
-  item: string;
-  unknown: string;
-
-  active: string;
-  paused: string;
-  error: string;
-}
+export interface Colors { bg: string; bgCard: string; bgCardPinned: string; bgSurface: string; bgInput: string; border: string; borderMed: string; borderStrong: string; textPrimary: string; textSecondary: string; textDim: string; textMuted: string; location: string; npc: string; faction: string; item: string; unknown: string; active: string; paused: string; error: string }
 
 export const DARK: Colors = {
   bg: '#080706',
