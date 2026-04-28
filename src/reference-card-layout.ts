@@ -6,20 +6,9 @@ export function isCardSize(value: unknown): value is CardSize { return typeof va
 
 export interface CardSizeLayoutConfig { landscapeCols: number; portraitCols: number }
 
-export const CARD_SIZE_LAYOUT_CONFIGS: Record<CardSize, CardSizeLayoutConfig> = {
-  S:  { landscapeCols: 4, portraitCols: 3 },
-  M:  { landscapeCols: 3, portraitCols: 2 },
-  L:  { landscapeCols: 2, portraitCols: 2 },
-  XL: { landscapeCols: 2, portraitCols: 1 },
-};
+export const CARD_SIZE_LAYOUT_CONFIGS: Record<CardSize, CardSizeLayoutConfig> = { S: { landscapeCols: 4, portraitCols: 3 }, M: { landscapeCols: 3, portraitCols: 2 }, L: { landscapeCols: 2, portraitCols: 2 }, XL: { landscapeCols: 2, portraitCols: 1 } };
 
-export const REFERENCE_CARD_LAYOUT = {
-  gridPad: 5,
-  cardMargin: 5,
-  minCardWidth: 230,
-  maxCardWidth: 380,
-  defaultMeasuredHeight: 200,
-} as const;
+export const REFERENCE_CARD_LAYOUT = { gridPad: 5, cardMargin: 5, minCardWidth: 230, maxCardWidth: 380, defaultMeasuredHeight: 200 } as const;
 
 export interface ReferenceCardLayoutItem { instanceId: string }
 export interface ReferenceCardLayoutViewport { width: number; height: number }
