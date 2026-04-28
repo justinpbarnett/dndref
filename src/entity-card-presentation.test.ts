@@ -7,21 +7,19 @@ import {
   extractEntityDetailBullets,
 } from "./entity-card-presentation";
 
-function makeCard(overrides: Partial<CardState> = {}): CardState {
-  return {
-    instanceId: "card-1",
-    pinned: false,
-    entity: {
-      id: "ironspire",
-      name: "Ironspire Fortress",
-      type: "Location",
-      aliases: [],
-      summary: "Ancient dwarven stronghold. Seven levels deep.",
-      image: undefined,
-    },
-    ...overrides,
-  };
-}
+const makeCard = (overrides: Partial<CardState> = {}): CardState => ({
+  instanceId: "card-1",
+  pinned: false,
+  entity: {
+    id: "ironspire",
+    name: "Ironspire Fortress",
+    type: "Location",
+    aliases: [],
+    summary: "Ancient dwarven stronghold. Seven levels deep.",
+    image: undefined,
+  },
+  ...overrides,
+});
 
 describe("extractEntityCardSummaryBullets", () => {
   test("splits sentence summaries into display bullets with terminal marks removed", () => {
