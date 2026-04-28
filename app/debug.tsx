@@ -25,14 +25,7 @@ export default function DebugScreen() {
   if (!__DEV__) return <Redirect href="/" />;
   const isEditable = status !== "idle";
 
-  const sttStatusColor =
-    sttStatus === "connecting"
-      ? C.paused
-      : sttStatus === "active"
-        ? C.active
-        : sttStatus === "error"
-          ? "#c04040"
-          : C.textMuted;
+  const sttStatusColor = { idle: C.textMuted, connecting: C.paused, active: C.active, error: "#c04040" }[sttStatus];
 
   return (
     <View style={styles.container}>
