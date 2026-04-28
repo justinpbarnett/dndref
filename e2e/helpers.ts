@@ -151,6 +151,5 @@ export async function setupTest(page: Page) {
 }
 
 export async function setupTestWithSession(page: Page) {
-  await setupTest(page);
-  await startSession(page);
+  await setupTest(page).then(() => startSession(page));
 }
