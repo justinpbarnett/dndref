@@ -6,39 +6,18 @@ const cards = ["a", "b", "c", "d", "e"].map((instanceId) => ({ instanceId }));
 
 describe("computeReferenceCardLayout", () => {
   test.each([
-    ["S", 3, 242.66666666666666],
-    ["M", 2, 369],
-    ["L", 2, 369],
-    ["XL", 1, 380],
-  ] satisfies Array<[CardSize, number, number]>)(
-    "uses %s portrait columns within the readable width",
-    (cardSize, columns, cardWidth) => {
-      const layout = computeReferenceCardLayout({
-        cards,
-        measuredHeights: {},
-        viewport: { width: 768, height: 1024 },
-        cardSize,
-      });
-
-      expect(layout.columns).toBe(columns);
-      expect(layout.cardWidth).toBeCloseTo(cardWidth, 6);
-    },
-  );
-
-  test.each([
-    ["S", 4, 347.5],
-    ["M", 3, 380],
-    ["L", 2, 380],
-    ["XL", 2, 380],
-  ] satisfies Array<[CardSize, number, number]>)(
-    "uses %s landscape columns within the readable width",
-    (cardSize, columns, cardWidth) => {
-      const layout = computeReferenceCardLayout({
-        cards,
-        measuredHeights: {},
-        viewport: { width: 1440, height: 900 },
-        cardSize,
-      });
+    ["portrait", "S", { width: 768, height: 1024 }, 3, 242.66666666666666],
+    ["portrait", "M", { width: 768, height: 1024 }, 2, 369],
+    ["portrait", "L", { width: 768, height: 1024 }, 2, 369],
+    ["portrait", "XL", { width: 768, height: 1024 }, 1, 380],
+    ["landscape", "S", { width: 1440, height: 900 }, 4, 347.5],
+    ["landscape", "M", { width: 1440, height: 900 }, 3, 380],
+    ["landscape", "L", { width: 1440, height: 900 }, 2, 380],
+    ["landscape", "XL", { width: 1440, height: 900 }, 2, 380],
+  ] satisfies Array<[string, CardSize, { width: number; height: number }, number, number]>)(
+    "uses %s %s columns within the readable width",
+    (_orientation, cardSize, viewport, columns, cardWidth) => {
+      const layout = computeReferenceCardLayout({ cards, measuredHeights: {}, viewport, cardSize });
 
       expect(layout.columns).toBe(columns);
       expect(layout.cardWidth).toBeCloseTo(cardWidth, 6);
