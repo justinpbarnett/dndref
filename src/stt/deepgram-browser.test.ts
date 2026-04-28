@@ -18,9 +18,7 @@ type BrowserCaptureMocks = {
 };
 
 class MockMediaRecorder {
-  static isTypeSupported(): boolean {
-    return true;
-  }
+  static isTypeSupported = () => true;
 
   ondataavailable: ((event: { data: { size: number } }) => void) | null = null;
   onerror: ((event: unknown) => void) | null = null;
@@ -39,19 +37,13 @@ class MockMediaRecorder {
     this.state = "recording";
     this.startMs = ms;
   }
-  pause(): void {
-    this.state = "paused";
-  }
-  resume(): void {
-    this.state = "recording";
-  }
+  pause = () => void (this.state = "paused");
+  resume = () => void (this.state = "recording");
   stop(): void {
     this.stopCalls += 1;
     this.state = "inactive";
   }
-  emitChunk(data: { size: number }): void {
-    this.ondataavailable?.({ data });
-  }
+  emitChunk = (data: { size: number }) => this.ondataavailable?.({ data });
 }
 
 class MockWebSocket {
@@ -83,12 +75,8 @@ class MockWebSocket {
     this.readyState = MockWebSocket.OPEN;
     this.onopen?.();
   }
-  send(data: unknown): void {
-    this.sent.push(data);
-  }
-  receive(data: string): void {
-    this.onmessage?.({ data });
-  }
+  send = (data: unknown) => void this.sent.push(data);
+  receive = (data: string) => this.onmessage?.({ data });
 }
 
 let installedBrowserMocks: BrowserCaptureMocks | null = null;
