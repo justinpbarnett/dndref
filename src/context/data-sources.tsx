@@ -8,11 +8,7 @@ import {
   type DataSourcesSettings,
 } from "../storage/app-data";
 
-export {
-  DEFAULT_DATA_SOURCES_SETTINGS,
-  createDefaultDataSourceSettings,
-  type DataSourcesSettings,
-} from "../storage/app-data";
+export { createDefaultDataSourceSettings, type DataSourcesSettings } from "../storage/app-data";
 
 type DataSourcesContextType = {
   settings: DataSourcesSettings;
