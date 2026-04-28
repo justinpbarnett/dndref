@@ -3,21 +3,9 @@ import { Platform } from 'react-native';
 import { EntityType } from './entities';
 
 export const F = {
-  display: Platform.select({
-    web: "'Cinzel', Georgia, 'Times New Roman', serif",
-    ios: 'Georgia',
-    default: 'serif',
-  }),
-  body: Platform.select({
-    web: "'EB Garamond', Georgia, serif",
-    ios: 'Georgia',
-    default: undefined,
-  }),
-  mono: Platform.select({
-    web: "'Courier Prime', 'Courier New', monospace",
-    ios: 'Menlo',
-    default: 'monospace',
-  }),
+  display: Platform.select({ web: "'Cinzel', Georgia, 'Times New Roman', serif", ios: 'Georgia', default: 'serif' }),
+  body: Platform.select({ web: "'EB Garamond', Georgia, serif", ios: 'Georgia', default: undefined }),
+  mono: Platform.select({ web: "'Courier Prime', 'Courier New', monospace", ios: 'Menlo', default: 'monospace' }),
 };
 
 export interface Colors { bg: string; bgCard: string; bgCardPinned: string; bgSurface: string; bgInput: string; border: string; borderMed: string; borderStrong: string; textPrimary: string; textSecondary: string; textDim: string; textMuted: string; location: string; npc: string; faction: string; item: string; unknown: string; active: string; paused: string; error: string }
