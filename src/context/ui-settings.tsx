@@ -52,13 +52,6 @@ function readStoredSetting<T>(key: string, isValue: (value: unknown) => value is
   return defaultValue;
 }
 
-function readStoredColorScheme(): ColorScheme {
-  return readStoredSetting(COLOR_SCHEME_KEY, isColorScheme, DEFAULT_COLOR_SCHEME);
-}
-function readStoredCardSize(): CardSize {
-  return readStoredSetting(CARD_SIZE_KEY, isCardSize, DEFAULT_CARD_SIZE);
-}
-
 interface UISettingsContextType {
   cardSize: CardSize;
   setCardSize: (size: CardSize) => void;
@@ -70,8 +63,12 @@ interface UISettingsContextType {
 const UISettingsContext = createContext<UISettingsContextType | null>(null);
 
 export function UISettingsProvider({ children }: { children: React.ReactNode }) {
-  const [cardSize, setCardSizeState] = useState<CardSize>(readStoredCardSize);
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(readStoredColorScheme);
+  const [cardSize, setCardSizeState] = useState<CardSize>(() =>
+    readStoredSetting(CARD_SIZE_KEY, isCardSize, DEFAULT_CARD_SIZE),
+  );
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(() =>
+    readStoredSetting(COLOR_SCHEME_KEY, isColorScheme, DEFAULT_COLOR_SCHEME),
+  );
 
   useEffect(() => {
     // On native (no localStorage), still load from AsyncStorage
