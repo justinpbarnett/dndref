@@ -5,9 +5,7 @@ export class SnapshotStore<S> {
 
   constructor(protected snapshot: S) {}
 
-  getSnapshot(): S {
-    return this.snapshot;
-  }
+  getSnapshot = (): S => this.snapshot;
 
   subscribe(listener: SnapshotListener<S>): () => void {
     this.listeners.add(listener);
