@@ -1,7 +1,7 @@
 import { Text, TouchableOpacity, View } from "react-native";
 
 import { CARD_SIZES, COLOR_SCHEMES } from "../../context/ui-settings";
-import { CARD_SIZE_DESCS, CARD_SIZE_LABELS, COLOR_SCHEME_LABELS } from "../constants";
+import { CARD_SIZE_DESCS, CARD_SIZE_LABELS } from "../constants";
 import { DisplaySectionProps } from "../types";
 
 export function DisplaySection({ cardSize, setCardSize, colorScheme, setColorScheme, styles }: DisplaySectionProps) {
@@ -40,7 +40,7 @@ export function DisplaySection({ cardSize, setCardSize, colorScheme, setColorSch
               activeOpacity={0.7}
             >
               <Text style={[styles.segmentLabel, colorScheme === scheme && styles.segmentLabelActive]}>
-                {COLOR_SCHEME_LABELS[scheme]}
+                {scheme[0].toUpperCase() + scheme.slice(1)}
               </Text>
             </TouchableOpacity>
           ))}

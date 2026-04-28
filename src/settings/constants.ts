@@ -1,5 +1,5 @@
 import type { IoniconName } from "../components/Ionicon";
-import type { CardSize, ColorScheme } from "../context/ui-settings";
+import type { CardSize } from "../context/ui-settings";
 
 export type Category = "display" | "voice" | "data" | "files" | "ai";
 
@@ -18,10 +18,4 @@ export const CARD_SIZE_DESCS: Record<CardSize, string> = {
   M: "up to 3/2",
   L: "up to 2/2",
   XL: "up to 2/1",
-};
-
-export const COLOR_SCHEME_LABELS: Record<ColorScheme, string> = {
-  system: "System",
-  dark: "Dark",
-  light: "Light",
 };
