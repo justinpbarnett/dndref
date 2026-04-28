@@ -1,4 +1,4 @@
-import { Page, ConsoleMessage } from "playwright";
+import { Page } from "playwright";
 
 export interface TestContext {
   page: Page;
@@ -22,7 +22,6 @@ export async function runTest(
   testFn: () => Promise<{ screenshotPath?: string; errors: string[]; extraInfo?: string }>,
 ): Promise<void> {
   const startTime = Date.now();
-  const consoleErrors: string[] = [];
   console.log(`\n🔄 Running: ${name}`);
 
   try {
@@ -35,7 +34,7 @@ export async function runTest(
   } catch (error) {
     const duration = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : String(error);
-    results.push({ name, status: "FAIL", errors: consoleErrors, duration, errorMessage });
+    results.push({ name, status: "FAIL", errors: [], duration, errorMessage });
     console.log(`❌ ${name} - FAIL (${duration}ms)`);
     console.log(`   Error: ${errorMessage}`);
   }
