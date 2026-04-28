@@ -7,14 +7,10 @@ import { deriveEntityCardPresentation } from "../entity-card-presentation";
 import { Colors, F, typeAccent } from "../theme";
 import { Ionicon } from "./Ionicon";
 
-interface Props {
-  card: CardState;
-  width: number;
-  onPin: () => void;
-  onUnpin: () => void;
-  onDismiss: () => void;
-  onOpenDetails: () => void;
-}
+type Props = { card: CardState; width: number } & Record<
+  "onPin" | "onUnpin" | "onDismiss" | "onOpenDetails",
+  () => void
+>;
 
 export function EntityCard({ card, width, onPin, onUnpin, onDismiss, onOpenDetails }: Props) {
   const C = useColors();
