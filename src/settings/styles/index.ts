@@ -2,6 +2,14 @@ import { Colors, F } from "../../theme";
 
 export function createStyles(C: Colors, isWide: boolean) {
   const cardBorder = { backgroundColor: C.bgCard, borderRadius: 4, borderWidth: 1, borderColor: C.border };
+  const actionBorder = {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: 3,
+    paddingVertical: 10,
+  };
   return {
     root: { flex: 1, flexDirection: isWide ? "row" : "column", backgroundColor: C.bg },
     sidebar: {
@@ -107,26 +115,10 @@ export function createStyles(C: Colors, isWide: boolean) {
     textarea: { minHeight: 100, textAlignVertical: "top" },
     saveBtn: { backgroundColor: C.active, borderRadius: 3, paddingVertical: 12, alignItems: "center", marginTop: 4 },
     saveBtnText: { color: C.bg, fontSize: 12, fontWeight: "700", letterSpacing: 0.5, fontFamily: F.mono },
-    outlineBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 1,
-      borderColor: C.active + "80",
-      borderRadius: 3,
-      paddingVertical: 10,
-    },
+    outlineBtn: { ...actionBorder, borderColor: C.active + "80" },
     outlineBtnDisabled: { borderColor: C.border, opacity: 0.5 },
     outlineBtnText: { color: C.active, fontSize: 12, fontWeight: "700", letterSpacing: 0.5, fontFamily: F.mono },
-    dangerBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 1,
-      borderColor: C.error + "90",
-      borderRadius: 3,
-      paddingVertical: 10,
-    },
+    dangerBtn: { ...actionBorder, borderColor: C.error + "90" },
     dangerBtnDisabled: { opacity: 0.5 },
     dangerBtnText: { color: C.error, fontSize: 12, fontWeight: "700", letterSpacing: 0.5, fontFamily: F.mono },
     sourcesList: { gap: 6 },
