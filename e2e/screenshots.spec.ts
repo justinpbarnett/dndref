@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, Page } from "@playwright/test";
 
 async function waitForApp(page: Page) {
   // Wait for fonts and JS to hydrate
@@ -6,17 +6,17 @@ async function waitForApp(page: Page) {
   await page.waitForTimeout(1500);
 }
 
-test("reference tab - dark mode (default)", async ({ page }) => {
-  await page.goto("/");
-  await waitForApp(page);
-  await page.screenshot({ path: "e2e/screenshots/01-reference-dark.png", fullPage: false });
-});
-
-test("settings tab - dark mode", async ({ page }) => {
-  await page.goto("/settings");
-  await waitForApp(page);
-  await page.screenshot({ path: "e2e/screenshots/02-settings-dark.png", fullPage: false });
-});
+for (const [name, url, path] of [
+  ["reference tab - dark mode (default)", "/", "e2e/screenshots/01-reference-dark.png"],
+  ["settings tab - dark mode", "/settings", "e2e/screenshots/02-settings-dark.png"],
+  ["debug tab", "/debug", "e2e/screenshots/06-debug-dark.png"],
+] as const) {
+  test(name, async ({ page }) => {
+    await page.goto(url);
+    await waitForApp(page);
+    await page.screenshot({ path, fullPage: false });
+  });
+}
 
 test("settings tab - switch to light mode", async ({ page }) => {
   await page.goto("/settings");
@@ -59,12 +59,6 @@ test("tab bar inspection", async ({ page }) => {
   const labels = await page.locator("text=REFERENCE").all();
   console.log(`Found ${labels.length} REFERENCE labels`);
   await page.screenshot({ path: "e2e/screenshots/05-tabbar-full.png", fullPage: false });
-});
-
-test("debug tab", async ({ page }) => {
-  await page.goto("/debug");
-  await waitForApp(page);
-  await page.screenshot({ path: "e2e/screenshots/06-debug-dark.png", fullPage: false });
 });
 
 test("settings - all categories", async ({ page }) => {

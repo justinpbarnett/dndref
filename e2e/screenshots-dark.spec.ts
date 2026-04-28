@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, Page } from "@playwright/test";
 
 test.use({ colorScheme: "dark" });
 
@@ -7,17 +7,16 @@ async function waitForApp(page: Page) {
   await page.waitForTimeout(1500);
 }
 
-test("reference tab - dark mode", async ({ page }) => {
-  await page.goto("/");
-  await waitForApp(page);
-  await page.screenshot({ path: "e2e/screenshots/dark-01-reference.png" });
-});
-
-test("settings tab - dark mode", async ({ page }) => {
-  await page.goto("/settings");
-  await waitForApp(page);
-  await page.screenshot({ path: "e2e/screenshots/dark-02-settings.png" });
-});
+for (const [name, url, path] of [
+  ["reference tab - dark mode", "/", "e2e/screenshots/dark-01-reference.png"],
+  ["settings tab - dark mode", "/settings", "e2e/screenshots/dark-02-settings.png"],
+] as const) {
+  test(name, async ({ page }) => {
+    await page.goto(url);
+    await waitForApp(page);
+    await page.screenshot({ path });
+  });
+}
 
 test("set light mode in settings, check reference matches", async ({ page }) => {
   // Start on reference, note the theme
