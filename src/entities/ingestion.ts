@@ -2,14 +2,9 @@ import { Entity, EntityIndex, EntityType, normalizeEntityType, slugify } from ".
 
 type MarkdownBlock = { name: string; body: string };
 
-export interface IngestedEntityRecord {
-  name?: unknown;
-  type?: unknown;
-  aliases?: unknown;
-  summary?: unknown;
-  description?: unknown;
-  image?: unknown;
-}
+export type IngestedEntityRecord = Partial<
+  Record<"name" | "type" | "aliases" | "summary" | "description" | "image", unknown>
+>;
 export type NormalizeIngestedEntityOptions = { idPrefix?: string; idNamespace?: string | number; index?: number };
 export type UploadedWorldData = { name: string; content: string };
 export type UploadedWorldDataIngestionOptions = {
