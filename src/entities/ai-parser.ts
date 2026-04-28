@@ -34,11 +34,7 @@ export async function parseWithAI(content: string, apiKey: string): Promise<Enti
       'anthropic-version': '2023-06-01',
       ...(!CORS_PROXY && { 'anthropic-dangerous-direct-browser-access': 'true' }),
     },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: PROMPT + content }],
-    }),
+    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 4096, messages: [{ role: 'user', content: PROMPT + content }] }),
   });
 
   if (!res.ok) {
@@ -63,11 +59,5 @@ export async function parseWithAI(content: string, apiKey: string): Promise<Enti
 
   return items
     .filter((item): item is AIEntityInput => !!item && typeof item.name === 'string')
-    .map((item, i): Entity => ({
-      id: `ai-${slugify(item.name)}-${Date.now()}-${i}`,
-      name: item.name,
-      type: normalizeEntityType(item.type ?? ''),
-      aliases: Array.isArray(item.aliases) ? item.aliases : [],
-      summary: item.summary ?? '',
-    }));
+    .map((item, i): Entity => ({ id: `ai-${slugify(item.name)}-${Date.now()}-${i}`, name: item.name, type: normalizeEntityType(item.type ?? ''), aliases: Array.isArray(item.aliases) ? item.aliases : [], summary: item.summary ?? '' }));
 }

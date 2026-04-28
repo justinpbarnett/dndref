@@ -9,13 +9,7 @@ describe('world data ingestion', () => {
       type: 'artifact weapon',
       aliases: [' key ', '', 7, 'silver key'],
       description: '  Opens the Moon Door.  ',
-    }, { idPrefix: 'upload', idNamespace: 42, index: 3 })).toEqual({
-      id: 'upload-the-argent-key-42-3',
-      name: 'The Argent Key!',
-      type: 'Item',
-      aliases: ['key', 'silver key'],
-      summary: 'Opens the Moon Door.',
-    });
+    }, { idPrefix: 'upload', idNamespace: 42, index: 3 })).toEqual({ id: 'upload-the-argent-key-42-3', name: 'The Argent Key!', type: 'Item', aliases: ['key', 'silver key'], summary: 'Opens the Moon Door.' });
   });
 
   it('keeps markdown/text parsing behavior while using shared normalization', () => {

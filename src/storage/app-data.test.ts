@@ -178,11 +178,7 @@ describe('app data storage clearing', () => {
   });
 
   it('loads data source settings through the local app data seam', async () => {
-    storage.set(DATA_SOURCES_KEY, JSON.stringify({
-      srdEnabled: false,
-      kankaToken: 'kanka-secret',
-      srdSources: ['kobold-press-tob'],
-    }));
+    storage.set(DATA_SOURCES_KEY, JSON.stringify({ srdEnabled: false, kankaToken: 'kanka-secret', srdSources: ['kobold-press-tob'] }));
 
     await expect(loadDataSourceSettings()).resolves.toEqual({
       ...DEFAULT_DATA_SOURCES_SETTINGS,
