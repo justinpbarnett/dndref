@@ -91,39 +91,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     runtime,
   ]);
 
-  const start = useCallback(() => {
-    void runtime.start();
-  }, [runtime]);
-  const pause = useCallback(() => {
-    runtime.pause();
-  }, [runtime]);
-  const stop = useCallback(() => {
-    runtime.stop();
-  }, [runtime]);
-  const appendTranscript = useCallback(
-    (text: string) => {
-      runtime.appendTranscript(text);
-    },
-    [runtime],
-  );
-  const pin = useCallback(
-    (instanceId: string) => {
-      runtime.pin(instanceId);
-    },
-    [runtime],
-  );
-  const unpin = useCallback(
-    (instanceId: string) => {
-      runtime.unpin(instanceId);
-    },
-    [runtime],
-  );
-  const dismiss = useCallback(
-    (instanceId: string) => {
-      runtime.dismiss(instanceId);
-    },
-    [runtime],
-  );
+  const start = useCallback(() => void runtime.start(), [runtime]);
+  const pause = useCallback(() => runtime.pause(), [runtime]);
+  const stop = useCallback(() => runtime.stop(), [runtime]);
+  const appendTranscript = useCallback((text: string) => runtime.appendTranscript(text), [runtime]);
+  const pin = useCallback((instanceId: string) => runtime.pin(instanceId), [runtime]);
+  const unpin = useCallback((instanceId: string) => runtime.unpin(instanceId), [runtime]);
+  const dismiss = useCallback((instanceId: string) => runtime.dismiss(instanceId), [runtime]);
 
   return (
     <SessionContext.Provider
