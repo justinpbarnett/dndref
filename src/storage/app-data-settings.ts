@@ -2,17 +2,7 @@ import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, type STTSettings } from '../stt
 import { getAppDataItem, setAppDataItem } from './app-data-core';
 import { DATA_SOURCES_KEY } from './keys';
 
-export interface DataSourcesSettings {
-  srdEnabled: boolean;
-  srdSources: string[];
-  kankaToken: string;
-  kankaCampaignId: string;
-  homebreweryUrl: string;
-  notionToken: string;
-  notionPageIds: string;
-  googleDocsUrl: string;
-  aiApiKey: string;
-}
+export interface DataSourcesSettings { srdEnabled: boolean; srdSources: string[]; kankaToken: string; kankaCampaignId: string; homebreweryUrl: string; notionToken: string; notionPageIds: string; googleDocsUrl: string; aiApiKey: string }
 
 export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
   srdEnabled: true,
