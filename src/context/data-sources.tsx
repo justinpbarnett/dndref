@@ -14,13 +14,11 @@ export {
   type DataSourcesSettings,
 } from "../storage/app-data";
 
-interface DataSourcesContextType {
+type DataSourcesContextType = {
   settings: DataSourcesSettings;
   uploadsVersion: number;
   update: (patch: Partial<DataSourcesSettings>) => Promise<void>;
-  bumpUploads: () => void;
-  reset: () => void;
-}
+} & Record<"bumpUploads" | "reset", () => void>;
 
 const DataSourcesContext = createContext<DataSourcesContextType | null>(null);
 
