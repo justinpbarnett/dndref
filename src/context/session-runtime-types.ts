@@ -25,7 +25,6 @@ export interface SessionRuntimeOptions {
   buildSttProvider?: SttProviderBuilder;
   detectIntervalMs?: number;
 }
-export type SessionRuntimeListener = (snapshot: SessionRuntimeSnapshot) => void;
 export type DetectionInterval = ReturnType<typeof setInterval>;
 export type SnapshotPatch = Partial<SessionRuntimeSnapshot>;
 export const INITIAL_SESSION_RUNTIME_SNAPSHOT: SessionRuntimeSnapshot = {

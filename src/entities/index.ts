@@ -1,5 +1,3 @@
-export const MAX_SUMMARY_LENGTH_DEFAULT = 300;
-
 export type EntityType = "Location" | "NPC" | "Faction" | "Item" | "Unknown";
 
 export interface Entity {
