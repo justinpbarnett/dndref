@@ -18,12 +18,8 @@ async function setup(page: Page) {
       onresult: any = null;
       onerror: any = null;
       onend: any = null;
-      start() {
-        recognition = this;
-      }
-      abort() {
-        this.onend?.();
-      }
+      start = () => void (recognition = this);
+      abort = () => this.onend?.();
     }
     (window as any).SpeechRecognition = MockSpeechRecognition;
     (window as any).webkitSpeechRecognition = MockSpeechRecognition;
