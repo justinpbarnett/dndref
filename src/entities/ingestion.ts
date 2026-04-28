@@ -1,9 +1,6 @@
 import { Entity, EntityIndex, EntityType, normalizeEntityType, slugify } from "./index";
 
-interface MarkdownBlock {
-  name: string;
-  body: string;
-}
+type MarkdownBlock = { name: string; body: string };
 
 export interface IngestedEntityRecord {
   name?: unknown;
@@ -18,14 +15,11 @@ export interface NormalizeIngestedEntityOptions {
   idNamespace?: string | number;
   index?: number;
 }
-export interface UploadedWorldData {
-  name: string;
-  content: string;
-}
-export interface UploadedWorldDataIngestionOptions {
+export type UploadedWorldData = { name: string; content: string };
+export type UploadedWorldDataIngestionOptions = {
   idNamespace?: string | number;
   onJsonParseError?: (error: unknown) => void;
-}
+};
 
 export function normalizeIngestedEntity(
   record: IngestedEntityRecord,
