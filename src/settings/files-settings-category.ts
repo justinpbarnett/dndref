@@ -16,14 +16,11 @@ type FilesSettingsServices = Required<FilesSettingsCategoryControllerOptions>;
 
 export type PickedTextFile = { name: string; text: () => Promise<string> };
 
-export interface FilesSettingsCategorySnapshot {
+export type FilesSettingsCategorySnapshot = {
   uploads: UploadedFile[];
   removingUploadId: string | null;
-  pasteFileName: string;
-  pasteContent: string;
   deleteAllPending: boolean;
-  deleteAllStatus: string;
-}
+} & Record<"pasteFileName" | "pasteContent" | "deleteAllStatus", string>;
 
 export interface FilesSettingsCategoryControllerOptions {
   getUploads?: () => Promise<UploadedFile[]>;
