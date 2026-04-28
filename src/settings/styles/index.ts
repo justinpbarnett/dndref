@@ -3,6 +3,7 @@ import { Colors, F } from "../../theme";
 export function createStyles(C: Colors, isWide: boolean) {
   const cardBorder = { backgroundColor: C.bgCard, borderRadius: 4, borderWidth: 1, borderColor: C.border };
   const compactCardBorder = { ...cardBorder, borderRadius: 3 };
+  const centerBorder = { alignItems: "center", justifyContent: "center", borderRadius: 3, borderWidth: 1 };
   const actionBorder = {
     flexDirection: "row",
     alignItems: "center",
@@ -152,11 +153,8 @@ export function createStyles(C: Colors, isWide: boolean) {
     checkbox: {
       width: 16,
       height: 16,
-      borderRadius: 3,
-      borderWidth: 1,
+      ...centerBorder,
       borderColor: C.borderStrong,
-      alignItems: "center",
-      justifyContent: "center",
     },
     checkboxChecked: { backgroundColor: C.active, borderColor: C.active },
     checkRowLabel: { color: C.textSecondary, fontSize: 12, fontFamily: F.mono },
@@ -173,10 +171,7 @@ export function createStyles(C: Colors, isWide: boolean) {
     fileRemoveBtn: {
       width: 28,
       height: 28,
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: 3,
-      borderWidth: 1,
+      ...centerBorder,
       borderColor: C.error + "70",
     },
     fileRemoveBtnDisabled: { opacity: 0.45 },
