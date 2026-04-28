@@ -221,8 +221,7 @@ describe("SessionRuntime", () => {
     });
 
     await runtime.start();
-    expect(providers[0].startCalls).toBe(1);
-    expect(providers[0].stopCalls).toBe(1);
+    expect(providers[0]).toMatchObject({ startCalls: 1, stopCalls: 1 });
     expect(runtime.getSnapshot()).toMatchObject({
       status: "idle",
       sttStatus: "error",
@@ -231,8 +230,7 @@ describe("SessionRuntime", () => {
     });
 
     await runtime.start();
-    expect(providers).toHaveLength(2);
-    expect(providers[1].startCalls).toBe(1);
+    expect(providers).toMatchObject([expect.any(FakeSTTProvider), { startCalls: 1 }]);
     expect(runtime.getSnapshot()).toMatchObject({ status: "active", sttStatus: "active", sttError: null });
   });
 
@@ -244,8 +242,7 @@ describe("SessionRuntime", () => {
     provider.resumeError = new Error("device lost");
 
     await runtime.resume();
-    expect(provider.resumeCalls).toBe(1);
-    expect(provider.stopCalls).toBe(1);
+    expect(provider).toMatchObject({ resumeCalls: 1, stopCalls: 1 });
     expect(runtime.getSnapshot()).toMatchObject({
       status: "paused",
       sttStatus: "error",
