@@ -85,12 +85,11 @@ export function CardGrid() {
     });
   }, [cards]);
 
-  const onCardLayout = useCallback((instanceId: string, h: number) => {
-    setCardHeights((prev) => {
-      if (prev[instanceId] === h) return prev;
-      return { ...prev, [instanceId]: h };
-    });
-  }, []);
+  const onCardLayout = useCallback(
+    (instanceId: string, h: number) =>
+      setCardHeights((prev) => (prev[instanceId] === h ? prev : { ...prev, [instanceId]: h })),
+    [],
+  );
 
   const selectedCard = cards.find((card) => card.instanceId === selectedCardId) ?? null;
 
