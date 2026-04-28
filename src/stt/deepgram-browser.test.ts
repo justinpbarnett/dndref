@@ -9,13 +9,7 @@ const originalWebSocket = Object.getOwnPropertyDescriptor(globalThis, 'WebSocket
 type MockTrack = { stop: () => void };
 type MockStream = { getTracks: () => MockTrack[] };
 
-type BrowserCaptureMocks = {
-  getUserMedia: ReturnType<typeof vi.fn>;
-  recorders: MockMediaRecorder[];
-  sockets: MockWebSocket[];
-  stream: MockStream;
-  trackStop: ReturnType<typeof vi.fn>;
-};
+type BrowserCaptureMocks = { getUserMedia: ReturnType<typeof vi.fn>; recorders: MockMediaRecorder[]; sockets: MockWebSocket[]; stream: MockStream; trackStop: ReturnType<typeof vi.fn> };
 
 class MockMediaRecorder {
   static isTypeSupported(): boolean { return true; }
