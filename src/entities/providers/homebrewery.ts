@@ -28,8 +28,8 @@ function extractBrewId(input: string): string {
   return input.trim().split("/").pop() ?? input.trim();
 }
 
-function stripBrewSyntax(text: string): string {
-  return text
+const stripBrewSyntax = (text: string): string =>
+  text
     .replace(/\{\{[^}]*\}\}/g, "")
     .replace(/^:{2,}.*$/gm, "")
     .replace(/^={4,}$/gm, "")
@@ -37,4 +37,3 @@ function stripBrewSyntax(text: string): string {
     .replace(/\\\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-}

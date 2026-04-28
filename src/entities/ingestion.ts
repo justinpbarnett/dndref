@@ -172,8 +172,7 @@ function normalizeSummary(summary: unknown, description: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function buildEntityId(name: string, options: NormalizeIngestedEntityOptions): string {
-  return [options.idPrefix, slugify(name), options.idNamespace, options.index]
+const buildEntityId = (name: string, options: NormalizeIngestedEntityOptions): string =>
+  [options.idPrefix, slugify(name), options.idNamespace, options.index]
     .filter((part) => part !== undefined && part !== "")
     .join("-");
-}
