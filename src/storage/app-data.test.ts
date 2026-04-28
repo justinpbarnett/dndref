@@ -68,6 +68,18 @@ async function expectStaleHydrationReadDropped(readStaleValue: () => Promise<unk
   await expect(read).resolves.toBeNull();
 }
 
+async function resetWhileStorageBlocked(
+  operation: keyof typeof storageControls,
+  startBlockedWrite: () => Promise<unknown>,
+) {
+  const release = blockStorageOperation(operation);
+  const write = startBlockedWrite();
+  await Promise.resolve();
+  const reset = resetStoredAppData();
+  release();
+  await Promise.all([write, reset]);
+}
+
 describe("app data storage clearing", () => {
   beforeEach(() => {
     resetAppDataControlsForTests();
@@ -122,15 +134,7 @@ describe("app data storage clearing", () => {
   });
 
   it("waits for in-flight upload mutations before clearing storage", async () => {
-    const releaseGetItem = blockStorageOperation("getItemGate");
-
-    const upload = addUploadedFile("late.md", "# Late");
-    await Promise.resolve();
-
-    const reset = resetStoredAppData();
-    releaseGetItem();
-
-    await Promise.all([upload, reset]);
+    await resetWhileStorageBlocked("getItemGate", () => addUploadedFile("late.md", "# Late"));
     storageControls.getItemGate = null;
 
     expect(await getUploadedFiles()).toEqual([]);
@@ -175,15 +179,7 @@ describe("app data storage clearing", () => {
   });
 
   it("waits for in-flight settings writes before clearing storage", async () => {
-    const releaseSetItem = blockStorageOperation("setItemGate");
-
-    const write = setAppDataItem(DATA_SOURCES_KEY, '{"aiApiKey":"secret"}');
-    await Promise.resolve();
-
-    const reset = resetStoredAppData();
-    releaseSetItem();
-
-    await Promise.all([write, reset]);
+    await resetWhileStorageBlocked("setItemGate", () => setAppDataItem(DATA_SOURCES_KEY, '{"aiApiKey":"secret"}'));
 
     expect(storage.get(DATA_SOURCES_KEY)).toBeUndefined();
     expect(storage.get("unrelated:other-app")).toBe("keep");
