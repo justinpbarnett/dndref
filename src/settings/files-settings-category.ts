@@ -199,19 +199,5 @@ export function useFilesSettingsCategory(options: FilesSettingsCategoryControlle
   const setPasteFileName = useCallback<Dispatch<SetStateAction<string>>>((update) => controller.setPasteFileName(update), [controller]);
   const setPasteContent = useCallback<Dispatch<SetStateAction<string>>>((update) => controller.setPasteContent(update), [controller]);
 
-  return {
-    uploads: snapshot.uploads,
-    removingUploadId: snapshot.removingUploadId,
-    pasteFileName: snapshot.pasteFileName,
-    setPasteFileName,
-    pasteContent: snapshot.pasteContent,
-    setPasteContent,
-    pickFilesWeb: useCallback(() => controller.pickFilesWeb(), [controller]),
-    handlePasteAdd: useCallback(() => controller.addPastedContent(), [controller]),
-    handleDeleteUpload: useCallback((id: string) => controller.deleteUpload(id), [controller]),
-    handleDeleteAllData: useCallback(() => controller.deleteAllData(), [controller]),
-    saveUpload: useCallback((name: string, content: string) => controller.saveUpload(name, content), [controller]),
-    deleteAllPending: snapshot.deleteAllPending,
-    deleteAllStatus: snapshot.deleteAllStatus,
-  };
+  return { uploads: snapshot.uploads, removingUploadId: snapshot.removingUploadId, pasteFileName: snapshot.pasteFileName, setPasteFileName, pasteContent: snapshot.pasteContent, setPasteContent, pickFilesWeb: useCallback(() => controller.pickFilesWeb(), [controller]), handlePasteAdd: useCallback(() => controller.addPastedContent(), [controller]), handleDeleteUpload: useCallback((id: string) => controller.deleteUpload(id), [controller]), handleDeleteAllData: useCallback(() => controller.deleteAllData(), [controller]), saveUpload: useCallback((name: string, content: string) => controller.saveUpload(name, content), [controller]), deleteAllPending: snapshot.deleteAllPending, deleteAllStatus: snapshot.deleteAllStatus };
 }

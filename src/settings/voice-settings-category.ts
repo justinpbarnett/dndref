@@ -121,12 +121,5 @@ export function useVoiceSettingsCategory() {
   const saveVoice = useCallback(() => controller.save(), [controller]);
   const resetVoiceSettings = useCallback(() => controller.reset(), [controller]);
 
-  return {
-    sttSettings: snapshot.sttSettings,
-    setSttSettings,
-    saveVoice,
-    voiceSaved: snapshot.voiceSaved,
-    isWebSpeech: Platform.OS === 'web',
-    resetVoiceSettings,
-  };
+  return { sttSettings: snapshot.sttSettings, setSttSettings, saveVoice, voiceSaved: snapshot.voiceSaved, isWebSpeech: Platform.OS === 'web', resetVoiceSettings };
 }
