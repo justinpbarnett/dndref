@@ -4,9 +4,6 @@ import { Entity, EntityIndex } from "./index";
 
 type SearchTerm = { term: string; entity: Entity };
 
-const THRESHOLD = 0.28;
-const MIN_CHARS = 4;
-
 export class EntityDetector {
   private fuse: Fuse<SearchTerm>;
 
@@ -18,14 +15,14 @@ export class EntityDetector {
 
     this.fuse = new Fuse(terms, {
       keys: ["term"],
-      threshold: THRESHOLD,
-      minMatchCharLength: MIN_CHARS,
+      threshold: 0.28,
+      minMatchCharLength: 4,
       includeScore: true,
     });
   }
 
   detect(transcript: string): Entity[] {
-    const words = transcript.split(/\s+/).filter((w) => w.replace(/[^a-z]/gi, "").length >= MIN_CHARS);
+    const words = transcript.split(/\s+/).filter((w) => w.replace(/[^a-z]/gi, "").length >= 4);
     const found = new Map<string, { entity: Entity; score: number }>();
 
     const phrases: string[] = [...words];
