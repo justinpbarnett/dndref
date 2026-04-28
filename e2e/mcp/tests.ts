@@ -105,28 +105,13 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
 
   await gotoSettingsPage(page, baseUrl);
 
-  const darkBtn = page.getByText("Dark", { exact: true }).first();
-  if (await darkBtn.isVisible().catch(() => false)) {
-    await darkBtn.click();
-    await page.waitForTimeout(1000);
-    const darkScreenshot = `${screenshotDir}/test-04-theme-dark.png`;
-    await saveScreenshot(page, screenshots, darkScreenshot);
-  }
-
-  const lightBtn = page.getByText("Light", { exact: true }).first();
-  if (await lightBtn.isVisible().catch(() => false)) {
-    await lightBtn.click();
-    await page.waitForTimeout(1000);
-    const lightScreenshot = `${screenshotDir}/test-04-theme-light.png`;
-    await saveScreenshot(page, screenshots, lightScreenshot);
-  }
-
-  const systemBtn = page.getByText("System", { exact: true }).first();
-  if (await systemBtn.isVisible().catch(() => false)) {
-    await systemBtn.click();
-    await page.waitForTimeout(1000);
-    const systemScreenshot = `${screenshotDir}/test-04-theme-system.png`;
-    await saveScreenshot(page, screenshots, systemScreenshot);
+  for (const theme of ["Dark", "Light", "System"]) {
+    const button = page.getByText(theme, { exact: true }).first();
+    if (await button.isVisible().catch(() => false)) {
+      await button.click();
+      await page.waitForTimeout(1000);
+      await saveScreenshot(page, screenshots, `${screenshotDir}/test-04-theme-${theme.toLowerCase()}.png`);
+    }
   }
 
   return {
