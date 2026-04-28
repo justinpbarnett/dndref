@@ -3,7 +3,6 @@ export {
   allowAppDataCacheWrites,
   beginAppDataReset,
   canPersistAppDataCache,
-  clearStoredAppData,
   createAppDataCacheSession,
   createAppDataWriteToken,
   finishAppDataReset,
@@ -25,13 +24,7 @@ export {
   saveVoiceSettings,
   type DataSourcesSettings,
 } from "./app-data-settings";
-export {
-  addUploadedFile,
-  getUploadedFiles,
-  removeUploadedFile,
-  waitForUploadedFileMutations,
-  type UploadedFile,
-} from "./app-data-uploads";
+export { addUploadedFile, getUploadedFiles, removeUploadedFile, type UploadedFile } from "./app-data-uploads";
 
 import {
   beginAppDataReset,
