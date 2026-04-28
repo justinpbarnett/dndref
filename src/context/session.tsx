@@ -15,7 +15,6 @@ import { buildProvider, loadSettings } from "../stt/build-provider";
 import { SessionRuntime } from "./session-runtime";
 import type { EntityStatus, SessionContextType } from "./session-types";
 
-const DETECT_INTERVAL_MS = 2000;
 const SessionContext = createContext<SessionContextType | null>(null);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
@@ -27,7 +26,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       new SessionRuntime({
         loadSttSettings: loadSettings,
         buildSttProvider: buildProvider,
-        detectIntervalMs: DETECT_INTERVAL_MS,
+        detectIntervalMs: 2000,
       }),
   );
   const [runtimeSnapshot, setRuntimeSnapshot] = useState(() => runtime.getSnapshot());
