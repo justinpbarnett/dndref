@@ -6,10 +6,7 @@ export function isCardSize(value: unknown): value is CardSize {
   return typeof value === "string" && (CARD_SIZES as readonly string[]).includes(value);
 }
 
-export interface CardSizeLayoutConfig {
-  landscapeCols: number;
-  portraitCols: number;
-}
+export type CardSizeLayoutConfig = { landscapeCols: number; portraitCols: number };
 
 export const CARD_SIZE_LAYOUT_CONFIGS: Record<CardSize, CardSizeLayoutConfig> = {
   S: { landscapeCols: 4, portraitCols: 3 },
@@ -26,17 +23,9 @@ export const REFERENCE_CARD_LAYOUT = {
   defaultMeasuredHeight: 200,
 } as const;
 
-export interface ReferenceCardLayoutItem {
-  instanceId: string;
-}
-export interface ReferenceCardLayoutViewport {
-  width: number;
-  height: number;
-}
-export interface ReferenceCardPosition {
-  x: number;
-  y: number;
-}
+export type ReferenceCardLayoutItem = { instanceId: string };
+export type ReferenceCardLayoutViewport = { width: number; height: number };
+export type ReferenceCardPosition = { x: number; y: number };
 
 export interface ReferenceCardLayout {
   columns: number;
