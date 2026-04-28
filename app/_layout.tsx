@@ -21,32 +21,12 @@ function ThemedTabs() {
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: C.bg },
-        tabBarStyle: {
-          backgroundColor: C.bgSurface,
-          borderTopColor: C.border,
-          borderTopWidth: 1,
-          height: 72 + insets.bottom,
-          paddingBottom: 12 + insets.bottom,
-          paddingTop: 8,
-        },
-        tabBarItemStyle: {
-          paddingVertical: 4,
-        },
-        tabBarIconStyle: {
-          height: 22,
-          marginBottom: 2,
-        },
+        tabBarStyle: { backgroundColor: C.bgSurface, borderTopColor: C.border, borderTopWidth: 1, height: 72 + insets.bottom, paddingBottom: 12 + insets.bottom, paddingTop: 8 },
+        tabBarItemStyle: { paddingVertical: 4 },
+        tabBarIconStyle: { height: 22, marginBottom: 2 },
         tabBarActiveTintColor: C.textPrimary,
         tabBarInactiveTintColor: C.textSecondary,
-        tabBarLabelStyle: {
-          fontSize: 9,
-          lineHeight: 16,
-          height: 16,
-          overflow: 'visible',
-          fontWeight: '600',
-          letterSpacing: 0.8,
-          fontFamily: F.display,
-        },
+        tabBarLabelStyle: { fontSize: 9, lineHeight: 16, height: 16, overflow: 'visible', fontWeight: '600', letterSpacing: 0.8, fontFamily: F.display },
       }}
     >
       <Tabs.Screen
