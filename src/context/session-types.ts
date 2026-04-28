@@ -4,11 +4,7 @@ export type SessionStatus = "idle" | "active" | "paused";
 export type SttStatus = "idle" | "connecting" | "active" | "error";
 export type EntityStatus = "loading" | "ready" | "error";
 
-export interface CardState {
-  instanceId: string;
-  entity: Entity;
-  pinned: boolean;
-}
+export type CardState = { instanceId: string; entity: Entity; pinned: boolean };
 
 export interface SessionContextType {
   status: SessionStatus;
