@@ -41,9 +41,8 @@ export class WebSpeechProvider implements STTProvider {
     );
   }
 
-  private actionError(e: unknown, permissionMessage: string, prefix: string): string {
-    return this.isPermissionError(e) ? permissionMessage : `${prefix}: ${e instanceof Error ? e.message : String(e)}`;
-  }
+  private actionError = (e: unknown, permissionMessage: string, prefix: string): string =>
+    this.isPermissionError(e) ? permissionMessage : `${prefix}: ${e instanceof Error ? e.message : String(e)}`;
 
   private clearRestartTimer(): void {
     if (this.restartTimer === null) return;
