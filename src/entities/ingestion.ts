@@ -10,11 +10,7 @@ export interface IngestedEntityRecord {
   description?: unknown;
   image?: unknown;
 }
-export interface NormalizeIngestedEntityOptions {
-  idPrefix?: string;
-  idNamespace?: string | number;
-  index?: number;
-}
+export type NormalizeIngestedEntityOptions = { idPrefix?: string; idNamespace?: string | number; index?: number };
 export type UploadedWorldData = { name: string; content: string };
 export type UploadedWorldDataIngestionOptions = {
   idNamespace?: string | number;
