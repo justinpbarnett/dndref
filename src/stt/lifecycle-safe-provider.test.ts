@@ -33,9 +33,7 @@ class FakeCaptureAdapter implements STTProvider {
   pause(): void {}
   resume(): void {}
 
-  async stop(): Promise<void> {
-    this.stopCalls += 1;
-  }
+  stop = async () => void (this.stopCalls += 1);
   emitTranscript = (text: string) => this.onTranscript(text);
   emitError = (error: string) => this.onError(error);
 }
