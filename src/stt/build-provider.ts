@@ -20,13 +20,9 @@ export function buildProvider(
 }
 
 function createProviderFactory(settings: STTSettings): STTProviderFactory {
-  if (shouldUseDeepgram(settings)) {
+  if (Platform.OS !== "web" || (settings.provider === "deepgram" && Boolean(settings.deepgramApiKey))) {
     return (safeTranscript, safeError) => new DeepgramProvider(settings.deepgramApiKey, safeTranscript, safeError);
   }
 
   return (safeTranscript, safeError) => new WebSpeechProvider(safeTranscript, safeError);
-}
-
-function shouldUseDeepgram(settings: STTSettings): boolean {
-  return Platform.OS !== "web" || (settings.provider === "deepgram" && Boolean(settings.deepgramApiKey));
 }
