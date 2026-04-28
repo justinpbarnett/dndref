@@ -15,15 +15,10 @@ export async function injectSpeechMock(page: Page) {
       get activeRecognition() {
         return recognition;
       },
-      failNextStart(name = "NotAllowedError", message = "Microphone permission required") {
-        failNextStart = new DOMException(message, name);
-      },
-      emitError(error = "audio-capture") {
-        recognition?.onerror?.({ error });
-      },
-      emitEnd() {
-        recognition?.onend?.();
-      },
+      failNextStart: (name = "NotAllowedError", message = "Microphone permission required") =>
+        (failNextStart = new DOMException(message, name)),
+      emitError: (error = "audio-capture") => recognition?.onerror?.({ error }),
+      emitEnd: () => recognition?.onend?.(),
       emitSpeech(text: string): boolean {
         if (!recognition?.onresult) return false;
         recognition.onresult({
