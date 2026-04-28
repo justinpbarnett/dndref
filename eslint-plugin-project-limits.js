@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-const { ESLint } = require('eslint');
-
 module.exports = {
   rules: {
     'max-lines': {
@@ -30,8 +28,7 @@ module.exports = {
         const options = context.options[0] || {};
         const max = options.max || 300;
         const filename = context.getFilename();
-        
-        // Skip node_modules and hidden files
+
         if (filename.includes('node_modules') || path.basename(filename).startsWith('.')) {
           return {};
         }
@@ -79,13 +76,11 @@ module.exports = {
         const max = options.max || 20;
         const filename = context.getFilename();
         const directory = path.dirname(filename);
-        
-        // Skip node_modules
+
         if (directory.includes('node_modules')) {
           return {};
         }
 
-        // Only report once per directory (on the first file ESLint processes in that dir)
         if (!context.settings || !context.settings._checkedDirs) {
           context.settings = context.settings || {};
           context.settings._checkedDirs = new Set();
@@ -116,9 +111,7 @@ module.exports = {
               },
             });
           }
-        } catch (error) {
-          // Ignore errors reading directory
-        }
+        } catch (error) {}
 
         return {};
       },
