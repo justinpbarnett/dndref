@@ -126,15 +126,11 @@ export async function failNextSpeechStart(
 }
 
 export async function emitSpeechError(page: Page, error = "audio-capture") {
-  await page.evaluate((value) => {
-    (window as any).__speechMock.emitError(value);
-  }, error);
+  await page.evaluate((value) => (window as any).__speechMock.emitError(value), error);
 }
 
 export async function emitSpeechEnd(page: Page) {
-  await page.evaluate(() => {
-    (window as any).__speechMock.emitEnd();
-  });
+  await page.evaluate(() => (window as any).__speechMock.emitEnd());
 }
 
 export async function getSpeechStartCount(page: Page): Promise<number> {
