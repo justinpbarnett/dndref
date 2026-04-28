@@ -1,7 +1,5 @@
-export const DETECTION_CONTEXT_CHARS = 80;
-
 export function nextDetectionContext(transcript: string): string {
-  return transcript.slice(-DETECTION_CONTEXT_CHARS);
+  return transcript.slice(-80);
 }
 
 export function buildDetectionInput(previousContext: string, newText: string): string {
