@@ -10,16 +10,6 @@ export interface EntityCardPinTogglePresentation {
   accessibilityLabel: EntityCardPinToggleLabel;
   iconName: EntityCardPinToggleIconName;
 }
-export interface EntityCardDismissActionPresentation {
-  kind: "dismiss";
-  accessibilityLabel: "Dismiss";
-  iconName: "close";
-}
-export interface EntityCardActionsPresentation {
-  pinToggle: EntityCardPinTogglePresentation;
-  dismiss: EntityCardDismissActionPresentation;
-}
-
 export interface EntityCardPresentation {
   instanceId: string;
   name: string;
@@ -31,7 +21,10 @@ export interface EntityCardPresentation {
   bulletMarker: string;
   summaryBullets: string[];
   details: string;
-  actions: EntityCardActionsPresentation;
+  actions: {
+    pinToggle: EntityCardPinTogglePresentation;
+    dismiss: { kind: "dismiss"; accessibilityLabel: "Dismiss"; iconName: "close" };
+  };
 }
 
 export interface DeriveEntityCardPresentationInput {
