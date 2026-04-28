@@ -22,9 +22,10 @@ export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
   aiApiKey: "",
 };
 
-export function createDefaultDataSourceSettings(): DataSourcesSettings {
-  return { ...DEFAULT_DATA_SOURCES_SETTINGS, srdSources: [...DEFAULT_DATA_SOURCES_SETTINGS.srdSources] };
-}
+export const createDefaultDataSourceSettings = (): DataSourcesSettings => ({
+  ...DEFAULT_DATA_SOURCES_SETTINGS,
+  srdSources: [...DEFAULT_DATA_SOURCES_SETTINGS.srdSources],
+});
 
 export function mergeDataSourceSettings(settings?: Partial<DataSourcesSettings> | null): DataSourcesSettings {
   const patch = settings ?? {};
@@ -36,9 +37,7 @@ export function mergeDataSourceSettings(settings?: Partial<DataSourcesSettings> 
 
 type VoiceSettingsPatch = Partial<Record<keyof STTSettings, unknown>>;
 
-export function createDefaultVoiceSettings(): STTSettings {
-  return { ...DEFAULT_STT_SETTINGS };
-}
+export const createDefaultVoiceSettings = (): STTSettings => ({ ...DEFAULT_STT_SETTINGS });
 
 function normalizeVoiceSettings(settings: unknown): STTSettings {
   const patch = settings !== null && typeof settings === "object" ? (settings as VoiceSettingsPatch) : {};
@@ -52,15 +51,12 @@ function normalizeVoiceSettings(settings: unknown): STTSettings {
   return { provider, deepgramApiKey };
 }
 
-export function mergeVoiceSettings(settings?: Partial<STTSettings> | null): STTSettings {
-  return normalizeVoiceSettings(settings);
-}
-export function loadVoiceSettings(): Promise<STTSettings | null> {
-  return loadJsonSetting(STT_SETTINGS_KEY, normalizeVoiceSettings, "voice settings");
-}
-export function saveVoiceSettings(settings: STTSettings): Promise<boolean> {
-  return saveJsonSetting(STT_SETTINGS_KEY, mergeVoiceSettings(settings), "voice settings");
-}
+export const mergeVoiceSettings = (settings?: Partial<STTSettings> | null): STTSettings =>
+  normalizeVoiceSettings(settings);
+export const loadVoiceSettings = (): Promise<STTSettings | null> =>
+  loadJsonSetting(STT_SETTINGS_KEY, normalizeVoiceSettings, "voice settings");
+export const saveVoiceSettings = (settings: STTSettings): Promise<boolean> =>
+  saveJsonSetting(STT_SETTINGS_KEY, mergeVoiceSettings(settings), "voice settings");
 
 export function loadDataSourceSettings(): Promise<DataSourcesSettings | null> {
   return loadJsonSetting(
@@ -70,9 +66,8 @@ export function loadDataSourceSettings(): Promise<DataSourcesSettings | null> {
   );
 }
 
-export function saveDataSourceSettings(settings: DataSourcesSettings): Promise<boolean> {
-  return saveJsonSetting(DATA_SOURCES_KEY, settings, "data source settings");
-}
+export const saveDataSourceSettings = (settings: DataSourcesSettings): Promise<boolean> =>
+  saveJsonSetting(DATA_SOURCES_KEY, settings, "data source settings");
 
 async function loadJsonSetting<T>(key: string, normalize: (value: unknown) => T, label: string): Promise<T | null> {
   let raw: string | null;
