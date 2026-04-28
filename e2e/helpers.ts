@@ -84,11 +84,7 @@ export async function interceptFonts(page: Page) {
 
 export async function interceptExternalApis(page: Page) {
   await page.route('**open5e**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ count: 0, next: null, previous: null, results: [] }),
-    });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ count: 0, next: null, previous: null, results: [] }) });
   });
 }
 

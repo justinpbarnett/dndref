@@ -40,12 +40,7 @@ describe('computeReferenceCardLayout', () => {
   });
 
   test('centers constrained single-column XL portrait cards', () => {
-    const layout = computeReferenceCardLayout({
-      cards: cards.slice(0, 1),
-      measuredHeights: {},
-      viewport: { width: 768, height: 1024 },
-      cardSize: 'XL',
-    });
+    const layout = computeReferenceCardLayout({ cards: cards.slice(0, 1), measuredHeights: {}, viewport: { width: 768, height: 1024 }, cardSize: 'XL' });
 
     expect(layout.columns).toBe(1);
     expect(layout.gridWidth).toBe(400);
@@ -73,12 +68,7 @@ describe('computeReferenceCardLayout', () => {
   });
 
   test('falls back to the default card height until rows are measured', () => {
-    const layout = computeReferenceCardLayout({
-      cards: cards.slice(0, 4),
-      measuredHeights: { a: 220 },
-      viewport: { width: 1440, height: 900 },
-      cardSize: 'M',
-    });
+    const layout = computeReferenceCardLayout({ cards: cards.slice(0, 4), measuredHeights: { a: 220 }, viewport: { width: 1440, height: 900 }, cardSize: 'M' });
 
     expect(layout.positions.d).toEqual({ x: 135, y: 225 });
     expect(layout.totalHeight).toBe(430);
