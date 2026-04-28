@@ -143,30 +143,9 @@ function createStyles(C: Colors) {
   return StyleSheet.create({
     scroll: { flex: 1 },
     cardWrapper: { position: 'absolute' },
-    empty: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 10,
-    },
-    emptyGlyph: {
-      fontSize: 24,
-      color: C.textMuted,
-      fontFamily: F.display,
-      opacity: 0.6,
-    },
-    emptyLabel: {
-      color: C.textDim,
-      fontSize: 13,
-      letterSpacing: 0.5,
-      fontFamily: F.mono,
-    },
-    emptyHint: {
-      color: C.textMuted,
-      fontSize: 11,
-      letterSpacing: 0.5,
-      fontFamily: F.mono,
-      marginTop: 2,
-    },
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
+    emptyGlyph: { fontSize: 24, color: C.textMuted, fontFamily: F.display, opacity: 0.6 },
+    emptyLabel: { color: C.textDim, fontSize: 13, letterSpacing: 0.5, fontFamily: F.mono },
+    emptyHint: { color: C.textMuted, fontSize: 11, letterSpacing: 0.5, fontFamily: F.mono, marginTop: 2 },
   });
 }
