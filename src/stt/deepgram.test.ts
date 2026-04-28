@@ -17,10 +17,7 @@ const adapterState = vi.hoisted(() => {
       startCalls = 0;
       stopCalls = 0;
 
-      constructor(
-        readonly apiKey: string,
-        ..._: unknown[]
-      ) {
+      constructor(readonly apiKey: string) {
         instances.push(this);
       }
 
