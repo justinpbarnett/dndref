@@ -1,9 +1,6 @@
-import { test, Page } from "@playwright/test";
+import { test } from "@playwright/test";
 
-async function waitForApp(page: Page) {
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1500);
-}
+import { waitForSettledPage as waitForApp } from "./helpers";
 
 for (const [name, url, path] of [
   ["reference tab - dark mode (default)", "/", "e2e/screenshots/01-reference-dark.png"],

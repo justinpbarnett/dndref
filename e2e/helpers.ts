@@ -70,6 +70,11 @@ export async function waitForApp(page: Page) {
   await page.waitForSelector("text=Ready", { timeout: 20000 });
 }
 
+export async function waitForSettledPage(page: Page) {
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1500);
+}
+
 export async function gotoSettings(page: Page) {
   await page.goto("/settings");
   await page.waitForLoadState("load");
