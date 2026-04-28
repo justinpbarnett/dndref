@@ -81,8 +81,7 @@ export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
   }
 
   processTranscript(): void {
-    if (this.snapshot.status !== "active") return;
-    if (!this.detector) return;
+    if (this.snapshot.status !== "active" || !this.detector) return;
     const newText = this.snapshot.transcript.slice(this.processedTranscriptLength);
     if (!newText.trim()) return;
 
