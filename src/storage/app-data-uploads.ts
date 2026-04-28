@@ -5,18 +5,14 @@ export type UploadedFile = { id: string; name: string; content: string };
 
 let uploadMutationQueue: Promise<unknown> = Promise.resolve();
 
-export async function getUploadedFiles(): Promise<UploadedFile[]> {
-  return readUploadedFiles(createAppDataWriteToken());
-}
-export async function addUploadedFile(name: string, content: string): Promise<boolean> {
-  return mutateUploadedFiles((uploads) => [
+export const getUploadedFiles = (): Promise<UploadedFile[]> => readUploadedFiles(createAppDataWriteToken());
+export const addUploadedFile = (name: string, content: string): Promise<boolean> =>
+  mutateUploadedFiles((uploads) => [
     ...uploads,
     { id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, content },
   ]);
-}
-export async function removeUploadedFile(id: string): Promise<boolean> {
-  return mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id));
-}
+export const removeUploadedFile = (id: string): Promise<boolean> =>
+  mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id));
 export async function waitForUploadedFileMutations(): Promise<void> {
   await uploadMutationQueue.catch(() => undefined);
 }
