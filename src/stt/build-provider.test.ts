@@ -5,12 +5,7 @@ const platform = vi.hoisted(() => ({ OS: 'web' }));
 
 type MockProviderInstance = { emitError(error: string): void; emitTranscript(text: string): void };
 
-const sttMocks = vi.hoisted(() => ({
-  deepgramInstances: [] as MockProviderInstance[],
-  deepgramStartError: null as Error | null,
-  webSpeechInstances: [] as MockProviderInstance[],
-  webSpeechStartError: null as Error | null,
-}));
+const sttMocks = vi.hoisted(() => ({ deepgramInstances: [] as MockProviderInstance[], deepgramStartError: null as Error | null, webSpeechInstances: [] as MockProviderInstance[], webSpeechStartError: null as Error | null }));
 
 vi.mock('@react-native-async-storage/async-storage', () => ({
   default: {

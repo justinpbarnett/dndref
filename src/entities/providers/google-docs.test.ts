@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fetchMock = vi.hoisted(() => vi.fn());
-const ingestionMocks = vi.hoisted(() => ({
-  ingestMarkdownContent: vi.fn(),
-}));
+const ingestionMocks = vi.hoisted(() => ({ ingestMarkdownContent: vi.fn() }));
 
 vi.mock('react-native', () => ({ Platform: { OS: 'web' } }));
 vi.mock('../ingestion', () => ingestionMocks);

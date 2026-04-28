@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const storage = vi.hoisted(() => new Map<string, string>());
-const storageControls = vi.hoisted(() => ({
-  getItemGate: null as Promise<void> | null,
-}));
+const storageControls = vi.hoisted(() => ({ getItemGate: null as Promise<void> | null }));
 
 vi.mock('@react-native-async-storage/async-storage', () => ({
   default: {
