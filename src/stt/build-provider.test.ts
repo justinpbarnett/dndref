@@ -28,9 +28,7 @@ const sttMocks = vi.hoisted(() => {
         instances.push(this);
       }
 
-      async start(): Promise<void> {
-        if (state[errorKey]) throw state[errorKey];
-      }
+      start = () => (state[errorKey] ? Promise.reject(state[errorKey]) : Promise.resolve());
       pause(): void {}
       resume(): void {}
       stop(): void {}
