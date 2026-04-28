@@ -2,14 +2,11 @@ import { Page } from "playwright";
 
 export type TestContext = { page: Page; consoleErrors: string[]; screenshotDir: string; baseUrl: string };
 
-export interface TestResult {
-  name: string;
+export type TestResult = {
   status: "PASS" | "FAIL";
-  screenshotPath?: string;
   errors: string[];
   duration: number;
-  errorMessage?: string;
-}
+} & { name: string; screenshotPath?: string; errorMessage?: string };
 
 export async function runTest(
   results: TestResult[],
