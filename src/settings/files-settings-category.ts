@@ -12,8 +12,6 @@ import { SnapshotStore } from "../utils/snapshot-store";
 
 const DELETE_ALL_MESSAGE =
   "This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.";
-const PASTED_CONTENT_FILE_NAME = "Pasted Content.md";
-
 type FilesSettingsServices = Required<FilesSettingsCategoryControllerOptions>;
 
 export type PickedTextFile = { name: string; text: () => Promise<string> };
@@ -95,7 +93,7 @@ class DefaultFilesSettingsCategoryController extends SnapshotStore<FilesSettings
     const content = this.snapshot.pasteContent;
     if (!content.trim()) return;
 
-    const name = this.snapshot.pasteFileName.trim() || PASTED_CONTENT_FILE_NAME;
+    const name = this.snapshot.pasteFileName.trim() || "Pasted Content.md";
     await this.services.addUpload(name, content);
     this.updateSnapshot({ pasteFileName: "", pasteContent: "" });
     await this.refreshUploads();
