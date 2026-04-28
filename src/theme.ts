@@ -1,17 +1,8 @@
-import { Platform } from "react-native";
+import type { Colors } from "./color-types";
 
-import { EntityType } from "./entities";
+export { F } from "./fonts";
 
-export const F = {
-  display: Platform.select({ web: "'Cinzel', Georgia, 'Times New Roman', serif", ios: "Georgia", default: "serif" }),
-  body: Platform.select({ web: "'EB Garamond', Georgia, serif", ios: "Georgia", default: undefined }),
-  mono: Platform.select({ web: "'Courier Prime', 'Courier New', monospace", ios: "Menlo", default: "monospace" }),
-};
-
-export type Colors = Record<"bg" | "bgCard" | "bgCardPinned" | "bgSurface" | "bgInput", string> &
-  Record<"border" | "borderMed" | "borderStrong", string> &
-  Record<"textPrimary" | "textSecondary" | "textDim" | "textMuted", string> &
-  Record<"location" | "npc" | "faction" | "item" | "unknown" | "active" | "paused" | "error", string>;
+export type { Colors } from "./color-types";
 
 export const DARK: Colors = {
   bg: "#080706",
@@ -19,6 +10,7 @@ export const DARK: Colors = {
   bgCardPinned: "#1a1208",
   bgSurface: "#0c0a07",
   bgInput: "#0f0c09",
+  backdrop: "#00000099",
   border: "#241c12",
   borderMed: "#302018",
   borderStrong: "#3e2e1a",
@@ -34,6 +26,9 @@ export const DARK: Colors = {
   active: "#3fc878",
   paused: "#c47a2c",
   error: "#c44d6a",
+  shadowSoft: "#00000030",
+  shadowMedium: "#00000040",
+  shadowStrong: "#00000030",
 };
 
 export const LIGHT: Colors = {
@@ -42,6 +37,7 @@ export const LIGHT: Colors = {
   bgCardPinned: "#e4dbc8",
   bgSurface: "#ece5d5",
   bgInput: "#e4dcc8",
+  backdrop: "#00000099",
   border: "#c8b898",
   borderMed: "#b4a480",
   borderStrong: "#9e8e68",
@@ -57,13 +53,9 @@ export const LIGHT: Colors = {
   active: "#1e8050",
   paused: "#9a5018",
   error: "#b03060",
+  shadowSoft: "#00000030",
+  shadowMedium: "#00000040",
+  shadowStrong: "#00000030",
 };
 
-export const typeAccent = (type: EntityType, colors: Colors): string =>
-  ({
-    Location: colors.location,
-    NPC: colors.npc,
-    Faction: colors.faction,
-    Item: colors.item,
-    Unknown: colors.unknown,
-  })[type];
+export { typeAccent } from "./type-accent";

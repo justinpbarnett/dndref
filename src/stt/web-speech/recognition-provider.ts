@@ -1,0 +1,1 @@
+export { WebSpeechProvider } from "./WebSpeechProvider";

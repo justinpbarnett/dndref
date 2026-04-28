@@ -1,0 +1,1 @@
+export { DeepgramBrowserCaptureAdapter } from "./BrowserDeepgramCaptureAdapter";

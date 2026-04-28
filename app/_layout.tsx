@@ -1,87 +1,24 @@
 import { Ionicons as ExpoIonicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import { Tabs } from "expo-router";
 import Head from "expo-router/head";
-import React, { useEffect } from "react";
+import React from "react";
 import { Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { Ionicon } from "../src/components/Ionicon";
-import { DataSourcesProvider } from "../src/context/data-sources";
+import { DataSourcesProvider } from "../src/context/data-sources/provider";
 import { SessionProvider } from "../src/context/session";
-import { UISettingsProvider, useColors } from "../src/context/ui-settings";
+import { UISettingsProvider } from "../src/context/ui-settings";
 import { IONICONS_WEB_FONT, getIoniconsFontSource } from "../src/icon-font";
-import { F } from "../src/theme";
+import { ThemedTabs } from "../src/navigation/ThemedTabs";
+import { useWebFontStylesheet } from "../src/web-font-stylesheet";
 
 const META_DESCRIPTION =
   "Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time.";
-function ThemedTabs() {
-  const C = useColors();
-  const insets = useSafeAreaInsets();
-  return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        sceneStyle: { backgroundColor: C.bg },
-        tabBarStyle: {
-          backgroundColor: C.bgSurface,
-          borderTopColor: C.border,
-          borderTopWidth: 1,
-          height: 72 + insets.bottom,
-          paddingBottom: 12 + insets.bottom,
-          paddingTop: 8,
-        },
-        tabBarItemStyle: { paddingVertical: 4 },
-        tabBarIconStyle: { height: 22, marginBottom: 2 },
-        tabBarActiveTintColor: C.textPrimary,
-        tabBarInactiveTintColor: C.textSecondary,
-        tabBarLabelStyle: {
-          fontSize: 9,
-          lineHeight: 16,
-          height: 16,
-          overflow: "visible",
-          fontWeight: "600",
-          letterSpacing: 0.8,
-          fontFamily: F.display,
-        },
-      }}
-    >
-      {(
-        [
-          { name: "index", title: "REFERENCE", icon: "layers-outline", focusedIcon: "layers" },
-          { name: "debug", title: "DEBUG", icon: "bug-outline", focusedIcon: "bug", href: __DEV__ ? undefined : null },
-          { name: "settings", title: "SETTINGS", icon: "settings-outline", focusedIcon: "settings" },
-        ] as const
-      ).map((tab) => (
-        <Tabs.Screen
-          key={tab.name}
-          name={tab.name}
-          options={{
-            title: tab.title,
-            href: "href" in tab ? tab.href : undefined,
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicon name={focused ? tab.focusedIcon : tab.icon} size={20} color={color} />
-            ),
-          }}
-        />
-      ))}
-    </Tabs>
-  );
-}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts(
     Platform.OS === "web" ? {} : { ionicons: getIoniconsFontSource(Platform.OS, ExpoIonicons.font.ionicons) },
   );
 
-  useEffect(() => {
-    if (Platform.OS !== "web") return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap";
-    document.head.appendChild(link);
-  }, []);
+  useWebFontStylesheet();
 
   if (!fontsLoaded && Platform.OS !== "web") return null;
 
