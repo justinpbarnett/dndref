@@ -25,9 +25,7 @@ describe("file upload storage", () => {
     resetAppDataControlsForTests();
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  afterEach(() => vi.restoreAllMocks());
 
   it("preserves every file when uploads are added concurrently", async () => {
     await Promise.all([addUpload("one.md", "# One"), addUpload("two.md", "# Two"), addUpload("three.md", "# Three")]);

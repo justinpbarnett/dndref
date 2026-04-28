@@ -22,9 +22,7 @@ function createController(options: FilesSettingsCategoryControllerOptions) {
 }
 
 describe("files settings category controller", () => {
-  afterEach(() => {
-    controllers.splice(0).forEach((controller) => controller.dispose());
-  });
+  afterEach(() => controllers.splice(0).forEach((controller) => controller.dispose()));
 
   it("stores pasted content, refreshes uploads, and bumps the uploads version", async () => {
     const events: string[] = [];
