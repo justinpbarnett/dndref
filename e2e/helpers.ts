@@ -97,14 +97,10 @@ export async function waitForApp(page: Page) {
   await page.waitForSelector("text=Ready", { timeout: 20000 });
 }
 
-export async function waitForSettings(page: Page) {
-  await page.waitForLoadState("load");
-  await page.waitForSelector("text=Display", { timeout: 20000 });
-}
-
 export async function gotoSettings(page: Page) {
   await page.goto("/settings");
-  await waitForSettings(page);
+  await page.waitForLoadState("load");
+  await page.waitForSelector("text=Display", { timeout: 20000 });
 }
 
 export async function speak(page: Page, text: string) {
