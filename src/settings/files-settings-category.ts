@@ -8,7 +8,7 @@ import {
   type UploadedFile,
 } from "../entities/providers/file-upload";
 import { resetStoredAppData as resetStoredLocalAppData } from "../storage/app-data";
-import { SnapshotStore, type SnapshotListener } from "./snapshot-store";
+import { SnapshotStore, type SnapshotListener } from "../utils/snapshot-store";
 
 const DELETE_ALL_MESSAGE =
   "This deletes uploads, pasted content, AI parsed files, saved settings, API keys, source URLs, cached SRD data, and the current session on this device.";

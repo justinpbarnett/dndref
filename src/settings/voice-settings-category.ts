@@ -8,7 +8,7 @@ import {
   saveVoiceSettings as saveStoredVoiceSettings,
 } from "../storage/app-data";
 import type { STTSettings } from "../stt";
-import { SnapshotStore, type SnapshotListener } from "./snapshot-store";
+import { SnapshotStore, type SnapshotListener } from "../utils/snapshot-store";
 
 export const VOICE_SAVED_INDICATOR_MS = 2000;
 

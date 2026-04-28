@@ -1,5 +1,6 @@
 import type { Entity } from "../entities";
 import type { STTProvider } from "../stt";
+import { SnapshotStore } from "../utils/snapshot-store";
 import { addCard, dismissCard, pinCard, unpinCard } from "./card-stack";
 import { buildDetectionInput, nextDetectionContext } from "./detection-window";
 import type { CardState } from "./session-types";
@@ -7,7 +8,6 @@ import {
   INITIAL_SESSION_RUNTIME_SNAPSHOT,
   type DetectionInterval,
   type SessionRuntimeDetector,
-  type SessionRuntimeListener,
   type SessionRuntimeOptions,
   type SessionRuntimeSnapshot,
   type SnapshotPatch,
@@ -15,30 +15,18 @@ import {
 
 export type { SessionRuntimeDetector, SessionRuntimeOptions, SessionRuntimeSnapshot } from "./session-runtime-types";
 
-export class SessionRuntime {
+export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
   private acceptingTranscript = false;
   private detector: SessionRuntimeDetector | null = null;
   private detectionInterval: DetectionInterval | null = null;
   private lastDetectionKey = "";
-  private listeners = new Set<SessionRuntimeListener>();
   private previousDetectionContext = "";
   private processedTranscriptLength = 0;
   private startInFlight: Promise<void> | null = null;
   private sttGeneration = 0;
   private sttProvider: STTProvider | null = null;
-  private snapshot: SessionRuntimeSnapshot = INITIAL_SESSION_RUNTIME_SNAPSHOT;
-
-  constructor(private readonly options: SessionRuntimeOptions = {}) {}
-
-  getSnapshot(): SessionRuntimeSnapshot {
-    return this.snapshot;
-  }
-
-  subscribe(listener: SessionRuntimeListener): () => void {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
+  constructor(private readonly options: SessionRuntimeOptions = {}) {
+    super(INITIAL_SESSION_RUNTIME_SNAPSHOT);
   }
 
   setDetector(detector: SessionRuntimeDetector | null): void {
@@ -84,7 +72,7 @@ export class SessionRuntime {
     const provider = this.invalidateStt();
     this.clearDetectionInterval();
     if (provider) void this.stopProvider(provider);
-    this.listeners.clear();
+    this.clearSnapshotListeners();
   }
 
   appendTranscript(text: string): void {
@@ -261,11 +249,5 @@ export class SessionRuntime {
 
   private formatError(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
-  }
-
-  private updateSnapshot(patch: SnapshotPatch): void {
-    if (Object.keys(patch).length === 0) return;
-    this.snapshot = { ...this.snapshot, ...patch };
-    for (const listener of this.listeners) listener(this.snapshot);
   }
 }
