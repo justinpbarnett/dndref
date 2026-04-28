@@ -58,13 +58,12 @@ export const loadVoiceSettings = (): Promise<STTSettings | null> =>
 export const saveVoiceSettings = (settings: STTSettings): Promise<boolean> =>
   saveJsonSetting(STT_SETTINGS_KEY, mergeVoiceSettings(settings), "voice settings");
 
-export function loadDataSourceSettings(): Promise<DataSourcesSettings | null> {
-  return loadJsonSetting(
+export const loadDataSourceSettings = (): Promise<DataSourcesSettings | null> =>
+  loadJsonSetting(
     DATA_SOURCES_KEY,
     (value) => mergeDataSourceSettings(value as Partial<DataSourcesSettings>),
     "data source settings",
   );
-}
 
 export const saveDataSourceSettings = (settings: DataSourcesSettings): Promise<boolean> =>
   saveJsonSetting(DATA_SOURCES_KEY, settings, "data source settings");
