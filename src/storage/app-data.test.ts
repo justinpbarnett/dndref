@@ -52,13 +52,7 @@ describe('app data storage clearing', () => {
   it('removes app-owned keys while preserving unrelated storage', async () => {
     const removed = await resetStoredAppData();
 
-    expect(removed.sort()).toEqual([
-      '@dnd-ref/card-size',
-      '@dnd-ref/stt-settings',
-      'dndref:data-sources',
-      'dndref:file-uploads',
-      'dndref:srd-wotc-srd',
-    ]);
+    expect(removed.sort()).toEqual(['@dnd-ref/card-size', '@dnd-ref/stt-settings', 'dndref:data-sources', 'dndref:file-uploads', 'dndref:srd-wotc-srd']);
     expect(Array.from(storage.keys())).toEqual(['unrelated:other-app']);
   });
 
