@@ -8,28 +8,10 @@ export const F = {
   mono: Platform.select({ web: "'Courier Prime', 'Courier New', monospace", ios: "Menlo", default: "monospace" }),
 };
 
-export interface Colors {
-  bg: string;
-  bgCard: string;
-  bgCardPinned: string;
-  bgSurface: string;
-  bgInput: string;
-  border: string;
-  borderMed: string;
-  borderStrong: string;
-  textPrimary: string;
-  textSecondary: string;
-  textDim: string;
-  textMuted: string;
-  location: string;
-  npc: string;
-  faction: string;
-  item: string;
-  unknown: string;
-  active: string;
-  paused: string;
-  error: string;
-}
+export type Colors = Record<"bg" | "bgCard" | "bgCardPinned" | "bgSurface" | "bgInput", string> &
+  Record<"border" | "borderMed" | "borderStrong", string> &
+  Record<"textPrimary" | "textSecondary" | "textDim" | "textMuted", string> &
+  Record<"location" | "npc" | "faction" | "item" | "unknown" | "active" | "paused" | "error", string>;
 
 export const DARK: Colors = {
   bg: "#080706",
