@@ -6,7 +6,12 @@ async function saveScreenshot(page: TestContext["page"], screenshots: string[], 
 }
 
 async function gotoSettingsPage(page: TestContext["page"], baseUrl: string) {
-  await gotoSettingsPage(page, baseUrl);
+  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
+  await page.waitForTimeout(2000);
+}
+
+function testResult(consoleErrors: string[], screenshotPath: string, extraInfo: string) {
+  return { screenshotPath, errors: [...consoleErrors], extraInfo };
 }
 
 export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -24,11 +29,7 @@ export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl
 
   await page.screenshot({ path: `${screenshotDir}/test-01-app-loads.png` });
 
-  return {
-    screenshotPath: `${screenshotDir}/test-01-app-loads.png`,
-    errors: [...consoleErrors],
-    extraInfo: `Ready: ${hasReady}, Start: ${hasStart}`,
-  };
+  return testResult(consoleErrors, `${screenshotDir}/test-01-app-loads.png`, `Ready: ${hasReady}, Start: ${hasStart}`);
 }
 
 export async function testNavigateToSettings({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -53,11 +54,7 @@ export async function testNavigateToSettings({ page, consoleErrors, screenshotDi
 
   await page.screenshot({ path: `${screenshotDir}/test-02-settings-page.png` });
 
-  return {
-    screenshotPath: `${screenshotDir}/test-02-settings-page.png`,
-    errors: [...consoleErrors],
-    extraInfo: `Found tabs: ${foundTabs.join(", ")}`,
-  };
+  return testResult(consoleErrors, `${screenshotDir}/test-02-settings-page.png`, `Found tabs: ${foundTabs.join(", ")}`);
 }
 
 export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -92,11 +89,7 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
     }
   }
 
-  return {
-    screenshotPath: screenshots.join(", "),
-    errors: [...consoleErrors],
-    extraInfo: `Tested sizes: ${testedSizes.join(", ")}`,
-  };
+  return testResult(consoleErrors, screenshots.join(", "), `Tested sizes: ${testedSizes.join(", ")}`);
 }
 
 export async function testThemeSwitching({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -114,11 +107,7 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
     }
   }
 
-  return {
-    screenshotPath: screenshots.join(", "),
-    errors: [...consoleErrors],
-    extraInfo: `Tested themes: Dark, Light, System`,
-  };
+  return testResult(consoleErrors, screenshots.join(", "), `Tested themes: Dark, Light, System`);
 }
 
 export async function testSttProvider({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -162,18 +151,14 @@ export async function testSttProvider({ page, consoleErrors, screenshotDir, base
       await saveScreenshot(page, screenshots, `${screenshotDir}/test-05-stt-webspeech.png`);
     }
 
-    return {
-      screenshotPath: screenshots.join(", "),
-      errors: [...consoleErrors],
-      extraInfo: `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}, API key field visible: ${hasApiKeyField}`,
-    };
+    return testResult(
+      consoleErrors,
+      screenshots.join(", "),
+      `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}, API key field visible: ${hasApiKeyField}`,
+    );
   }
 
-  return {
-    screenshotPath: screenshots.join(", "),
-    errors: [...consoleErrors],
-    extraInfo: `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}`,
-  };
+  return testResult(consoleErrors, screenshots.join(", "), `Web Speech: ${hasWebSpeech}, Deepgram: ${hasDeepgram}`);
 }
 
 export async function testDataSourceToggles({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -207,11 +192,11 @@ export async function testDataSourceToggles({ page, consoleErrors, screenshotDir
 
   await page.screenshot({ path: `${screenshotDir}/test-06-data-sources.png` });
 
-  return {
-    screenshotPath: `${screenshotDir}/test-06-data-sources.png`,
-    errors: [...consoleErrors],
-    extraInfo: `SRD found: ${hasSrd}, Checkboxes: ${checkboxCount}, Toggle: ${toggleResult}`,
-  };
+  return testResult(
+    consoleErrors,
+    `${screenshotDir}/test-06-data-sources.png`,
+    `SRD found: ${hasSrd}, Checkboxes: ${checkboxCount}, Toggle: ${toggleResult}`,
+  );
 }
 
 export async function testSampleWorldEntities({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
@@ -237,9 +222,9 @@ export async function testSampleWorldEntities({ page, consoleErrors, screenshotD
 
   await page.screenshot({ path: `${screenshotDir}/test-07-sample-world.png` });
 
-  return {
-    screenshotPath: `${screenshotDir}/test-07-sample-world.png`,
-    errors: [...consoleErrors],
-    extraInfo: `Session started. Listening: ${hasListening}, Awaiting entities: ${hasAwaiting}`,
-  };
+  return testResult(
+    consoleErrors,
+    `${screenshotDir}/test-07-sample-world.png`,
+    `Session started. Listening: ${hasListening}, Awaiting entities: ${hasAwaiting}`,
+  );
 }
