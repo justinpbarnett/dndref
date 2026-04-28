@@ -65,13 +65,10 @@ describe("DeepgramProvider internal adapter selection", () => {
     await provider.stop();
 
     expect(provider.name).toBe("Deepgram");
-    expect(adapterState.browserInstances).toHaveLength(1);
+    expect(adapterState.browserInstances).toMatchObject([
+      { apiKey: "browser-key", startCalls: 1, pauseCalls: 1, resumeCalls: 1, stopCalls: 1 },
+    ]);
     expect(adapterState.nativeInstances).toHaveLength(0);
-    expect(adapterState.browserInstances[0].apiKey).toBe("browser-key");
-    expect(adapterState.browserInstances[0].startCalls).toBe(1);
-    expect(adapterState.browserInstances[0].pauseCalls).toBe(1);
-    expect(adapterState.browserInstances[0].resumeCalls).toBe(1);
-    expect(adapterState.browserInstances[0].stopCalls).toBe(1);
   });
 
   it("keeps native capture hidden behind the Deepgram provider seam off web", async () => {
@@ -82,16 +79,13 @@ describe("DeepgramProvider internal adapter selection", () => {
 
     expect(provider.name).toBe("Deepgram");
     expect(adapterState.browserInstances).toHaveLength(0);
-    expect(adapterState.nativeInstances).toHaveLength(1);
-    expect(adapterState.nativeInstances[0].apiKey).toBe("native-key");
-    expect(adapterState.nativeInstances[0].startCalls).toBe(1);
+    expect(adapterState.nativeInstances).toMatchObject([{ apiKey: "native-key", startCalls: 1 }]);
   });
 
   it("preserves the missing API key startup error before starting an adapter", async () => {
     const provider = new DeepgramProvider("", vi.fn(), vi.fn());
 
     await expect(provider.start()).rejects.toThrow("Deepgram API key not set");
-    expect(adapterState.browserInstances).toHaveLength(1);
-    expect(adapterState.browserInstances[0].startCalls).toBe(0);
+    expect(adapterState.browserInstances).toMatchObject([{ startCalls: 0 }]);
   });
 });
