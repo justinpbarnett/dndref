@@ -18,7 +18,10 @@ export class DeepgramProvider implements STTProvider {
     onTranscript: TranscriptHandler,
     onError: ErrorHandler,
   ) {
-    this.adapter = createDeepgramCaptureAdapter(apiKey, onTranscript, onError);
+    this.adapter =
+      Platform.OS === "web"
+        ? new DeepgramBrowserCaptureAdapter(apiKey, onTranscript, onError)
+        : new DeepgramNativeCaptureAdapter(apiKey, onTranscript, onError);
   }
 
   async start(): Promise<void> {
@@ -35,13 +38,4 @@ export class DeepgramProvider implements STTProvider {
   stop(): void | Promise<void> {
     return this.adapter.stop();
   }
-}
-
-function createDeepgramCaptureAdapter(
-  apiKey: string,
-  onTranscript: TranscriptHandler,
-  onError: ErrorHandler,
-): STTProvider {
-  if (Platform.OS === "web") return new DeepgramBrowserCaptureAdapter(apiKey, onTranscript, onError);
-  return new DeepgramNativeCaptureAdapter(apiKey, onTranscript, onError);
 }
