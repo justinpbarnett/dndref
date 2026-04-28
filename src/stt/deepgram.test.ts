@@ -19,24 +19,15 @@ const adapterState = vi.hoisted(() => {
 
       constructor(
         readonly apiKey: string,
-        readonly onTranscript: (text: string) => void,
-        readonly onError: (error: string) => void,
+        ..._: unknown[]
       ) {
         instances.push(this);
       }
 
-      async start(): Promise<void> {
-        this.startCalls += 1;
-      }
-      async pause(): Promise<void> {
-        this.pauseCalls += 1;
-      }
-      async resume(): Promise<void> {
-        this.resumeCalls += 1;
-      }
-      async stop(): Promise<void> {
-        this.stopCalls += 1;
-      }
+      start = async () => void (this.startCalls += 1);
+      pause = async () => void (this.pauseCalls += 1);
+      resume = async () => void (this.resumeCalls += 1);
+      stop = async () => void (this.stopCalls += 1);
     };
   const browserInstances: MockAdapter[] = [];
   const nativeInstances: MockAdapter[] = [];
