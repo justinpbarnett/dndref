@@ -124,6 +124,11 @@ export async function stopSession(page: Page) {
 
 export const DETECT_WAIT_MS = 2500;
 
+export async function speakAndWait(page: Page, text: string) {
+  await speak(page, text);
+  await page.waitForTimeout(DETECT_WAIT_MS);
+}
+
 export async function mockExternalRoutes(page: Page) {
   await page.route("**/cdn.jsdelivr.net/**", async (route) => {
     const body = fs.readFileSync(

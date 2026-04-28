@@ -1,10 +1,9 @@
 import { test, expect, type Page } from "@playwright/test";
 
-import { setupTestWithSession, speak, DETECT_WAIT_MS } from "../helpers";
+import { setupTestWithSession, speakAndWait } from "../helpers";
 
 async function showScarabCard(page: Page) {
-  await speak(page, "Scarab of Protection");
-  await page.waitForTimeout(DETECT_WAIT_MS);
+  await speakAndWait(page, "Scarab of Protection");
   const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
   await expect(card).toBeVisible();
   return card;
