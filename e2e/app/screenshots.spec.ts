@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { setupTest, startSession, speak, waitForSettings, DETECT_WAIT_MS } from "../helpers";
+import { setupTest, startSession, speak, gotoSettings, DETECT_WAIT_MS } from "../helpers";
 
 test.describe("screenshots", () => {
   test.beforeEach(async ({ page }) => {
@@ -29,8 +29,7 @@ test.describe("screenshots", () => {
   });
 
   test("settings page", async ({ page }) => {
-    await page.goto("/settings");
-    await waitForSettings(page);
+    await gotoSettings(page);
     await page.screenshot({ path: "e2e/screenshots/app-04-settings.png" });
   });
 });

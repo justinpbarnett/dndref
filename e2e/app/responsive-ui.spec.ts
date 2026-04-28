@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-import { DETECT_WAIT_MS, setupTest, speak, startSession, waitForSettings } from "../helpers";
+import { DETECT_WAIT_MS, setupTest, speak, startSession, gotoSettings } from "../helpers";
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 360, height: 640 };
@@ -94,16 +94,14 @@ test.describe("responsive UI coverage", () => {
   test("settings content is constrained on desktop and category tabs fit on mobile", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
     await setupTest(page);
-    await page.goto("/settings");
-    await waitForSettings(page);
+    await gotoSettings(page);
 
     const desktopContent = await page.getByTestId("settings-content").boundingBox();
     expect(desktopContent).not.toBeNull();
     expect(desktopContent!.width).toBeLessThanOrEqual(900);
 
     await page.setViewportSize(MOBILE);
-    await page.goto("/settings");
-    await waitForSettings(page);
+    await gotoSettings(page);
 
     for (const label of ["DISPLAY", "VOICE", "SOURCES", "FILES", "AI PARSE"]) {
       await expectInsideViewport(page, label);
@@ -113,8 +111,7 @@ test.describe("responsive UI coverage", () => {
   test("settings subviews cover empty and full-content states on mobile", async ({ page }) => {
     await page.setViewportSize(MOBILE);
     await setupTest(page);
-    await page.goto("/settings");
-    await waitForSettings(page);
+    await gotoSettings(page);
 
     await page.getByText("FILES", { exact: true }).click();
     await expect(page.getByText("UPLOAD FILES")).toBeVisible();
@@ -132,8 +129,7 @@ test.describe("responsive UI coverage", () => {
 
   test("settings file uploads can be removed one at a time", async ({ page }) => {
     await setupTest(page);
-    await page.goto("/settings");
-    await waitForSettings(page);
+    await gotoSettings(page);
     await page.getByText("Files", { exact: true }).click();
 
     await page.getByPlaceholder("File name (e.g. my-campaign.md)").fill("keep-me.md");

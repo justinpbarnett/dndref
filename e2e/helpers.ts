@@ -102,6 +102,11 @@ export async function waitForSettings(page: Page) {
   await page.waitForSelector("text=Display", { timeout: 20000 });
 }
 
+export async function gotoSettings(page: Page) {
+  await page.goto("/settings");
+  await waitForSettings(page);
+}
+
 export async function speak(page: Page, text: string) {
   const ok = await page.evaluate((t) => (window as any).__speak(t), text);
   if (!ok) throw new Error(`speak() failed -- SpeechRecognition not active. text: "${text}"`);
