@@ -51,7 +51,5 @@ export async function resetStoredAppData(
   }
 }
 
-export function resetAppDataControlsForTests(): void {
-  resetAppDataCoreControlsForTests();
-  resetUploadedFileMutationQueueForTests();
-}
+export const resetAppDataControlsForTests = (): void =>
+  void (resetAppDataCoreControlsForTests(), resetUploadedFileMutationQueueForTests());
