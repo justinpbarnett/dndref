@@ -3,9 +3,7 @@ import { test, expect } from "@playwright/test";
 import { setupTestWithSession, speak, DETECT_WAIT_MS } from "../helpers";
 
 test.describe("entity details modal", () => {
-  test.beforeEach(async ({ page }) => {
-    await setupTestWithSession(page);
-  });
+  test.beforeEach(async ({ page }) => setupTestWithSession(page));
 
   test("clicking a card opens full details and closing keeps the card visible", async ({ page }) => {
     await speak(page, "Scarab of Protection");

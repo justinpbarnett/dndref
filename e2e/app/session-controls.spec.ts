@@ -12,9 +12,7 @@ import {
 } from "../helpers";
 
 test.describe("session controls", () => {
-  test.beforeEach(async ({ page }) => {
-    await setupTest(page);
-  });
+  test.beforeEach(async ({ page }) => setupTest(page));
 
   test("idle: Start button and Ready status visible", async ({ page }) => {
     await expect(page.getByText("Start", { exact: true })).toBeVisible();

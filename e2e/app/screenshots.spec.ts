@@ -1,11 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 
 import { setupTest, startSession, speak, gotoSettings, DETECT_WAIT_MS } from "../helpers";
 
 test.describe("screenshots", () => {
-  test.beforeEach(async ({ page }) => {
-    await setupTest(page);
-  });
+  test.beforeEach(async ({ page }) => setupTest(page));
 
   test("idle state", async ({ page }) => {
     await page.screenshot({ path: "e2e/screenshots/app-01-idle.png" });

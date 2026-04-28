@@ -3,9 +3,7 @@ import { test, expect } from "@playwright/test";
 import { setupTestWithSession, speak, startSession, pauseSession, stopSession, DETECT_WAIT_MS } from "../helpers";
 
 test.describe("voice entity detection", () => {
-  test.beforeEach(async ({ page }) => {
-    await setupTestWithSession(page);
-  });
+  test.beforeEach(async ({ page }) => setupTestWithSession(page));
 
   test("entity full name in speech surfaces a card", async ({ page }) => {
     await speak(page, "Valdrath the Undying approaches the throne");
