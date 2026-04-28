@@ -189,11 +189,9 @@ function confirmDeleteAllData(): Promise<boolean> {
   });
 }
 
-export function createFilesSettingsCategoryController(
+export const createFilesSettingsCategoryController = (
   options: FilesSettingsCategoryControllerOptions = {},
-): FilesSettingsCategoryController {
-  return new DefaultFilesSettingsCategoryController(options);
-}
+): FilesSettingsCategoryController => new DefaultFilesSettingsCategoryController(options);
 
 export function useFilesSettingsCategory(options: FilesSettingsCategoryControllerOptions) {
   const controllerRef = useRef<FilesSettingsCategoryController | null>(null);

@@ -94,11 +94,9 @@ class DefaultVoiceSettingsCategoryController extends SnapshotStore<VoiceSettings
   }
 }
 
-export function createVoiceSettingsCategoryController(
+export const createVoiceSettingsCategoryController = (
   options: VoiceSettingsCategoryControllerOptions = {},
-): VoiceSettingsCategoryController {
-  return new DefaultVoiceSettingsCategoryController(options);
-}
+): VoiceSettingsCategoryController => new DefaultVoiceSettingsCategoryController(options);
 
 export function useVoiceSettingsCategory() {
   const controllerRef = useRef<VoiceSettingsCategoryController | null>(null);
