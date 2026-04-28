@@ -14,10 +14,8 @@ export class SnapshotStore<S> {
 
   protected updateSnapshot = (patch: Partial<S>): void => this.replaceSnapshot({ ...this.snapshot, ...patch });
 
-  protected replaceSnapshot(snapshot: S): void {
-    this.snapshot = snapshot;
-    this.listeners.forEach((listener) => listener(this.snapshot));
-  }
+  protected replaceSnapshot = (snapshot: S): void =>
+    void ((this.snapshot = snapshot), this.listeners.forEach((listener) => listener(this.snapshot)));
 
   protected clearSnapshotListeners = (): void => this.listeners.clear();
 }
