@@ -1,19 +1,44 @@
 import type { Entity } from "../entities";
-import type { STTProvider } from "../stt";
+import type { STTProvider, STTSettings } from "../stt";
 import { SnapshotStore } from "../utils/snapshot-store";
 import { addCard, dismissCard, pinCard, unpinCard } from "./card-stack";
 import { buildDetectionInput, nextDetectionContext } from "./detection-window";
-import type { CardState } from "./session-types";
-import {
-  INITIAL_SESSION_RUNTIME_SNAPSHOT,
-  type DetectionInterval,
-  type SessionRuntimeDetector,
-  type SessionRuntimeOptions,
-  type SessionRuntimeSnapshot,
-  type SnapshotPatch,
-} from "./session-runtime-types";
+import type { CardState, SessionStatus, SttStatus } from "./session-types";
 
-export type { SessionRuntimeDetector, SessionRuntimeOptions, SessionRuntimeSnapshot } from "./session-runtime-types";
+export interface SessionRuntimeDetector {
+  detect(transcript: string): Entity[];
+}
+export interface SessionRuntimeSnapshot {
+  status: SessionStatus;
+  sttStatus: SttStatus;
+  sttError: string | null;
+  sttProviderName: string;
+  cards: CardState[];
+  transcript: string;
+  recentDetections: Entity[];
+}
+type SttSettingsLoader = () => Promise<STTSettings>;
+type SttProviderBuilder = (
+  settings: STTSettings,
+  onTranscript: (text: string) => void,
+  onError: (error: string) => void,
+) => STTProvider;
+export interface SessionRuntimeOptions {
+  loadSttSettings?: SttSettingsLoader;
+  buildSttProvider?: SttProviderBuilder;
+  detectIntervalMs?: number;
+}
+type DetectionInterval = ReturnType<typeof setInterval>;
+type SnapshotPatch = Partial<SessionRuntimeSnapshot>;
+const INITIAL_SESSION_RUNTIME_SNAPSHOT: SessionRuntimeSnapshot = {
+  status: "idle",
+  sttStatus: "idle",
+  sttError: null,
+  sttProviderName: "",
+  cards: [],
+  transcript: "",
+  recentDetections: [],
+};
 
 export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
   private acceptingTranscript = false;
