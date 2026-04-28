@@ -1,14 +1,10 @@
-import { test, Page } from "@playwright/test";
+import { test } from "@playwright/test";
 
 import { injectSpeechMock, mockExternalRoutes } from "./helpers";
 
-async function setup(page: Page) {
+test("og image", async ({ page }) => {
   await injectSpeechMock(page);
   await mockExternalRoutes(page);
-}
-
-test("og image", async ({ page }) => {
-  await setup(page);
   // 900px wide, taller than wide → portrait mode → 2 columns (M size).
   await page.setViewportSize({ width: 900, height: 2000 });
   await page.goto("/");
