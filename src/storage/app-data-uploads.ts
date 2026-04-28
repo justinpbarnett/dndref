@@ -13,17 +13,16 @@ export async function getUploadedFiles(): Promise<UploadedFile[]> {
   return readUploadedFiles(createAppDataWriteToken());
 }
 export async function addUploadedFile(name: string, content: string): Promise<boolean> {
-  return mutateUploadedFiles((uploads) => [...uploads, createUploadedFile(name, content)]);
+  return mutateUploadedFiles((uploads) => [
+    ...uploads,
+    { id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, content },
+  ]);
 }
 export async function removeUploadedFile(id: string): Promise<boolean> {
   return mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id));
 }
 export async function waitForUploadedFileMutations(): Promise<void> {
   await uploadMutationQueue.catch(() => undefined);
-}
-
-function createUploadedFile(name: string, content: string): UploadedFile {
-  return { id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, content };
 }
 
 function isUploadedFile(value: unknown): value is UploadedFile {
