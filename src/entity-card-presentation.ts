@@ -1,9 +1,6 @@
 import type { CardState } from "./context/session-types";
 import type { EntityType } from "./entities";
 
-export const ENTITY_CARD_MAX_SUMMARY_BULLETS = 5;
-export const ENTITY_CARD_BULLET_MARKER = ">";
-
 type EntityCardPinToggleKind = "pin" | "unpin";
 type EntityCardPinToggleIconName = "bookmark" | "bookmark-outline";
 type EntityCardPinToggleLabel = "Pin" | "Unpin";
@@ -31,7 +28,7 @@ export interface EntityCardPresentation {
   accentColor: string;
   pinned: boolean;
   imageUri: string | null;
-  bulletMarker: typeof ENTITY_CARD_BULLET_MARKER;
+  bulletMarker: string;
   summaryBullets: string[];
   details: string;
   actions: EntityCardActionsPresentation;
@@ -45,7 +42,7 @@ export interface DeriveEntityCardPresentationInput {
 export function extractEntityCardSummaryBullets(summary: string): string[] {
   return extractEntityDetailBullets(summary)
     .map((bullet) => bullet.replace(/[.!?]$/, "").trim())
-    .slice(0, ENTITY_CARD_MAX_SUMMARY_BULLETS);
+    .slice(0, 5);
 }
 
 export function extractEntityDetailBullets(details: string): string[] {
@@ -87,7 +84,7 @@ export function deriveEntityCardPresentation({
     accentColor,
     pinned,
     imageUri,
-    bulletMarker: ENTITY_CARD_BULLET_MARKER,
+    bulletMarker: ">",
     summaryBullets: extractEntityCardSummaryBullets(entity.summary),
     details: entity.details || entity.summary,
     actions: {
