@@ -25,7 +25,6 @@ export class HomebreweryProvider implements WorldDataProvider {
 function extractBrewId(input: string): string {
   const match = input.match(/(?:share|edit)\/([a-zA-Z0-9_-]+)/);
   if (match) return match[1];
-  // Bare ID or unknown format -- return as-is
   return input.trim().split("/").pop() ?? input.trim();
 }
 
