@@ -26,10 +26,7 @@ class MockMediaRecorder {
   state = "inactive";
   stopCalls = 0;
 
-  constructor(
-    readonly stream: MockStream,
-    readonly options?: unknown,
-  ) {
+  constructor() {
     installedBrowserMocks?.recorders.push(this);
   }
 
