@@ -9,21 +9,15 @@ export class SnapshotStore<S> {
 
   subscribe(listener: SnapshotListener<S>): () => void {
     this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
+    return () => void this.listeners.delete(listener);
   }
 
-  protected updateSnapshot(patch: Partial<S>): void {
-    this.replaceSnapshot({ ...this.snapshot, ...patch });
-  }
+  protected updateSnapshot = (patch: Partial<S>): void => this.replaceSnapshot({ ...this.snapshot, ...patch });
 
   protected replaceSnapshot(snapshot: S): void {
     this.snapshot = snapshot;
     this.listeners.forEach((listener) => listener(this.snapshot));
   }
 
-  protected clearSnapshotListeners(): void {
-    this.listeners.clear();
-  }
+  protected clearSnapshotListeners = (): void => this.listeners.clear();
 }
