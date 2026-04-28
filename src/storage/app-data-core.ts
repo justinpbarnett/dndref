@@ -95,13 +95,9 @@ export function finishAppDataReset(generation: number): void {
   cacheWritesBlockedForGeneration = generation;
 }
 
-export async function getStoredAppDataKeys(): Promise<string[]> {
-  const keys = await AsyncStorage.getAllKeys();
-  return Array.from(new Set(keys.filter(isAppStorageKey)));
-}
-
 export async function clearStoredAppData(): Promise<string[]> {
-  const keys = await getStoredAppDataKeys();
+  const storedKeys = await AsyncStorage.getAllKeys();
+  const keys = Array.from(new Set(storedKeys.filter(isAppStorageKey)));
   if (keys.length > 0) await AsyncStorage.multiRemove(keys);
   return keys;
 }
