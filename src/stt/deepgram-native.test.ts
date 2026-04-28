@@ -19,11 +19,7 @@ const nativeState = vi.hoisted(() => {
     release(): void {}
   }
 
-  const state = {
-    MockRecording,
-    nextPrepare: null as Deferred | null,
-    recordings: [] as MockRecording[],
-  };
+  const state = { MockRecording, nextPrepare: null as Deferred | null, recordings: [] as MockRecording[] };
   return state;
 });
 

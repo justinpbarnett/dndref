@@ -43,12 +43,7 @@ const adapterState = vi.hoisted(() => {
     async stop(): Promise<void> { this.stopCalls += 1; }
   }
 
-  const state = {
-    MockBrowserAdapter,
-    MockNativeAdapter,
-    browserInstances: [] as MockBrowserAdapter[],
-    nativeInstances: [] as MockNativeAdapter[],
-  };
+  const state = { MockBrowserAdapter, MockNativeAdapter, browserInstances: [] as MockBrowserAdapter[], nativeInstances: [] as MockNativeAdapter[] };
   return state;
 });
 
