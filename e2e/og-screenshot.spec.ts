@@ -3,35 +3,15 @@ import * as path from "path";
 
 import { test, Page } from "@playwright/test";
 
+import { injectSpeechMock } from "./helpers";
+
 const IONICONS_TTF = path.join(
   __dirname,
   "../node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf",
 );
 
 async function setup(page: Page) {
-  await page.addInitScript(() => {
-    let recognition: any = null;
-    class MockSpeechRecognition {
-      continuous = false;
-      interimResults = false;
-      lang = "en-US";
-      onresult: any = null;
-      onerror: any = null;
-      onend: any = null;
-      start = () => void (recognition = this);
-      abort = () => this.onend?.();
-    }
-    (window as any).SpeechRecognition = MockSpeechRecognition;
-    (window as any).webkitSpeechRecognition = MockSpeechRecognition;
-    (window as any).__speak = (text: string) => {
-      if (!recognition?.onresult) return false;
-      recognition.onresult({
-        resultIndex: 0,
-        results: [Object.assign([{ transcript: text }], { isFinal: true })],
-      });
-      return true;
-    };
-  });
+  await injectSpeechMock(page);
   await page.route("**/cdn.jsdelivr.net/**", async (route) => {
     await route.fulfill({ status: 200, contentType: "font/ttf", body: fs.readFileSync(IONICONS_TTF) });
   });
