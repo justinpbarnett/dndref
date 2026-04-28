@@ -24,7 +24,6 @@ export interface SessionRuntimeOptions {
   ) => STTProvider;
   detectIntervalMs?: number;
 }
-type DetectionInterval = ReturnType<typeof setInterval>;
 type SnapshotPatch = Partial<SessionRuntimeSnapshot>;
 const INITIAL_SESSION_RUNTIME_SNAPSHOT: SessionRuntimeSnapshot = {
   status: "idle",
@@ -39,7 +38,7 @@ const INITIAL_SESSION_RUNTIME_SNAPSHOT: SessionRuntimeSnapshot = {
 export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
   private acceptingTranscript = false;
   private detector: SessionRuntimeDetector | null = null;
-  private detectionInterval: DetectionInterval | null = null;
+  private detectionInterval: ReturnType<typeof setInterval> | null = null;
   private lastDetectionKey = "";
   private previousDetectionContext = "";
   private processedTranscriptLength = 0;
