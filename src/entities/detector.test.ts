@@ -46,18 +46,15 @@ describe("EntityDetector", () => {
   });
 
   it("does not detect short words (< 4 chars)", () => {
-    const found = detector.detect("the");
-    expect(found.length).toBe(0);
+    expect(detector.detect("the")).toHaveLength(0);
   });
 
   it("returns empty for unknown words", () => {
-    const found = detector.detect("xyzzyplugh");
-    expect(found.length).toBe(0);
+    expect(detector.detect("xyzzyplugh")).toHaveLength(0);
   });
 
   it("handles empty transcript", () => {
-    const found = detector.detect("");
-    expect(found.length).toBe(0);
+    expect(detector.detect("")).toHaveLength(0);
   });
 
   it("deduplicates multiple matches to same entity", () => {
