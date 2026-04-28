@@ -185,12 +185,7 @@ describe("Deepgram browser capture adapter", () => {
     const trackStop = vi.fn();
     const stream: MockStream = { getTracks: () => [{ stop: trackStop }] };
     let resolveStream!: (value: MockStream) => void;
-    const getUserMedia = vi.fn(
-      () =>
-        new Promise<MockStream>((resolve) => {
-          resolveStream = resolve;
-        }),
-    );
+    const getUserMedia = vi.fn(() => new Promise<MockStream>((resolve) => (resolveStream = resolve)));
     const { sockets } = installBrowserCapture(getUserMedia);
     const provider = new DeepgramBrowserCaptureAdapter("key", vi.fn(), vi.fn());
 
