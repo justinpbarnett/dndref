@@ -17,10 +17,7 @@ const PASTED_CONTENT_FILE_NAME = "Pasted Content.md";
 type MaybePromise<T = unknown> = T | Promise<T>;
 type FilesSettingsServices = Required<FilesSettingsCategoryControllerOptions>;
 
-export interface PickedTextFile {
-  name: string;
-  text: () => Promise<string>;
-}
+export type PickedTextFile = { name: string; text: () => Promise<string> };
 
 export interface FilesSettingsCategorySnapshot {
   uploads: UploadedFile[];
