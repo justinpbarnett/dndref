@@ -12,9 +12,7 @@ export type { CardSize } from '../reference-card-layout';
 export const COLOR_SCHEMES = ['system', 'dark', 'light'] as const;
 export type ColorScheme = (typeof COLOR_SCHEMES)[number];
 
-export interface CardSizeConfig extends CardSizeLayoutConfig {
-  fontScale: number;
-}
+export interface CardSizeConfig extends CardSizeLayoutConfig { fontScale: number }
 
 export const CARD_SIZE_CONFIGS: Record<CardSize, CardSizeConfig> = {
   S:  { ...CARD_SIZE_LAYOUT_CONFIGS.S, fontScale: 0.85 },
