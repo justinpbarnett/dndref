@@ -4,17 +4,7 @@ import { DATA_SOURCES_KEY } from './keys';
 
 export interface DataSourcesSettings { srdEnabled: boolean; srdSources: string[]; kankaToken: string; kankaCampaignId: string; homebreweryUrl: string; notionToken: string; notionPageIds: string; googleDocsUrl: string; aiApiKey: string }
 
-export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
-  srdEnabled: true,
-  srdSources: ['wotc-srd'],
-  kankaToken: '',
-  kankaCampaignId: '',
-  homebreweryUrl: '',
-  notionToken: '',
-  notionPageIds: '',
-  googleDocsUrl: '',
-  aiApiKey: '',
-};
+export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = { srdEnabled: true, srdSources: ['wotc-srd'], kankaToken: '', kankaCampaignId: '', homebreweryUrl: '', notionToken: '', notionPageIds: '', googleDocsUrl: '', aiApiKey: '' };
 
 export function createDefaultDataSourceSettings(): DataSourcesSettings { return { ...DEFAULT_DATA_SOURCES_SETTINGS, srdSources: [...DEFAULT_DATA_SOURCES_SETTINGS.srdSources] }; }
 
