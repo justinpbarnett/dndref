@@ -51,7 +51,14 @@ class DefaultFilesSettingsCategoryController extends SnapshotStore<FilesSettings
   private disposed = false;
 
   constructor(options: FilesSettingsCategoryControllerOptions = {}) {
-    super(createDefaultSnapshot());
+    super({
+      uploads: [],
+      removingUploadId: null,
+      pasteFileName: "",
+      pasteContent: "",
+      deleteAllPending: false,
+      deleteAllStatus: "",
+    });
     this.services = {
       getUploads: options.getUploads ?? getStoredUploads,
       addUpload: options.addUpload ?? addStoredUpload,
@@ -152,17 +159,6 @@ class DefaultFilesSettingsCategoryController extends SnapshotStore<FilesSettings
     this.updateSnapshot({ uploads });
     this.services.bumpUploads();
   }
-}
-
-function createDefaultSnapshot(): FilesSettingsCategorySnapshot {
-  return {
-    uploads: [],
-    removingUploadId: null,
-    pasteFileName: "",
-    pasteContent: "",
-    deleteAllPending: false,
-    deleteAllStatus: "",
-  };
 }
 
 function noop(): void {}
