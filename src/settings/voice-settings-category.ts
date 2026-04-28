@@ -11,22 +11,9 @@ type VoiceSettingsListener = (snapshot: VoiceSettingsCategorySnapshot) => void;
 
 export interface VoiceSettingsCategorySnapshot { sttSettings: STTSettings; voiceSaved: boolean }
 
-export interface VoiceSettingsCategoryControllerOptions {
-  loadVoiceSettings?: () => Promise<STTSettings | null>;
-  saveVoiceSettings?: (settings: STTSettings) => Promise<boolean>;
-  setSavedTimer?: (callback: () => void, ms: number) => SavedTimer;
-  clearSavedTimer?: (timer: SavedTimer) => void;
-}
+export interface VoiceSettingsCategoryControllerOptions { loadVoiceSettings?: () => Promise<STTSettings | null>; saveVoiceSettings?: (settings: STTSettings) => Promise<boolean>; setSavedTimer?: (callback: () => void, ms: number) => SavedTimer; clearSavedTimer?: (timer: SavedTimer) => void }
 
-export interface VoiceSettingsCategoryController {
-  getSnapshot(): VoiceSettingsCategorySnapshot;
-  subscribe(listener: VoiceSettingsListener): () => void;
-  load(): Promise<void>;
-  setSttSettings(update: SetStateAction<STTSettings>): void;
-  save(): Promise<void>;
-  reset(): void;
-  dispose(): void;
-}
+export interface VoiceSettingsCategoryController { getSnapshot(): VoiceSettingsCategorySnapshot; subscribe(listener: VoiceSettingsListener): () => void; load(): Promise<void>; setSttSettings(update: SetStateAction<STTSettings>): void; save(): Promise<void>; reset(): void; dispose(): void }
 
 class DefaultVoiceSettingsCategoryController implements VoiceSettingsCategoryController {
   private readonly loadVoiceSettings: () => Promise<STTSettings | null>;
