@@ -31,8 +31,6 @@ export type FilesSettingsCategoryControllerOptions = {
   resetStoredAppData?: () => Promise<unknown>;
 } & Partial<Record<"bumpUploads" | "stopSession" | "onDeleteAllDataReset", () => void>>;
 
-export type FilesSettingsCategoryController = DefaultFilesSettingsCategoryController;
-
 class DefaultFilesSettingsCategoryController extends SnapshotStore<FilesSettingsCategorySnapshot> {
   private readonly services: FilesSettingsServices;
   private refreshGeneration = 0;
@@ -185,12 +183,11 @@ function confirmDeleteAllData(): Promise<boolean> {
   });
 }
 
-export const createFilesSettingsCategoryController = (
-  options: FilesSettingsCategoryControllerOptions = {},
-): FilesSettingsCategoryController => new DefaultFilesSettingsCategoryController(options);
+export const createFilesSettingsCategoryController = (options: FilesSettingsCategoryControllerOptions = {}) =>
+  new DefaultFilesSettingsCategoryController(options);
 
 export function useFilesSettingsCategory(options: FilesSettingsCategoryControllerOptions) {
-  const controllerRef = useRef<FilesSettingsCategoryController | null>(null);
+  const controllerRef = useRef<DefaultFilesSettingsCategoryController | null>(null);
   if (!controllerRef.current) controllerRef.current = createFilesSettingsCategoryController(options);
   const controller = controllerRef.current;
   const [snapshot, setSnapshot] = useState(() => controller.getSnapshot());
