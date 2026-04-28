@@ -65,8 +65,8 @@ export class NotionProvider implements WorldDataProvider {
 
 const richText = (rts: any[]) => (rts ?? []).map((rt: any) => rt.plain_text ?? "").join("");
 
-function blocksToMarkdown(blocks: any[]): string {
-  return blocks
+const blocksToMarkdown = (blocks: any[]): string =>
+  blocks
     .map((block) => {
       const content = block[block.type];
       const text = richText(content?.rich_text ?? []);
@@ -93,7 +93,6 @@ function blocksToMarkdown(blocks: any[]): string {
     })
     .filter(Boolean)
     .join("\n");
-}
 
 export function extractNotionId(urlOrId: string): string {
   const cleaned = urlOrId.trim();
