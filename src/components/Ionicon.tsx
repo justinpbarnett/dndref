@@ -5,12 +5,7 @@ import { Platform, StyleProp, Text, TextProps, TextStyle } from 'react-native';
 
 export type IoniconName = keyof typeof glyphMap;
 
-interface IoniconProps extends Omit<TextProps, 'children'> {
-  name: IoniconName;
-  size?: number;
-  color?: string;
-  style?: StyleProp<TextStyle>;
-}
+interface IoniconProps extends Omit<TextProps, 'children'> { name: IoniconName; size?: number; color?: string; style?: StyleProp<TextStyle> }
 
 export function Ionicon({
   name,

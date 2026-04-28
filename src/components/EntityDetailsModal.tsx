@@ -7,11 +7,7 @@ import { useColors } from '../context/ui-settings';
 import { extractEntityDetailBullets } from '../entity-card-presentation';
 import { Colors, F, typeAccent } from '../theme';
 
-interface Props {
-  card: CardState | null;
-  visible: boolean;
-  onClose: () => void;
-}
+interface Props { card: CardState | null; visible: boolean; onClose: () => void }
 
 export function EntityDetailsModal({ card, visible, onClose }: Props) {
   const C = useColors();
