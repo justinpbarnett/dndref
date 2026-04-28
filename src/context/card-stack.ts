@@ -1,8 +1,6 @@
 import type { Entity } from "../entities";
 import type { CardState } from "./session-types";
 
-export const MAX_CARDS = 6;
-
 export function extractCard(cards: CardState[], instanceId: string): [CardState, CardState[]] | null {
   const card = cards.find((candidate) => candidate.instanceId === instanceId);
   return card ? [card, cards.filter((candidate) => candidate.instanceId !== instanceId)] : null;
@@ -24,7 +22,7 @@ export function addCard(cards: CardState[], entity: Entity): CardState[] {
   const newCard: CardState = { instanceId: `${entity.id}-${Date.now()}`, entity, pinned: false };
   const nextCards = insertAfterPinned(cards, newCard);
 
-  if (nextCards.length > MAX_CARDS) {
+  if (nextCards.length > 6) {
     const evictionIndex = nextCards.findLastIndex((card) => !card.pinned);
     if (evictionIndex === -1) return cards;
     nextCards.splice(evictionIndex, 1);
