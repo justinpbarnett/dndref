@@ -11,8 +11,6 @@ export const CATEGORIES: { id: Category; label: string; icon: IoniconName; iconF
   { id: "ai", label: "AI Parse", icon: "sparkles-outline", iconFocused: "sparkles" },
 ];
 
-export const CARD_SIZE_LABELS: Record<CardSize, string> = { S: "S", M: "M", L: "L", XL: "XL" };
-
 export const CARD_SIZE_DESCS: Record<CardSize, string> = {
   S: "up to 4/3",
   M: "up to 3/2",
