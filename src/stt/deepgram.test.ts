@@ -3,13 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const platform = vi.hoisted(() => ({ OS: "web" }));
 
 const adapterState = vi.hoisted(() => {
-  type MockAdapter = {
-    apiKey: string;
-    startCalls: number;
-    pauseCalls: number;
-    resumeCalls: number;
-    stopCalls: number;
-  };
+  type MockAdapter = { apiKey: string } & Record<"startCalls" | "pauseCalls" | "resumeCalls" | "stopCalls", number>;
   const createMockAdapter = (instances: MockAdapter[]) =>
     class implements MockAdapter {
       pauseCalls = 0;
