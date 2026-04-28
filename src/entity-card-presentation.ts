@@ -41,19 +41,7 @@ export function extractEntityDetailBullets(details: string): string[] {
 }
 
 function derivePinTogglePresentation(pinned: boolean): EntityCardPinTogglePresentation {
-  if (pinned) {
-    return {
-      kind: 'unpin',
-      accessibilityLabel: 'Unpin',
-      iconName: 'bookmark',
-    };
-  }
-
-  return {
-    kind: 'pin',
-    accessibilityLabel: 'Pin',
-    iconName: 'bookmark-outline',
-  };
+  return pinned ? { kind: 'unpin', accessibilityLabel: 'Unpin', iconName: 'bookmark' } : { kind: 'pin', accessibilityLabel: 'Pin', iconName: 'bookmark-outline' };
 }
 
 export function deriveEntityCardPresentation({
@@ -76,11 +64,7 @@ export function deriveEntityCardPresentation({
     details: entity.details || entity.summary,
     actions: {
       pinToggle: derivePinTogglePresentation(pinned),
-      dismiss: {
-        kind: 'dismiss',
-        accessibilityLabel: 'Dismiss',
-        iconName: 'close',
-      },
+      dismiss: { kind: 'dismiss', accessibilityLabel: 'Dismiss', iconName: 'close' },
     },
   };
 }
