@@ -1,8 +1,5 @@
 import { Entity, EntityIndex, EntityType, normalizeEntityType, slugify } from "./index";
 
-const JSON_UPLOAD_EXTENSION = ".json";
-const UPLOAD_ENTITY_ID_PREFIX = "upload";
-
 interface MarkdownBlock {
   name: string;
   body: string;
@@ -88,7 +85,7 @@ export function ingestUploadedFile(
   if (isJsonUploadName(upload.name)) {
     try {
       return ingestJsonContent(upload.content, {
-        idPrefix: UPLOAD_ENTITY_ID_PREFIX,
+        idPrefix: "upload",
         idNamespace: options.idNamespace ?? Date.now(),
       });
     } catch (error) {
@@ -100,7 +97,7 @@ export function ingestUploadedFile(
 }
 
 export function isJsonUploadName(name: string): boolean {
-  return name.toLowerCase().endsWith(JSON_UPLOAD_EXTENSION);
+  return name.toLowerCase().endsWith(".json");
 }
 
 function normalizeMarkdownBlock(block: MarkdownBlock): Entity | null {
