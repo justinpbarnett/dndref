@@ -6,12 +6,5 @@ import { createSourceStyles } from './sources';
 import { Colors } from '../../theme';
 
 export function createStyles(C: Colors, isWide: boolean) {
-  return {
-    ...createLayoutStyles(C, isWide),
-    ...createGroupStyles(C),
-    ...createControlStyles(C),
-    ...createSourceStyles(C),
-    ...createFileStyles(C),
-    __colors: C,
-  };
+  return { ...createLayoutStyles(C, isWide), ...createGroupStyles(C), ...createControlStyles(C), ...createSourceStyles(C), ...createFileStyles(C), __colors: C };
 }
