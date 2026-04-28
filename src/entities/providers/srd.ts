@@ -4,9 +4,6 @@ import { fetchAll } from "../../utils/providers";
 import { Entity, EntityIndex, WorldDataProvider, slugify, stripHtml } from "../index";
 
 const OPEN5E = "https://api.open5e.com/v1";
-const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const SRD_CACHE_SCHEMA_VERSION = "v3";
-
 export type SRDSource = { slug: string; label: string; publisher: string };
 
 export const SRD_SOURCES: SRDSource[] = [
@@ -29,18 +26,16 @@ export const SRD_SOURCES: SRDSource[] = [
   { slug: "tal-dorei", label: "Critical Role: Tal'Dorei Campaign Setting", publisher: "Green Ronin Publishing" },
 ];
 
-export const DEFAULT_SRD_SOURCES = ["wotc-srd"];
-
 type SRDCache = { ts: number; entities: EntityIndex };
 
 export class SRDProvider implements WorldDataProvider {
   readonly name = "D&D 5e SRD";
-  constructor(private sources: string[] = DEFAULT_SRD_SOURCES) {}
+  constructor(private sources: string[] = ["wotc-srd"]) {}
 
   async load(): Promise<EntityIndex> {
     if (this.sources.length === 0) return [];
     const cacheSession = createAppDataCacheSession();
-    const cacheKey = `${SRD_CACHE_KEY_PREFIX}${SRD_CACHE_SCHEMA_VERSION}-${[...this.sources].sort().join(",")}`;
+    const cacheKey = `${SRD_CACHE_KEY_PREFIX}v3-${[...this.sources].sort().join(",")}`;
     const cached = await loadCache(cacheKey, cacheSession);
     if (cached) return cached;
 
@@ -60,7 +55,7 @@ async function loadCache(key: string, cacheSession: AppDataCacheSession): Promis
     const raw = await cacheSession.getItem(key);
     if (!raw) return null;
     const cache = JSON.parse(raw) as SRDCache;
-    if (Date.now() - cache.ts > CACHE_TTL_MS) return null;
+    if (Date.now() - cache.ts > 7 * 24 * 60 * 60 * 1000) return null;
     return cache.entities;
   } catch {
     return null;
