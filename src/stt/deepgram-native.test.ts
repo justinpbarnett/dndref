@@ -59,9 +59,7 @@ import { DeepgramNativeCaptureAdapter } from "./deepgram-native";
 
 function deferred(): Deferred {
   let resolve!: () => void;
-  const promise = new Promise<void>((res) => {
-    resolve = res;
-  });
+  const promise = new Promise<void>((res) => (resolve = res));
   return { promise, resolve };
 }
 
