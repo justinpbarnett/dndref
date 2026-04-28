@@ -79,8 +79,6 @@ function generateReport() {
       report += `- **Console Errors:**\n`;
       for (const err of result.errors.slice(0, 10)) report += `  - ${err.replace(/\n/g, " ")}\n`;
       if (result.errors.length > 10) report += `  - ... and ${result.errors.length - 10} more\n`;
-    } else {
-      report += `- **Console Errors:** None\n`;
     }
     report += `\n---\n\n`;
   }
