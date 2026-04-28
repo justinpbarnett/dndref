@@ -94,17 +94,13 @@ export async function failNextSpeechStart(
   );
 }
 
-export async function emitSpeechError(page: Page, error = "audio-capture") {
-  await page.evaluate((value) => (window as any).__speechMock.emitError(value), error);
-}
+export const emitSpeechError = (page: Page, error = "audio-capture") =>
+  page.evaluate((value) => (window as any).__speechMock.emitError(value), error);
 
-export async function emitSpeechEnd(page: Page) {
-  await page.evaluate(() => (window as any).__speechMock.emitEnd());
-}
+export const emitSpeechEnd = (page: Page) => page.evaluate(() => (window as any).__speechMock.emitEnd());
 
-export async function getSpeechStartCount(page: Page): Promise<number> {
-  return page.evaluate(() => (window as any).__speechMock.startCount);
-}
+export const getSpeechStartCount = (page: Page): Promise<number> =>
+  page.evaluate(() => (window as any).__speechMock.startCount);
 
 export async function startSession(page: Page) {
   await page.getByText("Start", { exact: true }).click();
