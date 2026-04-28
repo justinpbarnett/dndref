@@ -49,8 +49,7 @@ export async function testNavigateToSettings({ page, consoleErrors, screenshotDi
 
   if (!hasDisplay) throw new Error("Settings page not loaded - Display tab not found");
 
-  const expectedTabs = ["Display", "Voice", "Sources", "Files"];
-  const foundTabs = expectedTabs.filter((tab) => bodyText.includes(tab));
+  const foundTabs = ["Display", "Voice", "Sources", "Files"].filter((tab) => bodyText.includes(tab));
 
   await page.screenshot({ path: `${screenshotDir}/test-02-settings-page.png` });
 
@@ -66,10 +65,9 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
   const initialScreenshot = `${screenshotDir}/test-03-card-size-initial.png`;
   await saveScreenshot(page, screenshots, initialScreenshot);
 
-  const sizes = ["S", "M", "L", "XL"];
   const testedSizes: string[] = [];
 
-  for (const size of sizes) {
+  for (const size of ["S", "M", "L", "XL"]) {
     const sizeBtn = page
       .getByText(size, { exact: false })
       .filter({ hasText: new RegExp(`^${size}$`) })
