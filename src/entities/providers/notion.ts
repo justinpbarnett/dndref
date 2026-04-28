@@ -3,9 +3,6 @@ import { MarkdownProvider } from "./markdown";
 import { CORS_PROXY } from "../../proxy";
 import { handleCorsError } from "../../utils/providers";
 
-const NOTION_API = CORS_PROXY ? `${CORS_PROXY}/notion/v1` : "https://api.notion.com/v1";
-const NOTION_VERSION = "2022-06-28";
-
 export class NotionProvider implements WorldDataProvider {
   readonly name = "Notion";
   constructor(
@@ -30,14 +27,14 @@ export class NotionProvider implements WorldDataProvider {
   private async fetchBlocks(blockId: string, depth = 0): Promise<any[]> {
     const headers = {
       Authorization: `Bearer ${this.token}`,
-      "Notion-Version": NOTION_VERSION,
+      "Notion-Version": "2022-06-28",
     };
 
     const all: any[] = [];
     let cursor: string | undefined;
 
     for (;;) {
-      const url = `${NOTION_API}/blocks/${blockId}/children${cursor ? `?start_cursor=${cursor}` : ""}`;
+      const url = `${CORS_PROXY ? `${CORS_PROXY}/notion/v1` : "https://api.notion.com/v1"}/blocks/${blockId}/children${cursor ? `?start_cursor=${cursor}` : ""}`;
       let res: Response;
       try {
         res = await fetch(url, { headers });
