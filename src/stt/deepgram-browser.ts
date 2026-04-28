@@ -153,9 +153,7 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
         }
       };
 
-      ws.onmessage = (event) => {
-        this.handleDeepgramMessage(event.data as string);
-      };
+      ws.onmessage = (event) => this.handleDeepgramMessage(event.data as string);
 
       ws.onerror = () => {
         const err = new Error("Deepgram connection error. Check your API key and network.");
