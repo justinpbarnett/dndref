@@ -160,11 +160,7 @@ export class SessionRuntime {
       if (provider) void this.stopProvider(provider);
       this.sttProvider = null;
       this.acceptingTranscript = false;
-      this.updateSnapshot({
-        sttProviderName: '',
-        sttError: `Failed to start mic: ${this.formatError(e)}`,
-        sttStatus: 'error',
-      });
+      this.updateSnapshot({ sttProviderName: '', sttError: `Failed to start mic: ${this.formatError(e)}`, sttStatus: 'error' });
     }
   }
 

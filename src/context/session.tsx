@@ -21,11 +21,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const { settings: ds, uploadsVersion } = useDataSources();
   const [entityStatus, setEntityStatus] = useState<EntityStatus>('loading');
   const [entities, setEntities] = useState<EntityIndex>([]);
-  const [runtime] = useState(() => new SessionRuntime({
-    loadSttSettings: loadSettings,
-    buildSttProvider: buildProvider,
-    detectIntervalMs: DETECT_INTERVAL_MS,
-  }));
+  const [runtime] = useState(() => new SessionRuntime({ loadSttSettings: loadSettings, buildSttProvider: buildProvider, detectIntervalMs: DETECT_INTERVAL_MS }));
   const [runtimeSnapshot, setRuntimeSnapshot] = useState(() => runtime.getSnapshot());
   const { status, sttStatus, sttError, sttProviderName, cards, transcript, recentDetections } = runtimeSnapshot;
 
