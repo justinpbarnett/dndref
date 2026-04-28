@@ -13,6 +13,11 @@ import { UISettingsProvider, useColors } from "../src/context/ui-settings";
 import { IONICONS_WEB_FONT, getIoniconsFontSource } from "../src/icon-font";
 import { F } from "../src/theme";
 
+const META_DESCRIPTION =
+  "Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time.";
+const GOOGLE_FONT_STYLESHEET =
+  "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap";
+
 function ThemedTabs() {
   const C = useColors();
   const insets = useSafeAreaInsets();
@@ -85,8 +90,7 @@ export default function RootLayout() {
     if (Platform.OS !== "web") return;
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap";
+    link.href = GOOGLE_FONT_STYLESHEET;
     document.head.appendChild(link);
   }, []);
 
@@ -104,15 +108,9 @@ export default function RootLayout() {
             <link rel="preload" href={IONICONS_WEB_FONT} as="font" type="font/ttf" crossOrigin="" />
           </>
         )}
-        <meta
-          name="description"
-          content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time."
-        />
+        <meta name="description" content={META_DESCRIPTION} />
         <meta property="og:title" content="DnD Ref" />
-        <meta
-          property="og:description"
-          content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time."
-        />
+        <meta property="og:description" content={META_DESCRIPTION} />
         <meta property="og:image" content="https://dndref.com/og-image.png" />
         <meta property="og:image:width" content="900" />
         <meta property="og:image:height" content="747" />
@@ -120,10 +118,7 @@ export default function RootLayout() {
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="DnD Ref" />
-        <meta
-          name="twitter:description"
-          content="Live entity reference for D&D sessions. Listens to your table and surfaces character, location, and item cards in real time."
-        />
+        <meta name="twitter:description" content={META_DESCRIPTION} />
         <meta name="twitter:image" content="https://dndref.com/og-image-wide.png" />
         <meta name="twitter:image:width" content="1200" />
         <meta name="twitter:image:height" content="630" />
