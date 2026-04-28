@@ -96,8 +96,7 @@ export class LateEventSafeSTTProvider implements STTProvider {
   }
 
   private isCurrentCapture(capture: CaptureInstance): boolean {
-    const current = this.currentCapture;
-    return current !== null && current === capture && current.generation === capture.generation;
+    return this.currentCapture === capture;
   }
 
   private stopCurrentCapture(): Promise<void> {
