@@ -16,19 +16,7 @@ export interface FilesSettingsCategorySnapshot { uploads: UploadedFile[]; removi
 
 export interface FilesSettingsCategoryControllerOptions { getUploads?: () => Promise<UploadedFile[]>; addUpload?: (name: string, content: string) => MaybePromise<void>; removeUpload?: (id: string) => MaybePromise<void>; bumpUploads?: () => void; pickFiles?: () => Promise<PickedTextFile[]>; confirmDeleteAllData?: () => Promise<boolean>; resetStoredAppData?: () => Promise<unknown>; stopSession?: () => void; onDeleteAllDataReset?: () => void }
 
-export interface FilesSettingsCategoryController {
-  getSnapshot(): FilesSettingsCategorySnapshot;
-  subscribe(listener: FilesSettingsListener): () => void;
-  load(): Promise<void>;
-  setPasteFileName(update: SetStateAction<string>): void;
-  setPasteContent(update: SetStateAction<string>): void;
-  saveUpload(name: string, content: string): Promise<void>;
-  pickFilesWeb(): Promise<void>;
-  addPastedContent(): Promise<void>;
-  deleteUpload(id: string): Promise<void>;
-  deleteAllData(): Promise<void>;
-  dispose(): void;
-}
+export interface FilesSettingsCategoryController { getSnapshot(): FilesSettingsCategorySnapshot; subscribe(listener: FilesSettingsListener): () => void; load(): Promise<void>; setPasteFileName(update: SetStateAction<string>): void; setPasteContent(update: SetStateAction<string>): void; saveUpload(name: string, content: string): Promise<void>; pickFilesWeb(): Promise<void>; addPastedContent(): Promise<void>; deleteUpload(id: string): Promise<void>; deleteAllData(): Promise<void>; dispose(): void }
 
 class DefaultFilesSettingsCategoryController implements FilesSettingsCategoryController {
   private readonly getUploads: () => Promise<UploadedFile[]>;
