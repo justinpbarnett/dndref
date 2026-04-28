@@ -27,14 +27,9 @@ export type ReferenceCardLayoutItem = { instanceId: string };
 export type ReferenceCardLayoutViewport = { width: number; height: number };
 export type ReferenceCardPosition = { x: number; y: number };
 
-export interface ReferenceCardLayout {
-  columns: number;
-  cardWidth: number;
-  gridWidth: number;
-  xOffset: number;
+export type ReferenceCardLayout = Record<"columns" | "cardWidth" | "gridWidth" | "xOffset" | "totalHeight", number> & {
   positions: Record<string, ReferenceCardPosition>;
-  totalHeight: number;
-}
+};
 
 export interface ComputeReferenceCardLayoutInput {
   cards: readonly ReferenceCardLayoutItem[];
