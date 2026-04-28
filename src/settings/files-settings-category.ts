@@ -22,17 +22,14 @@ export type FilesSettingsCategorySnapshot = {
   deleteAllPending: boolean;
 } & Record<"pasteFileName" | "pasteContent" | "deleteAllStatus", string>;
 
-export interface FilesSettingsCategoryControllerOptions {
+export type FilesSettingsCategoryControllerOptions = {
   getUploads?: () => Promise<UploadedFile[]>;
   addUpload?: (name: string, content: string) => unknown | Promise<unknown>;
   removeUpload?: (id: string) => unknown | Promise<unknown>;
-  bumpUploads?: () => void;
   pickFiles?: () => Promise<PickedTextFile[]>;
   confirmDeleteAllData?: () => Promise<boolean>;
   resetStoredAppData?: () => Promise<unknown>;
-  stopSession?: () => void;
-  onDeleteAllDataReset?: () => void;
-}
+} & Partial<Record<"bumpUploads" | "stopSession" | "onDeleteAllDataReset", () => void>>;
 
 export type FilesSettingsCategoryController = DefaultFilesSettingsCategoryController;
 
