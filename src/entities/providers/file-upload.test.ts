@@ -9,13 +9,9 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
       await storageControls.getItemGate;
       return storage.get(key) ?? null;
     }),
-    setItem: vi.fn(async (key: string, value: string) => {
-      storage.set(key, value);
-    }),
+    setItem: vi.fn(async (key: string, value: string) => storage.set(key, value)),
     getAllKeys: vi.fn(async () => Array.from(storage.keys())),
-    multiRemove: vi.fn(async (keys: readonly string[]) => {
-      keys.forEach((key) => storage.delete(key));
-    }),
+    multiRemove: vi.fn(async (keys: readonly string[]) => keys.forEach((key) => storage.delete(key))),
   },
 }));
 
