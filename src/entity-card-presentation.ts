@@ -23,10 +23,7 @@ export interface EntityCardPresentation {
   };
 }
 
-export interface DeriveEntityCardPresentationInput {
-  card: CardState;
-  accentColor: string;
-}
+export type DeriveEntityCardPresentationInput = { card: CardState; accentColor: string };
 
 export function extractEntityCardSummaryBullets(summary: string): string[] {
   return extractEntityDetailBullets(summary)
