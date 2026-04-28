@@ -13,8 +13,8 @@ export interface Entity {
 export type EntityIndex = Entity[];
 
 export interface WorldDataProvider {
+  readonly name: string;
   load(): Promise<EntityIndex>;
-  getName(): string;
 }
 
 export function slugify(name: string): string {

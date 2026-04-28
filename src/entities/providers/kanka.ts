@@ -25,10 +25,6 @@ export class KankaProvider implements WorldDataProvider {
     return results.flat();
   }
 
-  getName(): string {
-    return this.name;
-  }
-
   private async fetchType(resource: KankaResourceType): Promise<Entity[]> {
     const entityType = TYPE_MAP[resource];
     const items = await fetchAll(

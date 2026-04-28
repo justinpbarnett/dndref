@@ -17,10 +17,6 @@ export class GoogleDocsProvider implements WorldDataProvider {
     const text = await fetchGoogleDocText(this.url);
     return ingestMarkdownContent(text);
   }
-
-  getName(): string {
-    return this.name;
-  }
 }
 
 export async function fetchGoogleDocText(urlOrId: string): Promise<string> {

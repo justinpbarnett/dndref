@@ -20,10 +20,6 @@ export class HomebreweryProvider implements WorldDataProvider {
     const cleaned = stripBrewSyntax(text);
     return new MarkdownProvider(cleaned, "Homebrewery").load();
   }
-
-  getName(): string {
-    return this.name;
-  }
 }
 
 function extractBrewId(input: string): string {

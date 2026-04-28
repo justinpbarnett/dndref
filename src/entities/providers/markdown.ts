@@ -4,13 +4,10 @@ import { ingestMarkdownContent } from "../ingestion";
 export class MarkdownProvider implements WorldDataProvider {
   constructor(
     private content: string,
-    private label = "Markdown",
+    readonly name = "Markdown",
   ) {}
 
   async load(): Promise<EntityIndex> {
     return ingestMarkdownContent(this.content);
-  }
-  getName(): string {
-    return this.label;
   }
 }

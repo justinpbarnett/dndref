@@ -21,10 +21,6 @@ export class NotionProvider implements WorldDataProvider {
     return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
   }
 
-  getName(): string {
-    return this.name;
-  }
-
   private async loadPage(pageId: string): Promise<EntityIndex> {
     const blocks = await this.fetchBlocks(pageId);
     const text = blocksToMarkdown(blocks);

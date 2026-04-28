@@ -66,7 +66,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (cancelled) return;
       results.forEach((r, i) => {
         if (r.status === "rejected") {
-          console.warn(`[dnd-ref] ${providers[i].getName()} failed to load:`, r.reason);
+          console.warn(`[dnd-ref] ${providers[i].name} failed to load:`, r.reason);
         }
       });
       const combined = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));

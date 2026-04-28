@@ -60,10 +60,6 @@ export class SRDProvider implements WorldDataProvider {
     await saveCache(cacheKey, entities, cacheSession);
     return entities;
   }
-
-  getName(): string {
-    return this.name;
-  }
 }
 
 async function loadCache(key: string, cacheSession: AppDataCacheSession): Promise<EntityIndex | null> {

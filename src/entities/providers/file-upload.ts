@@ -27,8 +27,4 @@ export class FileUploadProvider implements WorldDataProvider {
       }),
     );
   }
-
-  getName(): string {
-    return this.name;
-  }
 }
