@@ -39,10 +39,10 @@ export function allowAppDataCacheWrites(): void {
   cacheWritesBlockedForGeneration = null;
 }
 
-export interface AppDataCacheSession {
+export type AppDataCacheSession = {
   getItem: (key: string) => Promise<string | null>;
   setItem: (key: string, value: string) => Promise<boolean>;
-}
+};
 
 export function createAppDataCacheSession(): AppDataCacheSession {
   const token = createAppDataWriteToken();
