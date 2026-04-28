@@ -22,33 +22,23 @@ const makeCard = (overrides: Partial<CardState> = {}): CardState => ({
 });
 
 describe("extractEntityCardSummaryBullets", () => {
-  test("splits sentence summaries into display bullets with terminal marks removed", () => {
-    expect(extractEntityCardSummaryBullets("The Lich King. Undead sorcerer! His phylactery remains hidden.")).toEqual([
-      "The Lich King",
-      "Undead sorcerer",
-      "His phylactery remains hidden",
-    ]);
-  });
+  test.each([
+    [
+      "The Lich King. Undead sorcerer! His phylactery remains hidden.",
+      ["The Lich King", "Undead sorcerer", "His phylactery remains hidden"],
+    ],
+    ["One. Two. Three. Four. Five. Six. Seven.", ["One", "Two", "Three", "Four", "Five"]],
+    [
+      "Who guards the armory? Gorm knows: level 4. Wait--listen!",
+      ["Who guards the armory", "Gorm knows: level 4", "Wait--listen"],
+    ],
+  ])("extracts display bullets from summary %#", (summary, bullets) =>
+    expect(extractEntityCardSummaryBullets(summary)).toEqual(bullets),
+  );
 
   test.each(["", "   \n  "])("returns no bullets for empty summary %#", (summary) =>
     expect(extractEntityCardSummaryBullets(summary)).toEqual([]),
   );
-
-  test("limits long summaries to five bullets", () => {
-    const summary = "One. Two. Three. Four. Five. Six. Seven.";
-
-    expect(extractEntityCardSummaryBullets(summary)).toEqual(["One", "Two", "Three", "Four", "Five"]);
-  });
-
-  test("handles punctuation while preserving internal punctuation", () => {
-    const summary = "Who guards the armory? Gorm knows: level 4. Wait--listen!";
-
-    expect(extractEntityCardSummaryBullets(summary)).toEqual([
-      "Who guards the armory",
-      "Gorm knows: level 4",
-      "Wait--listen",
-    ]);
-  });
 });
 
 describe("extractEntityDetailBullets", () => {
