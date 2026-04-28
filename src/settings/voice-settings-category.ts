@@ -9,10 +9,7 @@ export const VOICE_SAVED_INDICATOR_MS = 2000;
 type SavedTimer = ReturnType<typeof setTimeout>;
 type VoiceSettingsListener = (snapshot: VoiceSettingsCategorySnapshot) => void;
 
-export interface VoiceSettingsCategorySnapshot {
-  sttSettings: STTSettings;
-  voiceSaved: boolean;
-}
+export interface VoiceSettingsCategorySnapshot { sttSettings: STTSettings; voiceSaved: boolean }
 
 export interface VoiceSettingsCategoryControllerOptions {
   loadVoiceSettings?: () => Promise<STTSettings | null>;

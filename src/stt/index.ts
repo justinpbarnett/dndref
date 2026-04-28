@@ -6,10 +6,7 @@ export interface STTProvider {
   stop(): void | Promise<void>;
 }
 
-export interface STTSettings {
-  provider: 'web-speech' | 'deepgram';
-  deepgramApiKey: string;
-}
+export interface STTSettings { provider: 'web-speech' | 'deepgram'; deepgramApiKey: string }
 
 export const DEFAULT_STT_SETTINGS: STTSettings = {
   provider: 'web-speech',

@@ -1,11 +1,7 @@
 import { canPersistAppData, createAppDataWriteToken, getAppDataItem, setAppDataItem } from './app-data-core';
 import { UPLOADS_KEY } from './keys';
 
-export interface UploadedFile {
-  id: string;
-  name: string;
-  content: string;
-}
+export interface UploadedFile { id: string; name: string; content: string }
 
 let uploadMutationQueue: Promise<unknown> = Promise.resolve();
 

@@ -10,10 +10,7 @@ const PASTED_CONTENT_FILE_NAME = 'Pasted Content.md';
 type FilesSettingsListener = (snapshot: FilesSettingsCategorySnapshot) => void;
 type MaybePromise<T> = T | Promise<T>;
 
-export interface PickedTextFile {
-  name: string;
-  text: () => Promise<string>;
-}
+export interface PickedTextFile { name: string; text: () => Promise<string> }
 
 export interface FilesSettingsCategorySnapshot {
   uploads: UploadedFile[];

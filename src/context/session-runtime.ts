@@ -4,9 +4,7 @@ import { addCard, dismissCard, pinCard, unpinCard } from './card-stack';
 import { buildDetectionInput, nextDetectionContext } from './detection-window';
 import type { CardState, SessionStatus, SttStatus } from './session-types';
 
-export interface SessionRuntimeDetector {
-  detect(transcript: string): Entity[];
-}
+export interface SessionRuntimeDetector { detect(transcript: string): Entity[] }
 
 export interface SessionRuntimeSnapshot {
   status: SessionStatus;
@@ -25,11 +23,7 @@ type SttProviderBuilder = (
   onError: (error: string) => void,
 ) => STTProvider;
 
-export interface SessionRuntimeOptions {
-  loadSttSettings?: SttSettingsLoader;
-  buildSttProvider?: SttProviderBuilder;
-  detectIntervalMs?: number;
-}
+export interface SessionRuntimeOptions { loadSttSettings?: SttSettingsLoader; buildSttProvider?: SttProviderBuilder; detectIntervalMs?: number }
 
 type SessionRuntimeListener = (snapshot: SessionRuntimeSnapshot) => void;
 type DetectionInterval = ReturnType<typeof setInterval>;
