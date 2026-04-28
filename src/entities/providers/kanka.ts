@@ -12,20 +12,6 @@ const TYPE_MAP: Record<KankaResourceType, EntityType> = {
   items: "Item",
 };
 
-export interface KankaCampaign {
-  id: number;
-  name: string;
-}
-
-export async function listKankaCampaigns(token: string): Promise<KankaCampaign[]> {
-  const res = await fetch(`${KANKA_BASE}/campaigns`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error(`Kanka: campaigns fetch failed (${res.status})`);
-  const data = (await res.json()) as { data: KankaCampaign[] };
-  return data.data;
-}
-
 export class KankaProvider implements WorldDataProvider {
   readonly name = "Kanka";
   constructor(
