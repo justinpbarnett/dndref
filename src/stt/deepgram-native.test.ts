@@ -31,23 +31,14 @@ const fileSystemMocks = vi.hoisted(() => ({
   })),
 }));
 
-vi.mock('expo-audio', () => ({
-  RecordingPresets: { HIGH_QUALITY: {} },
-  requestRecordingPermissionsAsync: vi.fn(async () => ({ granted: true })),
-  setAudioModeAsync: vi.fn(async () => undefined),
-}));
+vi.mock('expo-audio', () => ({ RecordingPresets: { HIGH_QUALITY: {} }, requestRecordingPermissionsAsync: vi.fn(async () => ({ granted: true })), setAudioModeAsync: vi.fn(async () => undefined) }));
 vi.mock('expo-audio/build/AudioModule', () => ({
   default: { AudioRecorder: nativeState.MockRecording },
 }));
 vi.mock('expo-audio/build/utils/options', () => ({
   createRecordingOptions: vi.fn((options) => options),
 }));
-vi.mock('expo-file-system/legacy', () => ({
-  default: {},
-  FileSystemUploadType: { BINARY_CONTENT: 'BINARY_CONTENT' },
-  deleteAsync: fileSystemMocks.deleteAsync,
-  uploadAsync: fileSystemMocks.uploadAsync,
-}));
+vi.mock('expo-file-system/legacy', () => ({ default: {}, FileSystemUploadType: { BINARY_CONTENT: 'BINARY_CONTENT' }, deleteAsync: fileSystemMocks.deleteAsync, uploadAsync: fileSystemMocks.uploadAsync }));
 
 import { DeepgramNativeCaptureAdapter } from './deepgram-native';
 
