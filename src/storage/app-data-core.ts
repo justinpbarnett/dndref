@@ -90,9 +90,8 @@ export async function clearStoredAppData(): Promise<string[]> {
   return keys;
 }
 
-export function resetAppDataCoreControlsForTests(): void {
-  appDataResetGeneration = 0;
-  appDataResetActive = false;
-  cacheWritesBlockedForGeneration = null;
-  appDataWriteQueue = Promise.resolve();
-}
+export const resetAppDataCoreControlsForTests = (): void =>
+  void ((appDataResetGeneration = 0),
+  (appDataResetActive = false),
+  (cacheWritesBlockedForGeneration = null),
+  (appDataWriteQueue = Promise.resolve()));
