@@ -10,12 +10,12 @@ import type { STTProvider, STTSettings } from "./index";
 export const loadSettings = async (): Promise<STTSettings> =>
   (await loadVoiceSettings()) ?? createDefaultVoiceSettings();
 
-export function buildProvider(
+export const buildProvider = (
   settings: STTSettings,
   onTranscript: (text: string) => void,
   onError: (error: string) => void,
-): STTProvider {
-  return createLateEventSafeSTTProvider(
+): STTProvider =>
+  createLateEventSafeSTTProvider(
     (safeTranscript, safeError) =>
       Platform.OS !== "web" || (settings.provider === "deepgram" && Boolean(settings.deepgramApiKey))
         ? new DeepgramProvider(settings.deepgramApiKey, safeTranscript, safeError)
@@ -23,4 +23,3 @@ export function buildProvider(
     onTranscript,
     onError,
   );
-}
