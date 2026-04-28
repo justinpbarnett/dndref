@@ -14,13 +14,7 @@ function isAllowedOrigin(origin: string): boolean {
   return origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1');
 }
 
-const CORS_HEADERS = [
-  'Content-Type',
-  'Authorization',
-  'x-api-key',
-  'anthropic-version',
-  'Notion-Version',
-].join(', ');
+const CORS_HEADERS = 'Content-Type, Authorization, x-api-key, anthropic-version, Notion-Version';
 
 function corsHeaders(origin: string): Record<string, string> {
   return {
