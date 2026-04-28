@@ -7,11 +7,7 @@ const OPEN5E = "https://api.open5e.com/v1";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const SRD_CACHE_SCHEMA_VERSION = "v3";
 
-export interface SRDSource {
-  slug: string;
-  label: string;
-  publisher: string;
-}
+export type SRDSource = { slug: string; label: string; publisher: string };
 
 export const SRD_SOURCES: SRDSource[] = [
   { slug: "o5e", label: "Open5e Original Content", publisher: "Open5e" },
@@ -35,10 +31,7 @@ export const SRD_SOURCES: SRDSource[] = [
 
 export const DEFAULT_SRD_SOURCES = ["wotc-srd"];
 
-interface SRDCache {
-  ts: number;
-  entities: EntityIndex;
-}
+type SRDCache = { ts: number; entities: EntityIndex };
 
 export class SRDProvider implements WorldDataProvider {
   readonly name = "D&D 5e SRD";
