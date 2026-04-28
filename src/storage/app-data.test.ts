@@ -93,12 +93,8 @@ describe("app data storage clearing", () => {
   });
 
   it("recognizes app-owned keys only", () => {
-    for (const key of APP_STORAGE_KEYS) {
+    for (const key of [...APP_STORAGE_KEYS, "dndref:file-uploads", "dndref:srd-wotc-srd", "@dnd-ref/stt-settings"])
       expect(isAppStorageKey(key)).toBe(true);
-    }
-    expect(isAppStorageKey("dndref:file-uploads")).toBe(true);
-    expect(isAppStorageKey("dndref:srd-wotc-srd")).toBe(true);
-    expect(isAppStorageKey("@dnd-ref/stt-settings")).toBe(true);
     expect(isAppStorageKey("unrelated:other-app")).toBe(false);
   });
 
