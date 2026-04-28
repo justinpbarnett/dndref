@@ -1,6 +1,6 @@
 import { test } from "@playwright/test";
 
-import { setupTest, startSession, speak, gotoSettings, DETECT_WAIT_MS } from "../helpers";
+import { setupTest, startSession, speakAndWait, gotoSettings } from "../helpers";
 
 test.describe("screenshots", () => {
   test.beforeEach(async ({ page }) => setupTest(page));
@@ -11,15 +11,13 @@ test.describe("screenshots", () => {
 
   test("active session with cards", async ({ page }) => {
     await startSession(page);
-    await speak(page, "Valdrath summoned Malachar and Seraphine to Ironspire");
-    await page.waitForTimeout(DETECT_WAIT_MS);
+    await speakAndWait(page, "Valdrath summoned Malachar and Seraphine to Ironspire");
     await page.screenshot({ path: "e2e/screenshots/app-02-active-cards.png" });
   });
 
   test("pinned card visual", async ({ page }) => {
     await startSession(page);
-    await speak(page, "Valdrath is here");
-    await page.waitForTimeout(DETECT_WAIT_MS);
+    await speakAndWait(page, "Valdrath is here");
     const card = page.getByTestId("entity-card").filter({ hasText: "Valdrath the Undying" });
     await card.locator('[aria-label="Pin"]').click();
     await page.waitForTimeout(300);

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { setupTestWithSession, speak, DETECT_WAIT_MS } from "../helpers";
+import { setupTestWithSession, speakAndWait } from "../helpers";
 
 test.describe("card eviction", () => {
   test.beforeEach(async ({ page }) => setupTestWithSession(page));
@@ -13,22 +13,19 @@ test.describe("card eviction", () => {
       "Seraphine arrived",
       "Gorm the blacksmith",
     ]) {
-      await speak(page, phrase);
-      await page.waitForTimeout(DETECT_WAIT_MS);
+      await speakAndWait(page, phrase);
     }
     await expect(page.getByTestId("entity-card")).toHaveCount(5);
   });
 
   test("pinned cards survive eviction pressure", async ({ page }) => {
-    await speak(page, "Valdrath is here");
-    await page.waitForTimeout(DETECT_WAIT_MS);
+    await speakAndWait(page, "Valdrath is here");
 
     const valdrath = page.getByTestId("entity-card").filter({ hasText: "Valdrath the Undying" });
     await valdrath.locator('[aria-label="Pin"]').click();
 
     for (const phrase of ["entered Ironspire", "Malachar in chains", "Seraphine arrived", "Gorm showed blueprints"]) {
-      await speak(page, phrase);
-      await page.waitForTimeout(DETECT_WAIT_MS);
+      await speakAndWait(page, phrase);
     }
 
     await expect(page.getByText("Valdrath the Undying")).toBeVisible();
