@@ -33,16 +33,10 @@ class MockMediaRecorder {
     installedBrowserMocks?.recorders.push(this);
   }
 
-  start(ms: number): void {
-    this.state = "recording";
-    this.startMs = ms;
-  }
+  start = (ms: number) => void ((this.state = "recording"), (this.startMs = ms));
   pause = () => void (this.state = "paused");
   resume = () => void (this.state = "recording");
-  stop(): void {
-    this.stopCalls += 1;
-    this.state = "inactive";
-  }
+  stop = () => void ((this.stopCalls += 1), (this.state = "inactive"));
   emitChunk = (data: { size: number }) => this.ondataavailable?.({ data });
 }
 
@@ -71,10 +65,7 @@ class MockWebSocket {
     this.readyState = MockWebSocket.CLOSED;
     this.onclose?.({ code: 1000 } as CloseEvent);
   }
-  open(): void {
-    this.readyState = MockWebSocket.OPEN;
-    this.onopen?.();
-  }
+  open = () => void ((this.readyState = MockWebSocket.OPEN), this.onopen?.());
   send = (data: unknown) => void this.sent.push(data);
   receive = (data: string) => this.onmessage?.({ data });
 }
