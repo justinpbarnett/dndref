@@ -114,8 +114,8 @@ export function SessionControls() {
   );
 }
 
-function createStyles(C: Colors) {
-  return StyleSheet.create({
+const createStyles = (C: Colors) =>
+  StyleSheet.create({
     bar: {
       flexDirection: "row",
       alignItems: "center",
@@ -155,4 +155,3 @@ function createStyles(C: Colors) {
     },
     errorText: { color: C.error, fontSize: 11, fontFamily: F.mono, letterSpacing: 0.3 },
   });
-}

@@ -139,8 +139,8 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss, onOpenDetai
   );
 }
 
-function createStyles(C: Colors) {
-  return StyleSheet.create({
+const createStyles = (C: Colors) =>
+  StyleSheet.create({
     card: {
       backgroundColor: C.bgCard,
       borderRadius: 6,
@@ -166,4 +166,3 @@ function createStyles(C: Colors) {
     bulletMark: { fontWeight: "700", fontFamily: F.mono },
     bulletText: { color: C.textSecondary, flex: 1, fontFamily: F.body },
   });
-}

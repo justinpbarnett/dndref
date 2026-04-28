@@ -105,8 +105,8 @@ export default function DebugScreen() {
   );
 }
 
-function createStyles(C: Colors) {
-  return StyleSheet.create({
+const createStyles = (C: Colors) =>
+  StyleSheet.create({
     container: { flex: 1, backgroundColor: C.bg, padding: 16 },
     section: { flex: 1 },
     sectionSmall: { flex: 0, maxHeight: 200 },
@@ -163,4 +163,3 @@ function createStyles(C: Colors) {
     detectionName: { color: C.textPrimary, fontSize: 12, fontWeight: "600", flex: 1, fontFamily: F.display },
     detectionType: { color: C.textDim, fontSize: 10, fontFamily: F.mono, letterSpacing: 0.5 },
   });
-}

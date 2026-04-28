@@ -135,8 +135,8 @@ export function CardGrid() {
   );
 }
 
-function createStyles(C: Colors) {
-  return StyleSheet.create({
+const createStyles = (C: Colors) =>
+  StyleSheet.create({
     scroll: { flex: 1 },
     cardWrapper: { position: "absolute" },
     empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
@@ -144,4 +144,3 @@ function createStyles(C: Colors) {
     emptyLabel: { color: C.textDim, fontSize: 13, letterSpacing: 0.5, fontFamily: F.mono },
     emptyHint: { color: C.textMuted, fontSize: 11, letterSpacing: 0.5, fontFamily: F.mono, marginTop: 2 },
   });
-}

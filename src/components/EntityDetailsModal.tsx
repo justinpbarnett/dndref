@@ -57,8 +57,8 @@ export function EntityDetailsModal({ card, visible, onClose }: Props) {
   );
 }
 
-function createStyles(C: Colors) {
-  return StyleSheet.create({
+const createStyles = (C: Colors) =>
+  StyleSheet.create({
     backdrop: { flex: 1, backgroundColor: "#00000099", alignItems: "center", justifyContent: "center", padding: 18 },
     dialog: {
       width: "100%",
@@ -97,4 +97,3 @@ function createStyles(C: Colors) {
     detailBulletRow: { flexDirection: "row", alignItems: "flex-start", gap: 7, marginBottom: 8 },
     detailBulletMark: { fontSize: 13, lineHeight: 23, fontWeight: "700", fontFamily: F.mono },
   });
-}
