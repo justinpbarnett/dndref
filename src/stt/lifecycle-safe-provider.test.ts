@@ -24,11 +24,10 @@ class FakeCaptureAdapter implements STTProvider {
     private readonly onError: (error: string) => void,
   ) {}
 
-  async start(): Promise<void> {
-    this.startCalls += 1;
-    if (this.startError) throw this.startError;
-    if (this.startResult) await this.startResult;
-  }
+  start = () => (
+    (this.startCalls += 1),
+    this.startError ? Promise.reject(this.startError) : (this.startResult ?? Promise.resolve())
+  );
 
   pause(): void {}
   resume(): void {}
