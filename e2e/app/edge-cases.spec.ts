@@ -88,7 +88,6 @@ test.describe("edge cases", () => {
     await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByText("Mic Error", { exact: true })).not.toBeVisible();
     await expect(page.getByTestId("entity-card")).toHaveCount(0);
-    const startCountAfterCallbacks = await getSpeechStartCount(page);
-    expect(startCountAfterCallbacks).toBe(startCountBeforeStop);
+    expect(await getSpeechStartCount(page)).toBe(startCountBeforeStop);
   });
 });
