@@ -45,17 +45,9 @@ describe("EntityDetector", () => {
     expect(detector.detect("The Prancing Pony").map((e) => e.name)).toContain("The Prancing Pony");
   });
 
-  it("does not detect short words (< 4 chars)", () => {
-    expect(detector.detect("the")).toHaveLength(0);
-  });
-
-  it("returns empty for unknown words", () => {
-    expect(detector.detect("xyzzyplugh")).toHaveLength(0);
-  });
-
-  it("handles empty transcript", () => {
-    expect(detector.detect("")).toHaveLength(0);
-  });
+  it.each(["the", "xyzzyplugh", ""])("returns no entities for %p", (input) =>
+    expect(detector.detect(input)).toHaveLength(0),
+  );
 
   it("deduplicates multiple matches to same entity", () => {
     expect(detector.detect("Gimble Lock is the bard").map((e) => e.name)).toEqual(["Gimble Lock"]);
