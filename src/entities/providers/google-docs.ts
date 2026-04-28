@@ -11,11 +11,7 @@ const GOOGLE_DOCS_CORS_FALLBACK = 'Use the iOS app or paste content via file upl
 
 export class GoogleDocsProvider implements WorldDataProvider {
   readonly name = GOOGLE_DOCS_SOURCE_NAME;
-  private readonly url: string;
-
-  constructor(url: string) {
-    this.url = url;
-  }
+  constructor(private readonly url: string) {}
 
   async load(): Promise<EntityIndex> {
     const text = await fetchGoogleDocText(this.url);

@@ -8,13 +8,7 @@ const NOTION_VERSION = '2022-06-28';
 
 export class NotionProvider implements WorldDataProvider {
   readonly name = 'Notion';
-  private token: string;
-  private pageIds: string[];
-
-  constructor(token: string, pageIds: string[]) {
-    this.token = token;
-    this.pageIds = pageIds;
-  }
+  constructor(private token: string, private pageIds: string[]) {}
 
   async load(): Promise<EntityIndex> {
     const results = await Promise.allSettled(this.pageIds.map((id) => this.loadPage(id)));

@@ -38,11 +38,7 @@ interface SRDCache {
 
 export class SRDProvider implements WorldDataProvider {
   readonly name = 'D&D 5e SRD';
-  private sources: string[];
-
-  constructor(sources: string[] = DEFAULT_SRD_SOURCES) {
-    this.sources = sources;
-  }
+  constructor(private sources: string[] = DEFAULT_SRD_SOURCES) {}
 
   async load(): Promise<EntityIndex> {
     if (this.sources.length === 0) return [];

@@ -4,11 +4,7 @@ import { handleCorsError } from '../../utils/providers';
 
 export class HomebreweryProvider implements WorldDataProvider {
   readonly name = 'Homebrewery';
-  private url: string;
-
-  constructor(url: string) {
-    this.url = url;
-  }
+  constructor(private url: string) {}
 
   async load(): Promise<EntityIndex> {
     const id = extractBrewId(this.url);
