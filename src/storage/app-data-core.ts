@@ -69,9 +69,7 @@ export async function setAppDataItem(
   return operation;
 }
 
-export async function waitForAppDataWrites(): Promise<void> {
-  await appDataWriteQueue.catch(() => undefined);
-}
+export const waitForAppDataWrites = (): Promise<void> => appDataWriteQueue.catch(() => undefined).then(() => undefined);
 
 export function beginAppDataReset(): number {
   appDataResetGeneration += 1;

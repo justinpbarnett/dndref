@@ -13,9 +13,8 @@ export const addUploadedFile = (name: string, content: string): Promise<boolean>
   ]);
 export const removeUploadedFile = (id: string): Promise<boolean> =>
   mutateUploadedFiles((uploads) => uploads.filter((u) => u.id !== id));
-export async function waitForUploadedFileMutations(): Promise<void> {
-  await uploadMutationQueue.catch(() => undefined);
-}
+export const waitForUploadedFileMutations = (): Promise<void> =>
+  uploadMutationQueue.catch(() => undefined).then(() => undefined);
 
 function isUploadedFile(value: unknown): value is UploadedFile {
   if (!value || typeof value !== "object") return false;
