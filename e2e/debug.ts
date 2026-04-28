@@ -7,15 +7,12 @@ async function debugPage() {
   await page.goto("http://localhost:3333", { waitUntil: "load", timeout: 30000 });
   await page.waitForTimeout(3000);
 
-  // Take a screenshot
   await page.screenshot({ path: "e2e/debug-home.png", fullPage: true });
 
-  // Get page text
   const bodyText = await page.textContent("body");
   console.log("=== PAGE TEXT (first 2000 chars) ===");
   console.log(bodyText?.slice(0, 2000));
 
-  // Find all buttons
   const buttons = await page.locator("button").all();
   console.log("\n=== BUTTONS ===");
   for (const btn of buttons) {
@@ -24,7 +21,6 @@ async function debugPage() {
     console.log(`Button: text="${text?.slice(0, 50)}" aria-label="${aria}"`);
   }
 
-  // Find all links
   const links = await page.locator("a").all();
   console.log("\n=== LINKS ===");
   for (const link of links) {
@@ -33,7 +29,6 @@ async function debugPage() {
     console.log(`Link: text="${text?.slice(0, 50)}" href="${href}"`);
   }
 
-  // Find all headings
   const headings = await page.locator("h1, h2, h3, h4").all();
   console.log("\n=== HEADINGS ===");
   for (const h of headings) {
@@ -41,7 +36,6 @@ async function debugPage() {
     console.log(`${await h.evaluate((el) => el.tagName)}: "${text?.slice(0, 50)}"`);
   }
 
-  // Navigate to settings
   console.log("\n=== NAVIGATING TO SETTINGS ===");
   await page.goto("http://localhost:3333/settings", { waitUntil: "load" });
   await page.waitForTimeout(2000);
@@ -51,7 +45,6 @@ async function debugPage() {
   console.log("\n=== SETTINGS PAGE TEXT (first 2000 chars) ===");
   console.log(settingsText?.slice(0, 2000));
 
-  // Find tabs
   const tabs = await page.locator('[role="tab"], button, a').all();
   console.log("\n=== SETTINGS ELEMENTS ===");
   for (const tab of tabs.slice(0, 20)) {
