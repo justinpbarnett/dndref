@@ -4,15 +4,9 @@ import { ingestUploadedFile } from "../ingestion";
 
 export type { UploadedFile } from "../../storage/app-data";
 
-export async function getUploads(): Promise<UploadedFile[]> {
-  return getUploadedFiles();
-}
-export async function addUpload(name: string, content: string): Promise<void> {
-  await addUploadedFile(name, content);
-}
-export async function removeUpload(id: string): Promise<void> {
-  await removeUploadedFile(id);
-}
+export const getUploads = getUploadedFiles;
+export const addUpload = addUploadedFile;
+export const removeUpload = removeUploadedFile;
 
 export class FileUploadProvider implements WorldDataProvider {
   readonly name = "Uploaded Files";
