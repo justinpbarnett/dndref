@@ -4,19 +4,7 @@ import type { CardState } from './context/session-types';
 import { deriveEntityCardPresentation, extractEntityCardSummaryBullets, extractEntityDetailBullets } from './entity-card-presentation';
 
 function makeCard(overrides: Partial<CardState> = {}): CardState {
-  return {
-    instanceId: 'card-1',
-    pinned: false,
-    entity: {
-      id: 'ironspire',
-      name: 'Ironspire Fortress',
-      type: 'Location',
-      aliases: [],
-      summary: 'Ancient dwarven stronghold. Seven levels deep.',
-      image: undefined,
-    },
-    ...overrides,
-  };
+  return { instanceId: 'card-1', pinned: false, entity: { id: 'ironspire', name: 'Ironspire Fortress', type: 'Location', aliases: [], summary: 'Ancient dwarven stronghold. Seven levels deep.', image: undefined }, ...overrides };
 }
 
 describe('extractEntityCardSummaryBullets', () => {
