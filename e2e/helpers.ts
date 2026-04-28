@@ -70,28 +70,6 @@ export async function injectSpeechMock(page: Page) {
   });
 }
 
-const IONICONS_TTF = path.join(
-  __dirname,
-  "../node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf",
-);
-
-export async function interceptFonts(page: Page) {
-  await page.route("**/cdn.jsdelivr.net/**", async (route) => {
-    const body = fs.readFileSync(IONICONS_TTF);
-    await route.fulfill({ status: 200, contentType: "font/ttf", body });
-  });
-}
-
-export async function interceptExternalApis(page: Page) {
-  await page.route("**open5e**", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ count: 0, next: null, previous: null, results: [] }),
-    });
-  });
-}
-
 export async function waitForApp(page: Page) {
   await page.waitForLoadState("load");
   await page.waitForSelector("text=Ready", { timeout: 20000 });
@@ -152,8 +130,22 @@ export const DETECT_WAIT_MS = 2500;
 
 export async function setupTest(page: Page) {
   await injectSpeechMock(page);
-  await interceptFonts(page);
-  await interceptExternalApis(page);
+  await page.route("**/cdn.jsdelivr.net/**", async (route) => {
+    const body = fs.readFileSync(
+      path.join(
+        __dirname,
+        "../node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf",
+      ),
+    );
+    await route.fulfill({ status: 200, contentType: "font/ttf", body });
+  });
+  await page.route("**open5e**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ count: 0, next: null, previous: null, results: [] }),
+    });
+  });
   await page.goto("/");
   await waitForApp(page);
 }
