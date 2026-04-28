@@ -115,11 +115,7 @@ describe('Deepgram browser capture adapter', () => {
 
     const chunk = { size: 42 };
     recorders[0].emitChunk(chunk);
-    sockets[0].receive(JSON.stringify({
-      type: 'Results',
-      is_final: true,
-      channel: { alternatives: [{ transcript: 'Strahd arrives' }] },
-    }));
+    sockets[0].receive(JSON.stringify({ type: 'Results', is_final: true, channel: { alternatives: [{ transcript: 'Strahd arrives' }] } }));
 
     expect(sockets[0].sent).toEqual([chunk]);
     expect(onTranscript).toHaveBeenCalledWith('Strahd arrives');

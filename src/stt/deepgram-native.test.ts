@@ -23,13 +23,7 @@ const nativeState = vi.hoisted(() => {
   return state;
 });
 
-const fileSystemMocks = vi.hoisted(() => ({
-  deleteAsync: vi.fn(async () => undefined),
-  uploadAsync: vi.fn(async () => ({
-    body: '{"results":{"channels":[{"alternatives":[{"transcript":""}]}]}}',
-    status: 200,
-  })),
-}));
+const fileSystemMocks = vi.hoisted(() => ({ deleteAsync: vi.fn(async () => undefined), uploadAsync: vi.fn(async () => ({ body: '{"results":{"channels":[{"alternatives":[{"transcript":""}]}]}}', status: 200 })) }));
 
 vi.mock('expo-audio', () => ({ RecordingPresets: { HIGH_QUALITY: {} }, requestRecordingPermissionsAsync: vi.fn(async () => ({ granted: true })), setAudioModeAsync: vi.fn(async () => undefined) }));
 vi.mock('expo-audio/build/AudioModule', () => ({
