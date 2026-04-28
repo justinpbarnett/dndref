@@ -38,9 +38,7 @@ Open only under the new moon.
 Commands the east watch.
 `;
 
-    const entities = await new MarkdownProvider(content, "Imported Doc").load();
-
-    expect(entities).toEqual([
+    await expect(new MarkdownProvider(content, "Imported Doc").load()).resolves.toEqual([
       {
         id: "moonlit-bazaar",
         name: "Moonlit Bazaar",
