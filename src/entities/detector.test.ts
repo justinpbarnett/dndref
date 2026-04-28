@@ -34,21 +34,15 @@ describe("EntityDetector", () => {
   const detector = new EntityDetector(entities);
 
   it("detects entities by exact name match", () => {
-    const found = detector.detect("Gimble");
-    expect(found.length).toBeGreaterThan(0);
-    expect(found.some((e) => e.name === "Gimble Lock")).toBe(true);
+    expect(detector.detect("Gimble").map((e) => e.name)).toContain("Gimble Lock");
   });
 
   it("detects entities by alias", () => {
-    const found = detector.detect("the bard");
-    expect(found.length).toBeGreaterThan(0);
-    expect(found.some((e) => e.name === "Gimble Lock")).toBe(true);
+    expect(detector.detect("the bard").map((e) => e.name)).toContain("Gimble Lock");
   });
 
   it("detects multi-word entity names", () => {
-    const found = detector.detect("The Prancing Pony");
-    expect(found.length).toBeGreaterThan(0);
-    expect(found.some((e) => e.name === "The Prancing Pony")).toBe(true);
+    expect(detector.detect("The Prancing Pony").map((e) => e.name)).toContain("The Prancing Pony");
   });
 
   it("does not detect short words (< 4 chars)", () => {
