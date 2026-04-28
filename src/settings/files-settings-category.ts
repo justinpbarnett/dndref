@@ -12,26 +12,9 @@ type MaybePromise<T> = T | Promise<T>;
 
 export interface PickedTextFile { name: string; text: () => Promise<string> }
 
-export interface FilesSettingsCategorySnapshot {
-  uploads: UploadedFile[];
-  removingUploadId: string | null;
-  pasteFileName: string;
-  pasteContent: string;
-  deleteAllPending: boolean;
-  deleteAllStatus: string;
-}
+export interface FilesSettingsCategorySnapshot { uploads: UploadedFile[]; removingUploadId: string | null; pasteFileName: string; pasteContent: string; deleteAllPending: boolean; deleteAllStatus: string }
 
-export interface FilesSettingsCategoryControllerOptions {
-  getUploads?: () => Promise<UploadedFile[]>;
-  addUpload?: (name: string, content: string) => MaybePromise<void>;
-  removeUpload?: (id: string) => MaybePromise<void>;
-  bumpUploads?: () => void;
-  pickFiles?: () => Promise<PickedTextFile[]>;
-  confirmDeleteAllData?: () => Promise<boolean>;
-  resetStoredAppData?: () => Promise<unknown>;
-  stopSession?: () => void;
-  onDeleteAllDataReset?: () => void;
-}
+export interface FilesSettingsCategoryControllerOptions { getUploads?: () => Promise<UploadedFile[]>; addUpload?: (name: string, content: string) => MaybePromise<void>; removeUpload?: (id: string) => MaybePromise<void>; bumpUploads?: () => void; pickFiles?: () => Promise<PickedTextFile[]>; confirmDeleteAllData?: () => Promise<boolean>; resetStoredAppData?: () => Promise<unknown>; stopSession?: () => void; onDeleteAllDataReset?: () => void }
 
 export interface FilesSettingsCategoryController {
   getSnapshot(): FilesSettingsCategorySnapshot;
