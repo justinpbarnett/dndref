@@ -65,11 +65,10 @@ class DefaultVoiceSettingsCategoryController extends SnapshotStore<VoiceSettings
     this.restartSavedTimer();
   }
 
-  reset(): void {
-    this.loadGeneration += 1;
-    this.clearSavedIndicatorTimer();
-    this.replaceSnapshot({ sttSettings: createDefaultVoiceSettings(), voiceSaved: false });
-  }
+  reset = (): void =>
+    void ((this.loadGeneration += 1),
+    this.clearSavedIndicatorTimer(),
+    this.replaceSnapshot({ sttSettings: createDefaultVoiceSettings(), voiceSaved: false }));
 
   dispose(): void {
     this.disposed = true;
