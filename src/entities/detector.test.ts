@@ -58,9 +58,7 @@ describe("EntityDetector", () => {
   });
 
   it("deduplicates multiple matches to same entity", () => {
-    const found = detector.detect("Gimble Lock is the bard");
-    expect(found.length).toBe(1);
-    expect(found[0].name).toBe("Gimble Lock");
+    expect(detector.detect("Gimble Lock is the bard").map((e) => e.name)).toEqual(["Gimble Lock"]);
   });
 });
 
