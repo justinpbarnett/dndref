@@ -24,8 +24,6 @@ export interface VoiceSettingsCategoryControllerOptions {
   clearSavedTimer?: (timer: SavedTimer) => void;
 }
 
-export type VoiceSettingsCategoryController = DefaultVoiceSettingsCategoryController;
-
 class DefaultVoiceSettingsCategoryController extends SnapshotStore<VoiceSettingsCategorySnapshot> {
   private readonly services: VoiceSettingsServices;
   private savedTimer: SavedTimer | null = null;
@@ -92,12 +90,11 @@ class DefaultVoiceSettingsCategoryController extends SnapshotStore<VoiceSettings
   }
 }
 
-export const createVoiceSettingsCategoryController = (
-  options: VoiceSettingsCategoryControllerOptions = {},
-): VoiceSettingsCategoryController => new DefaultVoiceSettingsCategoryController(options);
+export const createVoiceSettingsCategoryController = (options: VoiceSettingsCategoryControllerOptions = {}) =>
+  new DefaultVoiceSettingsCategoryController(options);
 
 export function useVoiceSettingsCategory() {
-  const controllerRef = useRef<VoiceSettingsCategoryController | null>(null);
+  const controllerRef = useRef<DefaultVoiceSettingsCategoryController | null>(null);
   if (!controllerRef.current) controllerRef.current = createVoiceSettingsCategoryController();
   const controller = controllerRef.current;
   const [snapshot, setSnapshot] = useState(() => controller.getSnapshot());

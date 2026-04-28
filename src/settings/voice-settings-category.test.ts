@@ -3,12 +3,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("react-native", () => ({ Platform: { OS: "web" } }));
 
 import { DEFAULT_STT_SETTINGS, type STTSettings } from "../stt";
-import {
-  VOICE_SAVED_INDICATOR_MS,
-  createVoiceSettingsCategoryController,
-  type VoiceSettingsCategoryController,
-  type VoiceSettingsCategoryControllerOptions,
-} from "./voice-settings-category";
+import { VOICE_SAVED_INDICATOR_MS, createVoiceSettingsCategoryController } from "./voice-settings-category";
+
+type VoiceSettingsCategoryController = ReturnType<typeof createVoiceSettingsCategoryController>;
+type VoiceSettingsCategoryControllerOptions = NonNullable<Parameters<typeof createVoiceSettingsCategoryController>[0]>;
 
 const controllers: VoiceSettingsCategoryController[] = [];
 
