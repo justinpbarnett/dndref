@@ -15,7 +15,6 @@ function testResult(consoleErrors: string[], screenshotPath: string, extraInfo: 
 }
 
 export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
-  consoleErrors.length = 0;
   await page.goto(baseUrl, { waitUntil: "load", timeout: 30000 });
   await page.waitForTimeout(2500);
 
@@ -33,8 +32,6 @@ export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl
 }
 
 export async function testNavigateToSettings({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
-  consoleErrors.length = 0;
-
   const settingsLink = page.locator('a[href="/settings"], text=SETTINGS').first();
   if (await settingsLink.isVisible().catch(() => false)) {
     await settingsLink.click();
@@ -57,7 +54,6 @@ export async function testNavigateToSettings({ page, consoleErrors, screenshotDi
 }
 
 export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
-  consoleErrors.length = 0;
   const screenshots: string[] = [];
 
   await gotoSettingsPage(page, baseUrl);
@@ -91,7 +87,6 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
 }
 
 export async function testThemeSwitching({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
-  consoleErrors.length = 0;
   const screenshots: string[] = [];
 
   await gotoSettingsPage(page, baseUrl);
@@ -109,7 +104,6 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
 }
 
 export async function testSttProvider({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
-  consoleErrors.length = 0;
   const screenshots: string[] = [];
 
   await gotoSettingsPage(page, baseUrl);
@@ -160,8 +154,6 @@ export async function testSttProvider({ page, consoleErrors, screenshotDir, base
 }
 
 export async function testDataSourceToggles({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
-  consoleErrors.length = 0;
-
   await gotoSettingsPage(page, baseUrl);
 
   const sourcesTab = page.getByText("Sources", { exact: true }).first();
@@ -198,8 +190,6 @@ export async function testDataSourceToggles({ page, consoleErrors, screenshotDir
 }
 
 export async function testSampleWorldEntities({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
-  consoleErrors.length = 0;
-
   await page.goto(baseUrl, { waitUntil: "load" });
   await page.waitForTimeout(2500);
 

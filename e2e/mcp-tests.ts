@@ -38,15 +38,20 @@ async function runTests() {
   page.on("pageerror", (err: Error) => consoleErrors.push(`[Page Error] ${err.message}`));
 
   const testCtx: TestContext = { page, consoleErrors, screenshotDir: SCREENSHOT_DIR, baseUrl: BASE_URL };
+  const run = (name: string, testFn: (ctx: TestContext) => Promise<any>) =>
+    runTest(results, name, () => {
+      consoleErrors.length = 0;
+      return testFn(testCtx);
+    });
 
   try {
-    await runTest(results, "Test 1: App loads correctly", () => testAppLoads(testCtx));
-    await runTest(results, "Test 2: Navigate to Settings", () => testNavigateToSettings(testCtx));
-    await runTest(results, "Test 3: Card size switching", () => testCardSizeSwitching(testCtx));
-    await runTest(results, "Test 4: Theme switching", () => testThemeSwitching(testCtx));
-    await runTest(results, "Test 5: STT provider selection", () => testSttProvider(testCtx));
-    await runTest(results, "Test 6: Data source toggles", () => testDataSourceToggles(testCtx));
-    await runTest(results, "Test 7: Sample world entities", () => testSampleWorldEntities(testCtx));
+    await run("Test 1: App loads correctly", testAppLoads);
+    await run("Test 2: Navigate to Settings", testNavigateToSettings);
+    await run("Test 3: Card size switching", testCardSizeSwitching);
+    await run("Test 4: Theme switching", testThemeSwitching);
+    await run("Test 5: STT provider selection", testSttProvider);
+    await run("Test 6: Data source toggles", testDataSourceToggles);
+    await run("Test 7: Sample world entities", testSampleWorldEntities);
   } finally {
     await browser.close();
   }
