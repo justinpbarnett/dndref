@@ -112,93 +112,20 @@ export function SessionControls() {
 
 function createStyles(C: Colors) {
   return StyleSheet.create({
-    bar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 18,
-      paddingVertical: 10,
-      backgroundColor: C.bgSurface,
-      borderBottomWidth: 1,
-      borderBottomColor: C.border,
-      minHeight: 50,
-    },
-    appName: {
-      color: C.textDim,
-      fontSize: 11,
-      fontWeight: '600',
-      letterSpacing: 2.5,
-      fontFamily: F.display,
-      minWidth: 80,
-    },
-    statusRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 7,
-    },
-    statusText: {
-      color: C.textSecondary,
-      fontSize: 11,
-      letterSpacing: 0.8,
-      fontFamily: F.mono,
-    },
-    buttons: {
-      flexDirection: 'row',
-      gap: 6,
-      minWidth: 80,
-      justifyContent: 'flex-end',
-    },
-    btn: {
-      paddingHorizontal: 16,
-      paddingVertical: 9,
-      borderRadius: 3,
-    },
-    btnStart: {
-      backgroundColor: C.active,
-    },
-    btnDisabled: {
-      opacity: 0.55,
-    },
-    btnPause: {
-      backgroundColor: C.paused + '25',
-      borderWidth: 1,
-      borderColor: C.paused + '70',
-    },
-    btnStop: {
-      borderWidth: 1,
-      borderColor: C.borderStrong,
-    },
-    btnTextStart: {
-      color: C.bg,
-      fontSize: 12,
-      fontWeight: '700',
-      letterSpacing: 0.3,
-      fontFamily: F.mono,
-    },
-    btnTextPause: {
-      color: C.paused,
-      fontSize: 12,
-      fontWeight: '600',
-      fontFamily: F.mono,
-    },
-    btnTextStop: {
-      color: C.textSecondary,
-      fontSize: 12,
-      fontWeight: '600',
-      fontFamily: F.mono,
-    },
-    errorBanner: {
-      backgroundColor: C.bgSurface,
-      borderBottomWidth: 1,
-      borderBottomColor: C.border,
-      paddingHorizontal: 18,
-      paddingVertical: 6,
-    },
-    errorText: {
-      color: C.error,
-      fontSize: 11,
-      fontFamily: F.mono,
-      letterSpacing: 0.3,
-    },
+    bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 10, backgroundColor: C.bgSurface, borderBottomWidth: 1, borderBottomColor: C.border, minHeight: 50 },
+    appName: { color: C.textDim, fontSize: 11, fontWeight: '600', letterSpacing: 2.5, fontFamily: F.display, minWidth: 80 },
+    statusRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+    statusText: { color: C.textSecondary, fontSize: 11, letterSpacing: 0.8, fontFamily: F.mono },
+    buttons: { flexDirection: 'row', gap: 6, minWidth: 80, justifyContent: 'flex-end' },
+    btn: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 3 },
+    btnStart: { backgroundColor: C.active },
+    btnDisabled: { opacity: 0.55 },
+    btnPause: { backgroundColor: C.paused + '25', borderWidth: 1, borderColor: C.paused + '70' },
+    btnStop: { borderWidth: 1, borderColor: C.borderStrong },
+    btnTextStart: { color: C.bg, fontSize: 12, fontWeight: '700', letterSpacing: 0.3, fontFamily: F.mono },
+    btnTextPause: { color: C.paused, fontSize: 12, fontWeight: '600', fontFamily: F.mono },
+    btnTextStop: { color: C.textSecondary, fontSize: 12, fontWeight: '600', fontFamily: F.mono },
+    errorBanner: { backgroundColor: C.bgSurface, borderBottomWidth: 1, borderBottomColor: C.border, paddingHorizontal: 18, paddingVertical: 6 },
+    errorText: { color: C.error, fontSize: 11, fontFamily: F.mono, letterSpacing: 0.3 },
   });
 }
