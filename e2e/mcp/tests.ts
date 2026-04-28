@@ -79,17 +79,15 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
       .first();
     const altSizeBtn = page.locator(`button:has-text("${size}")`).first();
 
-    if (await sizeBtn.isVisible().catch(() => false)) {
-      await sizeBtn.click();
+    const visibleButton = (await sizeBtn.isVisible().catch(() => false))
+      ? sizeBtn
+      : (await altSizeBtn.isVisible().catch(() => false))
+        ? altSizeBtn
+        : null;
+    if (visibleButton) {
+      await visibleButton.click();
       await page.waitForTimeout(600);
-      const screenshotPath = `${screenshotDir}/test-03-card-size-${size.toLowerCase()}.png`;
-      await saveScreenshot(page, screenshots, screenshotPath);
-      testedSizes.push(size);
-    } else if (await altSizeBtn.isVisible().catch(() => false)) {
-      await altSizeBtn.click();
-      await page.waitForTimeout(600);
-      const screenshotPath = `${screenshotDir}/test-03-card-size-${size.toLowerCase()}.png`;
-      await saveScreenshot(page, screenshots, screenshotPath);
+      await saveScreenshot(page, screenshots, `${screenshotDir}/test-03-card-size-${size.toLowerCase()}.png`);
       testedSizes.push(size);
     }
   }
