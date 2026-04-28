@@ -133,9 +133,7 @@ function getFallbackBlock(content: string): MarkdownBlock[] {
   return name ? [{ name, body: lines.join("\n") }] : [];
 }
 
-function cleanHeading(name: string): string {
-  return name.replace(/\*\*/g, "").trim();
-}
+const cleanHeading = (name: string) => name.replace(/\*\*/g, "").trim();
 
 function parseField(line: string): { key: string; value: string } | null {
   const match = line.match(/^(?:[-*]\s*)?(?:\*\*)?([^:*]+):(?:\*\*)?\s*(.+)$/);
@@ -144,15 +142,12 @@ function parseField(line: string): { key: string; value: string } | null {
   return { key: match[1].replace(/\*/g, "").trim().toLowerCase(), value: match[2].trim() };
 }
 
-function isIngestedEntityRecord(value: unknown): value is IngestedEntityRecord {
-  return value !== null && typeof value === "object";
-}
-function normalizeNonEmptyString(value: unknown): string | null {
-  return typeof value === "string" ? value.trim() || null : null;
-}
-function normalizeIngestedEntityType(value: unknown): EntityType {
-  return normalizeEntityType(typeof value === "string" ? value : "");
-}
+const isIngestedEntityRecord = (value: unknown): value is IngestedEntityRecord =>
+  value !== null && typeof value === "object";
+const normalizeNonEmptyString = (value: unknown): string | null =>
+  typeof value === "string" ? value.trim() || null : null;
+const normalizeIngestedEntityType = (value: unknown): EntityType =>
+  normalizeEntityType(typeof value === "string" ? value : "");
 
 function normalizeAliases(value: unknown): string[] {
   if (typeof value === "string") return splitAliasString(value);
