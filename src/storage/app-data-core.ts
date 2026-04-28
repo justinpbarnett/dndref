@@ -25,9 +25,7 @@ export const isAppDataWriteTokenCurrent = (token: number): boolean =>
 
 export const canPersistAppDataCache = (token: number): boolean =>
   isAppDataWriteTokenCurrent(token) && cacheWritesBlockedForGeneration !== token;
-export function allowAppDataCacheWrites(): void {
-  cacheWritesBlockedForGeneration = null;
-}
+export const allowAppDataCacheWrites = (): void => void (cacheWritesBlockedForGeneration = null);
 
 export type AppDataCacheSession = {
   getItem: (key: string) => Promise<string | null>;

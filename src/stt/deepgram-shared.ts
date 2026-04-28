@@ -6,9 +6,9 @@ type DeepgramTranscriptChannel = { alternatives?: Array<{ transcript?: string }>
 type DeepgramHttpResponse = { results?: { channels?: DeepgramTranscriptChannel[] } };
 type DeepgramStreamingResponse = { channel?: DeepgramTranscriptChannel; is_final?: boolean; type?: string };
 
-export function assertDeepgramApiKey(apiKey: string): void {
+export const assertDeepgramApiKey = (apiKey: string): void => {
   if (!apiKey) throw new Error("Deepgram API key not set. Configure it in the Settings tab.");
-}
+};
 
 export function getDeepgramCloseMessage(event: CloseEvent): string {
   if (event.code === 1008) return "Deepgram rejected the connection -- verify your API key.";
