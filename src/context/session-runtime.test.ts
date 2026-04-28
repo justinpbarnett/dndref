@@ -37,15 +37,9 @@ class FakeSTTProvider implements STTProvider {
     private readonly onError: (error: string) => void,
   ) {}
 
-  async start(): Promise<void> {
-    this.startCalls += 1;
-    if (this.startError) throw this.startError;
-  }
+  start = () => ((this.startCalls += 1), this.startError ? Promise.reject(this.startError) : Promise.resolve());
   pause = async () => void (this.pauseCalls += 1);
-  async resume(): Promise<void> {
-    this.resumeCalls += 1;
-    if (this.resumeError) throw this.resumeError;
-  }
+  resume = () => ((this.resumeCalls += 1), this.resumeError ? Promise.reject(this.resumeError) : Promise.resolve());
   stop = async () => void (this.stopCalls += 1);
 
   emitTranscript = (text: string) => this.onTranscript(text);
