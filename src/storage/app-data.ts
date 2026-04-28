@@ -2,18 +2,15 @@ export {
   APP_STORAGE_KEYS,
   allowAppDataCacheWrites,
   beginAppDataReset,
-  canPersistAppData,
   canPersistAppDataCache,
   clearStoredAppData,
   createAppDataCacheSession,
   createAppDataWriteToken,
   finishAppDataReset,
   getAppDataItem,
-  getStoredAppDataKeys,
   isAppDataWriteTokenCurrent,
   isAppStorageKey,
   setAppDataItem,
-  waitForAppDataWrites,
   type AppDataCacheSession,
 } from "./app-data-core";
 export {
