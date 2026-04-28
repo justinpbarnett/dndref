@@ -5,6 +5,10 @@ async function saveScreenshot(page: TestContext["page"], screenshots: string[], 
   screenshots.push(path);
 }
 
+async function gotoSettingsPage(page: TestContext["page"], baseUrl: string) {
+  await gotoSettingsPage(page, baseUrl);
+}
+
 export async function testAppLoads({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
   await page.goto(baseUrl, { waitUntil: "load", timeout: 30000 });
@@ -60,8 +64,7 @@ export async function testCardSizeSwitching({ page, consoleErrors, screenshotDir
   consoleErrors.length = 0;
   const screenshots: string[] = [];
 
-  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
-  await page.waitForTimeout(2000);
+  await gotoSettingsPage(page, baseUrl);
 
   const initialScreenshot = `${screenshotDir}/test-03-card-size-initial.png`;
   await saveScreenshot(page, screenshots, initialScreenshot);
@@ -102,8 +105,7 @@ export async function testThemeSwitching({ page, consoleErrors, screenshotDir, b
   consoleErrors.length = 0;
   const screenshots: string[] = [];
 
-  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
-  await page.waitForTimeout(2000);
+  await gotoSettingsPage(page, baseUrl);
 
   const darkBtn = page.getByText("Dark", { exact: true }).first();
   if (await darkBtn.isVisible().catch(() => false)) {
@@ -140,8 +142,7 @@ export async function testSttProvider({ page, consoleErrors, screenshotDir, base
   consoleErrors.length = 0;
   const screenshots: string[] = [];
 
-  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
-  await page.waitForTimeout(2000);
+  await gotoSettingsPage(page, baseUrl);
 
   const voiceTab = page.getByText("Voice", { exact: true }).first();
   if (!(await voiceTab.isVisible().catch(() => false))) throw new Error("Voice tab not found");
@@ -195,8 +196,7 @@ export async function testSttProvider({ page, consoleErrors, screenshotDir, base
 export async function testDataSourceToggles({ page, consoleErrors, screenshotDir, baseUrl }: TestContext) {
   consoleErrors.length = 0;
 
-  await page.goto(`${baseUrl}/settings`, { waitUntil: "load" });
-  await page.waitForTimeout(2000);
+  await gotoSettingsPage(page, baseUrl);
 
   const sourcesTab = page.getByText("Sources", { exact: true }).first();
   if (!(await sourcesTab.isVisible().catch(() => false))) throw new Error("Sources tab not found");
