@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STT_SETTINGS_KEY } from "../stt";
 import { CARD_SIZE_KEY, COLOR_SCHEME_KEY, DATA_SOURCES_KEY, SRD_CACHE_KEY_PREFIX, UPLOADS_KEY } from "./keys";
 
-const APP_STORAGE_PREFIXES = ["dndref:", "@dnd-ref/"];
 const INVALID_APP_DATA_TOKEN = -1;
 
 let appDataResetGeneration = 0;
@@ -17,7 +16,7 @@ export function isAppStorageKey(key: string): boolean {
   return (
     APP_STORAGE_KEYS.includes(key) ||
     key.startsWith(SRD_CACHE_KEY_PREFIX) ||
-    APP_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix))
+    ["dndref:", "@dnd-ref/"].some((prefix) => key.startsWith(prefix))
   );
 }
 
