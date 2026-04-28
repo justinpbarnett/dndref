@@ -158,12 +158,11 @@ function normalizeAliases(value: unknown): string[] {
     .filter(Boolean);
 }
 
-function splitAliasString(value: string): string[] {
-  return value
+const splitAliasString = (value: string): string[] =>
+  value
     .split(/[,;|]/)
     .map((alias) => alias.trim())
     .filter(Boolean);
-}
 
 function normalizeSummary(summary: unknown, description: unknown): string {
   const value = typeof summary === "string" ? summary : description;
