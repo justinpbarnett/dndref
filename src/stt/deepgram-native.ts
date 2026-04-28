@@ -1,17 +1,31 @@
+import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, type AudioRecorder } from "expo-audio";
+import AudioModule from "expo-audio/build/AudioModule";
+import { createRecordingOptions } from "expo-audio/build/utils/options";
 import * as FileSystem from "expo-file-system/legacy";
 
 import { assertDeepgramApiKey, DEEPGRAM_HTTP_URL, DEEPGRAM_PARAMS, extractDeepgramTranscript } from "./deepgram-shared";
-import {
-  createNativeAudioRecorder,
-  releaseNativeAudioRecorder,
-  requestNativeRecordingAccess,
-  type NativeAudioRecorder,
-} from "./native-audio";
-
 import type { STTProvider } from "./index";
 
 const NATIVE_AUDIO_CONTENT_TYPE = "audio/mp4";
 const NATIVE_CHUNK_INTERVAL_MS = 5000;
+const NATIVE_RECORDING_OPTIONS = createRecordingOptions(RecordingPresets.HIGH_QUALITY);
+type NativeAudioRecorder = AudioRecorder;
+
+async function requestNativeRecordingAccess(): Promise<void> {
+  const { granted } = await requestRecordingPermissionsAsync();
+  if (!granted) throw new Error("Microphone permission denied.");
+  await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+}
+
+function createNativeAudioRecorder(): NativeAudioRecorder {
+  return new AudioModule.AudioRecorder(NATIVE_RECORDING_OPTIONS);
+}
+
+function releaseNativeAudioRecorder(rec: NativeAudioRecorder): void {
+  try {
+    rec.release();
+  } catch {}
+}
 
 export class DeepgramNativeCaptureAdapter implements STTProvider {
   readonly name = "Deepgram";
