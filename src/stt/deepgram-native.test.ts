@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 type Deferred = { promise: Promise<void>; resolve: () => void };
 
+const EMPTY_TRANSCRIPT_BODY = '{"results":{"channels":[{"alternatives":[{"transcript":""}]}]}}';
+
 const nativeState = vi.hoisted(() => {
   class MockRecording {
     recordCalls = 0;
@@ -27,10 +29,7 @@ const nativeState = vi.hoisted(() => {
 
 const fileSystemMocks = vi.hoisted(() => ({
   deleteAsync: vi.fn(async () => undefined),
-  uploadAsync: vi.fn(async () => ({
-    body: '{"results":{"channels":[{"alternatives":[{"transcript":""}]}]}}',
-    status: 200,
-  })),
+  uploadAsync: vi.fn(async () => ({ body: EMPTY_TRANSCRIPT_BODY, status: 200 })),
 }));
 
 vi.mock("expo-audio", () => ({
@@ -74,10 +73,7 @@ describe("Deepgram native capture adapter", () => {
     nativeState.nextPrepare = null;
     nativeState.recordings.length = 0;
     fileSystemMocks.deleteAsync.mockResolvedValue(undefined);
-    fileSystemMocks.uploadAsync.mockResolvedValue({
-      body: '{"results":{"channels":[{"alternatives":[{"transcript":""}]}]}}',
-      status: 200,
-    });
+    fileSystemMocks.uploadAsync.mockResolvedValue({ body: EMPTY_TRANSCRIPT_BODY, status: 200 });
   });
 
   afterEach(() => vi.useRealTimers());
