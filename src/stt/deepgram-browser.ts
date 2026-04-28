@@ -189,6 +189,4 @@ export class DeepgramBrowserCaptureAdapter implements STTProvider {
   }
 }
 
-function stopMediaStream(stream: MediaStream): void {
-  stream.getTracks().forEach((track) => track.stop());
-}
+const stopMediaStream = (stream: MediaStream): void => stream.getTracks().forEach((track) => track.stop());
