@@ -22,18 +22,16 @@ export const REFERENCE_CARD_LAYOUT = {
   defaultMeasuredHeight: 200,
 } as const;
 
-export type ReferenceCardLayoutItem = { instanceId: string };
-export type ReferenceCardLayoutViewport = { width: number; height: number };
 export type ReferenceCardPosition = { x: number; y: number };
 
 export type ReferenceCardLayout = Record<"columns" | "cardWidth" | "gridWidth" | "xOffset" | "totalHeight", number> & {
   positions: Record<string, ReferenceCardPosition>;
 };
 
-export interface ComputeReferenceCardLayoutInput {
-  cards: readonly ReferenceCardLayoutItem[];
+interface ComputeReferenceCardLayoutInput {
+  cards: readonly { instanceId: string }[];
   measuredHeights: Readonly<Record<string, number>>;
-  viewport: ReferenceCardLayoutViewport;
+  viewport: { width: number; height: number };
   cardSize: CardSize;
 }
 
