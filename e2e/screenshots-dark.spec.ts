@@ -19,19 +19,16 @@ for (const [name, url, path] of [
 }
 
 test("set light mode in settings, check reference matches", async ({ page }) => {
-  // Start on reference, note the theme
   await page.goto("/");
   await waitForApp(page);
   await page.screenshot({ path: "e2e/screenshots/dark-03-ref-before.png" });
 
-  // Navigate to settings and click Light
   await page.goto("/settings");
   await waitForApp(page);
   await page.getByText("Light", { exact: true }).first().click({ force: true });
   await page.waitForTimeout(500);
   await page.screenshot({ path: "e2e/screenshots/dark-04-settings-light.png" });
 
-  // Navigate back to reference - should now be light
   await page.goto("/");
   await waitForApp(page);
   await page.screenshot({ path: "e2e/screenshots/dark-05-ref-after-light.png" });
@@ -40,7 +37,6 @@ test("set light mode in settings, check reference matches", async ({ page }) => 
 test("tab bar close-up", async ({ page }) => {
   await page.goto("/");
   await waitForApp(page);
-  // Crop to bottom of page for tab bar
   const viewport = page.viewportSize()!;
   await page.screenshot({
     path: "e2e/screenshots/dark-06-tabbar.png",
