@@ -15,6 +15,7 @@ const DELETE_ALL_MESSAGE =
 const PASTED_CONTENT_FILE_NAME = "Pasted Content.md";
 
 type MaybePromise<T> = T | Promise<T>;
+type FilesSettingsServices = Required<FilesSettingsCategoryControllerOptions>;
 
 export interface PickedTextFile {
   name: string;
@@ -60,29 +61,23 @@ class DefaultFilesSettingsCategoryController
   extends SnapshotStore<FilesSettingsCategorySnapshot>
   implements FilesSettingsCategoryController
 {
-  private readonly getUploads: () => Promise<UploadedFile[]>;
-  private readonly addUpload: (name: string, content: string) => MaybePromise<void>;
-  private readonly removeUpload: (id: string) => MaybePromise<void>;
-  private readonly bumpUploads: () => void;
-  private readonly pickFiles: () => Promise<PickedTextFile[]>;
-  private readonly confirmDeleteAllData: () => Promise<boolean>;
-  private readonly resetStoredAppData: () => Promise<unknown>;
-  private readonly stopSession: () => void;
-  private readonly onDeleteAllDataReset: () => void;
+  private readonly services: FilesSettingsServices;
   private refreshGeneration = 0;
   private disposed = false;
 
   constructor(options: FilesSettingsCategoryControllerOptions = {}) {
     super(createDefaultSnapshot());
-    this.getUploads = options.getUploads ?? getStoredUploads;
-    this.addUpload = options.addUpload ?? addStoredUpload;
-    this.removeUpload = options.removeUpload ?? removeStoredUpload;
-    this.bumpUploads = options.bumpUploads ?? noop;
-    this.pickFiles = options.pickFiles ?? pickFilesWithWebInput;
-    this.confirmDeleteAllData = options.confirmDeleteAllData ?? confirmDeleteAllData;
-    this.resetStoredAppData = options.resetStoredAppData ?? resetStoredLocalAppData;
-    this.stopSession = options.stopSession ?? noop;
-    this.onDeleteAllDataReset = options.onDeleteAllDataReset ?? noop;
+    this.services = {
+      getUploads: options.getUploads ?? getStoredUploads,
+      addUpload: options.addUpload ?? addStoredUpload,
+      removeUpload: options.removeUpload ?? removeStoredUpload,
+      bumpUploads: options.bumpUploads ?? noop,
+      pickFiles: options.pickFiles ?? pickFilesWithWebInput,
+      confirmDeleteAllData: options.confirmDeleteAllData ?? confirmDeleteAllData,
+      resetStoredAppData: options.resetStoredAppData ?? resetStoredLocalAppData,
+      stopSession: options.stopSession ?? noop,
+      onDeleteAllDataReset: options.onDeleteAllDataReset ?? noop,
+    };
   }
 
   async load(): Promise<void> {
@@ -98,13 +93,13 @@ class DefaultFilesSettingsCategoryController
   }
 
   async saveUpload(name: string, content: string): Promise<void> {
-    await this.addUpload(name, content);
+    await this.services.addUpload(name, content);
     await this.refreshUploads();
   }
 
   async pickFilesWeb(): Promise<void> {
-    const files = await this.pickFiles();
-    await Promise.all(files.map(async (file) => this.addUpload(file.name, await file.text())));
+    const files = await this.services.pickFiles();
+    await Promise.all(files.map(async (file) => this.services.addUpload(file.name, await file.text())));
     await this.refreshUploads();
   }
 
@@ -113,7 +108,7 @@ class DefaultFilesSettingsCategoryController
     if (!content.trim()) return;
 
     const name = this.snapshot.pasteFileName.trim() || PASTED_CONTENT_FILE_NAME;
-    await this.addUpload(name, content);
+    await this.services.addUpload(name, content);
     this.updateSnapshot({ pasteFileName: "", pasteContent: "" });
     await this.refreshUploads();
   }
@@ -121,7 +116,7 @@ class DefaultFilesSettingsCategoryController
   async deleteUpload(id: string): Promise<void> {
     this.updateSnapshot({ removingUploadId: id });
     try {
-      await this.removeUpload(id);
+      await this.services.removeUpload(id);
       await this.refreshUploads();
     } finally {
       if (!this.disposed && this.snapshot.removingUploadId === id) {
@@ -131,16 +126,16 @@ class DefaultFilesSettingsCategoryController
   }
 
   async deleteAllData(): Promise<void> {
-    const confirmed = await this.confirmDeleteAllData();
+    const confirmed = await this.services.confirmDeleteAllData();
     if (this.disposed || !confirmed) return;
 
     this.updateSnapshot({ deleteAllPending: true, deleteAllStatus: "" });
     try {
-      this.stopSession();
-      await this.resetStoredAppData();
+      this.services.stopSession();
+      await this.services.resetStoredAppData();
       if (this.disposed) return;
 
-      this.onDeleteAllDataReset();
+      this.services.onDeleteAllDataReset();
       this.refreshGeneration += 1;
       this.updateSnapshot({
         uploads: [],
@@ -166,11 +161,11 @@ class DefaultFilesSettingsCategoryController
 
   private async refreshUploads(): Promise<void> {
     const generation = ++this.refreshGeneration;
-    const uploads = await this.getUploads();
+    const uploads = await this.services.getUploads();
     if (this.disposed || generation !== this.refreshGeneration) return;
 
     this.updateSnapshot({ uploads });
-    this.bumpUploads();
+    this.services.bumpUploads();
   }
 }
 

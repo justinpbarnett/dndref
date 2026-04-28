@@ -13,6 +13,7 @@ import { SnapshotStore, type SnapshotListener } from "./snapshot-store";
 export const VOICE_SAVED_INDICATOR_MS = 2000;
 
 type SavedTimer = ReturnType<typeof setTimeout>;
+type VoiceSettingsServices = Required<VoiceSettingsCategoryControllerOptions>;
 
 export interface VoiceSettingsCategorySnapshot {
   sttSettings: STTSettings;
@@ -40,25 +41,24 @@ class DefaultVoiceSettingsCategoryController
   extends SnapshotStore<VoiceSettingsCategorySnapshot>
   implements VoiceSettingsCategoryController
 {
-  private readonly loadVoiceSettings: () => Promise<STTSettings | null>;
-  private readonly saveVoiceSettings: (settings: STTSettings) => Promise<boolean>;
-  private readonly setSavedTimer: (callback: () => void, ms: number) => SavedTimer;
-  private readonly clearSavedTimer: (timer: SavedTimer) => void;
+  private readonly services: VoiceSettingsServices;
   private savedTimer: SavedTimer | null = null;
   private loadGeneration = 0;
   private disposed = false;
 
   constructor(options: VoiceSettingsCategoryControllerOptions = {}) {
     super({ sttSettings: createDefaultVoiceSettings(), voiceSaved: false });
-    this.loadVoiceSettings = options.loadVoiceSettings ?? loadStoredVoiceSettings;
-    this.saveVoiceSettings = options.saveVoiceSettings ?? saveStoredVoiceSettings;
-    this.setSavedTimer = options.setSavedTimer ?? setTimeout;
-    this.clearSavedTimer = options.clearSavedTimer ?? clearTimeout;
+    this.services = {
+      loadVoiceSettings: options.loadVoiceSettings ?? loadStoredVoiceSettings,
+      saveVoiceSettings: options.saveVoiceSettings ?? saveStoredVoiceSettings,
+      setSavedTimer: options.setSavedTimer ?? setTimeout,
+      clearSavedTimer: options.clearSavedTimer ?? clearTimeout,
+    };
   }
 
   async load(): Promise<void> {
     const generation = ++this.loadGeneration;
-    const loadedSettings = await this.loadVoiceSettings();
+    const loadedSettings = await this.services.loadVoiceSettings();
     if (this.disposed || generation !== this.loadGeneration || !loadedSettings) return;
 
     this.updateSnapshot({ sttSettings: mergeVoiceSettings(loadedSettings) });
@@ -72,7 +72,7 @@ class DefaultVoiceSettingsCategoryController
 
   async save(): Promise<void> {
     const settingsToSave = mergeVoiceSettings(this.snapshot.sttSettings);
-    const saved = await this.saveVoiceSettings(settingsToSave);
+    const saved = await this.services.saveVoiceSettings(settingsToSave);
     if (this.disposed || !saved) return;
 
     this.updateSnapshot({ voiceSaved: true });
@@ -94,7 +94,7 @@ class DefaultVoiceSettingsCategoryController
 
   private restartSavedTimer(): void {
     this.clearSavedIndicatorTimer();
-    this.savedTimer = this.setSavedTimer(() => {
+    this.savedTimer = this.services.setSavedTimer(() => {
       this.savedTimer = null;
       if (this.disposed) return;
       this.updateSnapshot({ voiceSaved: false });
@@ -103,7 +103,7 @@ class DefaultVoiceSettingsCategoryController
 
   private clearSavedIndicatorTimer(): void {
     if (!this.savedTimer) return;
-    this.clearSavedTimer(this.savedTimer);
+    this.services.clearSavedTimer(this.savedTimer);
     this.savedTimer = null;
   }
 }
