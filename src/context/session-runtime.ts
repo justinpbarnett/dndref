@@ -6,15 +6,7 @@ import type { CardState, SessionStatus, SttStatus } from './session-types';
 
 export interface SessionRuntimeDetector { detect(transcript: string): Entity[] }
 
-export interface SessionRuntimeSnapshot {
-  status: SessionStatus;
-  sttStatus: SttStatus;
-  sttError: string | null;
-  sttProviderName: string;
-  cards: CardState[];
-  transcript: string;
-  recentDetections: Entity[];
-}
+export interface SessionRuntimeSnapshot { status: SessionStatus; sttStatus: SttStatus; sttError: string | null; sttProviderName: string; cards: CardState[]; transcript: string; recentDetections: Entity[] }
 
 type SttSettingsLoader = () => Promise<STTSettings>;
 type SttProviderBuilder = (
