@@ -3,11 +3,7 @@ import { handleCorsError } from "../../utils/providers";
 import { EntityIndex, WorldDataProvider } from "../index";
 import { ingestMarkdownContent } from "../ingestion";
 
-const GOOGLE_DOCS_ORIGIN = "https://docs.google.com";
-const GOOGLE_DOCS_PROXY_PATH = "/google-docs";
 const GOOGLE_DOCS_SOURCE_NAME = "Google Docs";
-const GOOGLE_DOCS_SHARE_HINT = 'Make sure the doc is shared with "Anyone with the link".';
-const GOOGLE_DOCS_CORS_FALLBACK = "Use the iOS app or paste content via file upload.";
 
 export class GoogleDocsProvider implements WorldDataProvider {
   readonly name = GOOGLE_DOCS_SOURCE_NAME;
@@ -25,18 +21,20 @@ export async function fetchGoogleDocText(urlOrId: string): Promise<string> {
   try {
     const response = await fetch(exportUrl);
     if (!response.ok) {
-      throw new Error(`Google Docs fetch failed: ${response.status}. ${GOOGLE_DOCS_SHARE_HINT}`);
+      throw new Error(
+        `Google Docs fetch failed: ${response.status}. Make sure the doc is shared with "Anyone with the link".`,
+      );
     }
 
     return await response.text();
   } catch (error) {
-    throw handleCorsError(error, GOOGLE_DOCS_SOURCE_NAME, GOOGLE_DOCS_CORS_FALLBACK);
+    throw handleCorsError(error, GOOGLE_DOCS_SOURCE_NAME, "Use the iOS app or paste content via file upload.");
   }
 }
 
 export function buildGoogleDocsExportUrl(urlOrId: string, corsProxy: string | null = CORS_PROXY): string {
   const docId = extractGoogleDocId(urlOrId);
-  const baseUrl = corsProxy ? `${corsProxy}${GOOGLE_DOCS_PROXY_PATH}` : GOOGLE_DOCS_ORIGIN;
+  const baseUrl = corsProxy ? `${corsProxy}/google-docs` : "https://docs.google.com";
   return `${baseUrl}/document/d/${docId}/export?format=txt`;
 }
 
