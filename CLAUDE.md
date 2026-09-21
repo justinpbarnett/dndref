@@ -32,7 +32,7 @@ Playwright tests need a production-like build: `just build-web && just screensho
 Three nested providers wrap the entire app (see `app/_layout.tsx`):
 
 1. `UISettingsProvider` (`src/context/ui-settings.tsx`) -- card size (S/M/L/XL) and color scheme (dark/light/system). On web, reads from `localStorage` synchronously to avoid hydration flicker; on native, reads from `AsyncStorage` on mount.
-2. `DataSourcesProvider` (`src/context/data-sources.tsx`) -- stores API credentials and source URLs in `AsyncStorage`. Exposes `uploadsVersion` counter that increments when a file is uploaded, triggering entity reload.
+2. `DataSourcesProvider` (`src/context/data-sources/provider.tsx`) -- stores API credentials and source URLs. It reads and writes them through `src/storage/settings.ts`; only `src/storage/app-data.ts` touches `AsyncStorage`. Exposes `uploadsVersion` counter that increments when a file is uploaded, triggering entity reload.
 3. `SessionProvider` (`src/context/session.tsx`) -- owns the session lifecycle (idle/active/paused), the running STT provider, the entity detector, and the card stack.
 
 ### Entity detection pipeline
@@ -40,13 +40,17 @@ Three nested providers wrap the entire app (see `app/_layout.tsx`):
 `SessionProvider` loads all configured `WorldDataProvider`s in parallel at startup (and again whenever `DataSourcesSettings` or `uploadsVersion` changes). Each provider implements:
 
 ```ts
-interface WorldDataProvider {
-  load(): Promise<EntityIndex>;
-  getName(): string;
-}
+type WorldDataProvider = { readonly name: string; load(): Promise<EntityIndex> };
 ```
 
-Providers live in `src/entities/providers/`: `MarkdownProvider` (sample world + file uploads), `SRDProvider`, `KankaProvider`, `HomebreweryProvider`, `NotionProvider`, `GoogleDocsProvider`, `FileUploadProvider`. On web, external API calls go through the CORS proxy at `proxy.dndref.com` (`src/proxy.ts` exports the base URL; `null` on native since native can call APIs directly).
+Every provider returns its entities through the one normalizer in
+`src/entities/ingestion/normalization.ts` -- directly for API sources (Kanka,
+SRD, the AI parser), or via `ingestMarkdownContent` for text sources. That is
+what trims names, resolves the entity type, splits aliases, and drops records a
+source could not name. A provider that builds `Entity` literals by hand skips
+all of it; the classic symptom is aliases silently never matching.
+
+Providers live in `src/entities/providers/`: `MarkdownProvider` (sample world + file uploads), `SRDProvider`, `KankaProvider`, `HomebreweryProvider`, `NotionProvider`, `GoogleDocsProvider`, `FileUploadProvider`. On web, external API calls go through the CORS proxy at `proxy.dndref.com`. `src/proxy-routes.ts` holds the one route table; both `src/proxy.ts` (`upstreamUrl`, `fetchUpstream`) and the Worker in `workers/cors-proxy/` import it, so adding a route is one edit. Native calls the upstream directly.
 
 The combined `EntityIndex` is fed into `EntityDetector` (Fuse.js, `src/entities/detector.ts`). Detection searches single words, 2-word, and 3-word phrases from the transcript against entity names and aliases. Threshold is 0.28; minimum 4 chars.
 

@@ -18,25 +18,33 @@ export type UploadedWorldDataIngestionOptions = {
 export const ingestMarkdownContent = (content: string): EntityIndex =>
   ingestMarkdownContentWithNormalizer(content, normalizeIngestedEntity);
 
-export function ingestJsonContent(
-  content: string,
+/**
+ * Every world source ends here: raw records in, entities out. Records without a
+ * name are dropped, and whatever aliases a source carries are picked up by the
+ * one normalizer rather than each source deciding for itself.
+ */
+export function ingestEntityRecords(
+  items: readonly unknown[],
   options: Omit<NormalizeIngestedEntityOptions, "index"> = {},
 ): EntityIndex {
-  const data = JSON.parse(content) as unknown;
-  const items = Array.isArray(data) ? data : [];
   const entities: EntityIndex = [];
 
   for (const item of items) {
     if (!isIngestedEntityRecord(item)) continue;
 
-    const entity = normalizeIngestedEntity(item, {
-      ...options,
-      index: entities.length,
-    });
+    const entity = normalizeIngestedEntity(item, { ...options, index: entities.length });
     if (entity) entities.push(entity);
   }
 
   return entities;
+}
+
+export function ingestJsonContent(
+  content: string,
+  options: Omit<NormalizeIngestedEntityOptions, "index"> = {},
+): EntityIndex {
+  const data = JSON.parse(content) as unknown;
+  return ingestEntityRecords(Array.isArray(data) ? data : [], options);
 }
 
 export function ingestUploadedFile(

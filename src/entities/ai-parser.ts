@@ -1,8 +1,7 @@
 import { upstreamUrl, usesProxy } from "../proxy";
 
-import { Entity, EntityIndex, normalizeEntityType, slugify } from "./index";
-
-type AIEntityInput = { name: string; type?: string; aliases?: string[]; summary?: string };
+import { EntityIndex } from "./index";
+import { ingestEntityRecords } from "./ingestion";
 
 const ANTHROPIC_API = upstreamUrl("anthropic", "/v1/messages");
 
@@ -59,15 +58,5 @@ export async function parseWithAI(content: string, apiKey: string): Promise<Enti
 
   if (!Array.isArray(items)) return [];
 
-  return items
-    .filter((item): item is AIEntityInput => !!item && typeof item.name === "string")
-    .map(
-      (item, i): Entity => ({
-        id: `ai-${slugify(item.name)}-${Date.now()}-${i}`,
-        name: item.name,
-        type: normalizeEntityType(item.type ?? ""),
-        aliases: Array.isArray(item.aliases) ? item.aliases : [],
-        summary: item.summary ?? "",
-      }),
-    );
+  return ingestEntityRecords(items, { idPrefix: "ai", idNamespace: Date.now() });
 }

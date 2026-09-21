@@ -125,6 +125,7 @@ app/
 src/
   entities/
     index.ts         -- Entity type + WorldDataProvider interface
+    ingestion.ts     -- Raw source records -> EntityIndex (one normalizer)
     detector.ts      -- fuse.js fuzzy matching
     ai-parser.ts     -- Claude entity extraction
     providers/
@@ -141,9 +142,11 @@ src/
     web-speech.ts    -- Web Speech API
   context/
     session.tsx      -- Session state, STT lifecycle, entity detection
-    data-sources.tsx -- Data source settings + upload versioning
+    data-sources/    -- Data source settings + upload versioning
     ui-settings.tsx  -- Card size preference
-  proxy.ts           -- CORS proxy URL (web only)
+  storage/           -- AsyncStorage-backed app data, settings, uploads
+  proxy-routes.ts    -- CORS proxy route table (shared with the Worker)
+  proxy.ts           -- Outbound world source requests
   theme.ts           -- Colors + fonts
 
 workers/

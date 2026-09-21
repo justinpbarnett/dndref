@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ingestJsonContent, ingestMarkdownContent, normalizeIngestedEntity } from "./ingestion";
+import { ingestEntityRecords, ingestJsonContent, ingestMarkdownContent, normalizeIngestedEntity } from "./ingestion";
 
 describe("world data ingestion", () => {
   it("normalizes entity type, ids, aliases, and summaries for shared ingested records", () => {
@@ -21,6 +21,35 @@ describe("world data ingestion", () => {
       aliases: ["key", "silver key"],
       summary: "Opens the Moon Door.",
     });
+  });
+
+  it("keeps the full details a source carries alongside the card summary", () => {
+    expect(
+      normalizeIngestedEntity({
+        name: "Scarab of Protection",
+        type: "item",
+        summary: "Rare. A beetle-shaped medallion.",
+        details: "Rare. A beetle-shaped medallion. It has 12 charges.",
+      }),
+    ).toMatchObject({
+      summary: "Rare. A beetle-shaped medallion.",
+      details: "Rare. A beetle-shaped medallion. It has 12 charges.",
+    });
+  });
+
+  it("keeps the id a source already owns instead of building one", () => {
+    expect(normalizeIngestedEntity({ name: "Goblin" }, { id: "srd-monster-goblin", idPrefix: "srd-monster" })).toMatchObject(
+      { id: "srd-monster-goblin" },
+    );
+    expect(normalizeIngestedEntity({ name: "Goblin" }, { idPrefix: "srd-monster" })).toMatchObject({
+      id: "srd-monster-goblin",
+    });
+  });
+
+  it("drops records no world source could name", () => {
+    expect(ingestEntityRecords([null, { name: "  " }, "text", { name: "Lord Ember" }, { type: "NPC" }])).toEqual([
+      { id: "lord-ember-0", name: "Lord Ember", type: "Unknown", aliases: [], summary: "" },
+    ]);
   });
 
   it("keeps markdown/text parsing behavior while using shared normalization", () => {

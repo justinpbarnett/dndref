@@ -1,5 +1,6 @@
 import { fetchAll } from "../../utils/providers";
 import { Entity, EntityIndex, EntityType, WorldDataProvider, stripHtml } from "../index";
+import { normalizeIngestedEntity } from "../ingestion";
 
 type KankaResourceType = "characters" | "locations" | "organisations" | "items";
 
@@ -32,15 +33,17 @@ export class KankaProvider implements WorldDataProvider {
         headers: { Authorization: `Bearer ${this.token}` },
       },
     );
-    return items.map(
-      (item: any): Entity => ({
-        id: `kanka-${resource}-${item.id}`,
-        name: item.name ?? "Unknown",
-        type: entityType,
-        aliases: [],
-        summary: stripHtml(item.entry ?? "").slice(0, 300),
-        image: item.has_custom_image ? (item.image_thumb ?? undefined) : undefined,
-      }),
-    );
+    return items.flatMap((item: any): Entity[] => {
+      const entity = normalizeIngestedEntity(
+        {
+          ...item,
+          type: entityType,
+          summary: stripHtml(item.entry ?? "").slice(0, 300),
+          image: item.has_custom_image ? item.image_thumb : undefined,
+        },
+        { id: `kanka-${resource}-${item.id}` },
+      );
+      return entity ? [entity] : [];
+    });
   }
 }

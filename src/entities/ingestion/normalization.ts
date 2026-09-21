@@ -1,9 +1,15 @@
 import { Entity, EntityType, normalizeEntityType, slugify } from "../index";
 
 export type IngestedEntityRecord = Partial<
-  Record<"name" | "type" | "aliases" | "summary" | "description" | "image", unknown>
+  Record<"name" | "type" | "aliases" | "summary" | "description" | "details" | "image", unknown>
 >;
-export type NormalizeIngestedEntityOptions = { idPrefix?: string; idNamespace?: string | number; index?: number };
+export type NormalizeIngestedEntityOptions = {
+  /** An id the source already owns. Otherwise one is built from the name. */
+  id?: string;
+  idPrefix?: string;
+  idNamespace?: string | number;
+  index?: number;
+};
 
 export function normalizeIngestedEntity(
   record: IngestedEntityRecord,
@@ -19,6 +25,9 @@ export function normalizeIngestedEntity(
     aliases: normalizeAliases(record.aliases),
     summary: normalizeSummary(record.summary, record.description),
   };
+
+  const details = normalizeNonEmptyString(record.details);
+  if (details) entity.details = details;
 
   const image = normalizeNonEmptyString(record.image);
   if (image) entity.image = image;
@@ -57,6 +66,7 @@ function normalizeSummary(summary: unknown, description: unknown): string {
 }
 
 const buildEntityId = (name: string, options: NormalizeIngestedEntityOptions): string =>
+  options.id ??
   [options.idPrefix, slugify(name), options.idNamespace, options.index]
     .filter((part) => part !== undefined && part !== "")
     .join("-");

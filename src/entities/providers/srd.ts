@@ -1,7 +1,7 @@
 import { openAppData, type AppDataSession } from "../../storage/app-data";
 import { SRD_CACHE_KEY_PREFIX } from "../../storage/keys";
 import { fetchAll } from "../../utils/providers";
-import { EntityIndex, WorldDataProvider } from "../index";
+import { Entity, EntityIndex, WorldDataProvider } from "../index";
 import { itemToEntity, monsterToEntity } from "./srd/mappers";
 
 const OPEN5E = "https://api.open5e.com/v1";
@@ -46,7 +46,9 @@ export class SRDProvider implements WorldDataProvider {
       fetchAll<any>(`${OPEN5E}/monsters/?limit=500&document__slug__in=${sourceParam}`, (data) => data.next ?? null),
       fetchAll<any>(`${OPEN5E}/magicitems/?limit=500&document__slug__in=${sourceParam}`, (data) => data.next ?? null),
     ]);
-    const entities = [...monsters.map(monsterToEntity), ...items.map(itemToEntity)];
+    const entities = [...monsters.map(monsterToEntity), ...items.map(itemToEntity)].filter(
+      (entity): entity is Entity => entity !== null,
+    );
     await saveCache(cacheKey, entities, cacheSession);
     return entities;
   }
