@@ -4,7 +4,7 @@ import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } f
 import type { CardState } from "../context/session-types";
 import { CARD_SIZE_CONFIGS, useColors, useUISettings } from "../context/ui-settings";
 import { deriveEntityCardPresentation } from "../entity-card-presentation";
-import { Colors, F, typeAccent } from "../theme";
+import { Colors, F } from "../theme";
 import { Ionicon } from "./Ionicon";
 
 type Props = { card: CardState; width: number } & Record<
@@ -14,7 +14,6 @@ type Props = { card: CardState; width: number } & Record<
 
 export function EntityCard({ card, width, onPin, onUnpin, onDismiss, onOpenDetails }: Props) {
   const C = useColors();
-  const entityAccentColor = typeAccent(card.entity.type, C);
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(8)).current;
 
@@ -22,10 +21,7 @@ export function EntityCard({ card, width, onPin, onUnpin, onDismiss, onOpenDetai
   const { fontScale } = CARD_SIZE_CONFIGS[cardSize];
 
   const styles = useMemo(() => createStyles(C), [C]);
-  const presentation = useMemo(
-    () => deriveEntityCardPresentation({ card, accentColor: entityAccentColor }),
-    [card, entityAccentColor],
-  );
+  const presentation = useMemo(() => deriveEntityCardPresentation({ card, colors: C }), [card, C]);
   const {
     actions: { dismiss: dismissAction, pinToggle: pinToggleAction },
     accentColor,

@@ -3,8 +3,8 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View 
 
 import type { CardState } from "../context/session-types";
 import { useColors } from "../context/ui-settings";
-import { extractEntityDetailBullets } from "../entity-card-presentation";
-import { Colors, F, typeAccent } from "../theme";
+import { deriveEntityCardPresentation } from "../entity-card-presentation";
+import { Colors, F } from "../theme";
 import { Ionicon } from "./Ionicon";
 
 type Props = { card: CardState | null; visible: boolean; onClose: () => void };
@@ -15,8 +15,10 @@ export function EntityDetailsModal({ card, visible, onClose }: Props) {
 
   if (!card) return null;
 
-  const accentColor = typeAccent(card.entity.type, C);
-  const details = card.entity.details || card.entity.summary;
+  const { accentColor, bulletMarker, detailBullets, name, typeLabel } = deriveEntityCardPresentation({
+    card,
+    colors: C,
+  });
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -24,14 +26,14 @@ export function EntityDetailsModal({ card, visible, onClose }: Props) {
         <Pressable
           style={[styles.dialog, { borderColor: accentColor + "55" }]}
           role="dialog"
-          accessibilityLabel={`${card.entity.name} details`}
+          accessibilityLabel={`${name} details`}
           onPress={(event) => event.stopPropagation()}
         >
           <View style={[styles.topStrip, { backgroundColor: accentColor }]} />
           <View style={styles.header}>
             <View style={styles.titleGroup}>
-              <Text style={styles.name}>{card.entity.name}</Text>
-              <Text style={[styles.typeLabel, { color: accentColor + "cc" }]}>{card.entity.type.toUpperCase()}</Text>
+              <Text style={styles.name}>{name}</Text>
+              <Text style={[styles.typeLabel, { color: accentColor + "cc" }]}>{typeLabel}</Text>
             </View>
             <TouchableOpacity
               onPress={onClose}
@@ -44,9 +46,9 @@ export function EntityDetailsModal({ card, visible, onClose }: Props) {
             </TouchableOpacity>
           </View>
           <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
-            {extractEntityDetailBullets(details).map((bullet, index) => (
+            {detailBullets.map((bullet, index) => (
               <View key={index} style={styles.detailBulletRow}>
-                <Text style={[styles.detailBulletMark, { color: accentColor + "aa" }]}>{">"}</Text>
+                <Text style={[styles.detailBulletMark, { color: accentColor + "aa" }]}>{bulletMarker}</Text>
                 <Text style={styles.details}>{bullet}</Text>
               </View>
             ))}

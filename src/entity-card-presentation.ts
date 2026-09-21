@@ -1,5 +1,7 @@
+import type { Colors } from "./color-types";
 import type { CardState } from "./context/session-types";
 import type { EntityType } from "./entities/index";
+import { typeAccent } from "./type-accent";
 
 export interface EntityCardPinTogglePresentation {
   kind: "pin" | "unpin";
@@ -13,21 +15,24 @@ export type EntityCardPresentation = Record<
   type: EntityType;
   pinned: boolean;
   imageUri: string | null;
+  /** The card face: the summary, trimmed to at most five short lines. */
   summaryBullets: string[];
+  /** The details modal: the full text, one bullet per sentence or list item. */
+  detailBullets: string[];
   actions: {
     pinToggle: EntityCardPinTogglePresentation;
     dismiss: { kind: "dismiss"; accessibilityLabel: "Dismiss"; iconName: "close" };
   };
 };
 
-export type DeriveEntityCardPresentationInput = { card: CardState; accentColor: string };
+export type DeriveEntityCardPresentationInput = { card: CardState; colors: Colors };
 
-export const extractEntityCardSummaryBullets = (summary: string): string[] =>
+const extractEntityCardSummaryBullets = (summary: string): string[] =>
   extractEntityDetailBullets(summary)
     .map((bullet) => bullet.replace(/[.!?]$/, "").trim())
     .slice(0, 5);
 
-export const extractEntityDetailBullets = (details: string): string[] =>
+const extractEntityDetailBullets = (details: string): string[] =>
   details
     .split("\n")
     .flatMap((line) => {
@@ -49,24 +54,29 @@ const derivePinTogglePresentation = (pinned: boolean): EntityCardPinTogglePresen
     ? { kind: "unpin", accessibilityLabel: "Unpin", iconName: "bookmark" }
     : { kind: "pin", accessibilityLabel: "Pin", iconName: "bookmark-outline" };
 
+/**
+ * Everything the card face and the details modal need in order to show one
+ * detected entity. Both read it, so both show the same name, accent and text.
+ */
 export function deriveEntityCardPresentation({
   card,
-  accentColor,
+  colors,
 }: DeriveEntityCardPresentationInput): EntityCardPresentation {
   const { entity, pinned } = card;
-  const imageUri = entity.image || null;
+  const details = entity.details || entity.summary;
 
   return {
     instanceId: card.instanceId,
     name: entity.name,
     type: entity.type,
     typeLabel: entity.type.toUpperCase(),
-    accentColor,
+    accentColor: typeAccent(entity.type, colors),
     pinned,
-    imageUri,
+    imageUri: entity.image || null,
     bulletMarker: ">",
     summaryBullets: extractEntityCardSummaryBullets(entity.summary),
-    details: entity.details || entity.summary,
+    detailBullets: extractEntityDetailBullets(details),
+    details,
     actions: {
       pinToggle: derivePinTogglePresentation(pinned),
       dismiss: { kind: "dismiss", accessibilityLabel: "Dismiss", iconName: "close" },
