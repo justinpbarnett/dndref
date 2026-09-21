@@ -1,5 +1,6 @@
 # Project Rules
 
-## File Limits
-- No source files should exceed 300 lines
-- No directory should contain more than 20 flat files
+## Module design
+- Prefer deep modules: a lot of behavior behind a small interface.
+- A file that only re-exports another file is not a module. Delete it and import the real one.
+- Split a file when it holds two responsibilities, not when it crosses a line count.

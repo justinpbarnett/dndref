@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("react-native", () => ({ Platform: { OS: "web" } }));
 
-import { DEFAULT_STT_SETTINGS, type STTSettings } from "../stt";
+import { DEFAULT_STT_SETTINGS, type STTSettings } from "../stt/index";
 import { VOICE_SAVED_INDICATOR_MS, createVoiceSettingsCategoryController } from "./voice-settings-category";
 
 type VoiceSettingsCategoryController = ReturnType<typeof createVoiceSettingsCategoryController>;

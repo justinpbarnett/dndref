@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { Entity } from "../entities";
-import type { STTProvider } from "../stt";
+import type { Entity } from "../entities/index";
+import type { STTProvider } from "../stt/index";
 import { SessionRuntime, type SessionRuntimeDetector } from "./session-runtime";
 
 const makeEntity = (id: string, name: string): Entity => ({

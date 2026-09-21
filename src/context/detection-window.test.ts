@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildDetectionInput, nextDetectionContext } from "./detection-window";
-import { EntityType } from "../entities";
+import { EntityType } from "../entities/index";
 import { EntityDetector } from "../entities/detector";
 
 describe("detection transcript windows", () => {

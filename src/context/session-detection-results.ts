@@ -1,4 +1,4 @@
-import type { Entity } from "../entities";
+import type { Entity } from "../entities/index";
 import { addCard } from "./card-stack";
 import type { CardState } from "./session-types";
 

@@ -1,4 +1,4 @@
-import type { EntityType } from "./entities";
+import type { EntityType } from "./entities/index";
 import type { Colors } from "./color-types";
 
 export const typeAccent = (type: EntityType, colors: Colors): string =>

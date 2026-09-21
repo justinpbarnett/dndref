@@ -1,4 +1,4 @@
-import type { Entity } from "../../entities";
+import type { Entity } from "../../entities/index";
 import { buildDetectionInput, nextDetectionContext } from "../detection-window";
 import { buildDetectionResultsUpdate } from "../session-detection-results";
 import type { SessionRuntimeDetector, SessionRuntimeSnapshot, SessionRuntimeSnapshotPatch } from "./runtime-types";

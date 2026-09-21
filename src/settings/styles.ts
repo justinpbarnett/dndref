@@ -1,4 +1,4 @@
-import { Colors, F } from "../../theme";
+import { Colors, F } from "../theme";
 
 export function createStyles(C: Colors, isWide: boolean) {
   const cardBorder = { backgroundColor: C.bgCard, borderRadius: 4, borderWidth: 1, borderColor: C.border };

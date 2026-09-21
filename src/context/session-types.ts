@@ -1,4 +1,4 @@
-import { Entity, EntityIndex } from "../entities";
+import { Entity, EntityIndex } from "../entities/index";
 
 export type SessionStatus = "idle" | "active" | "paused";
 export type SttStatus = "idle" | "connecting" | "active" | "error";

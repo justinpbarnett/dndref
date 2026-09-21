@@ -1,5 +1,5 @@
 import type { DataSourcesSettings } from "../storage/app-data/data-source-settings-model";
-import type { EntityIndex, WorldDataProvider } from "../entities";
+import type { EntityIndex, WorldDataProvider } from "../entities/index";
 import { FileUploadProvider } from "../entities/providers/file-upload";
 import { GoogleDocsProvider } from "../entities/providers/google-docs";
 import { HomebreweryProvider } from "../entities/providers/homebrewery";
@@ -7,7 +7,7 @@ import { KankaProvider } from "../entities/providers/kanka";
 import { MarkdownProvider } from "../entities/providers/markdown";
 import { extractNotionId, NotionProvider } from "../entities/providers/notion";
 import { SRDProvider } from "../entities/providers/srd";
-import { SAMPLE_WORLD } from "../sample-world";
+import { SAMPLE_WORLD } from "../sample-world/index";
 
 export function buildWorldDataProviders(settings: DataSourcesSettings): WorldDataProvider[] {
   const providers: WorldDataProvider[] = [new MarkdownProvider(SAMPLE_WORLD, "Sample World"), new FileUploadProvider()];

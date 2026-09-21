@@ -1,5 +1,5 @@
-import type { Entity } from "../../entities";
-import type { STTProvider, STTSettings } from "../../stt";
+import type { Entity } from "../../entities/index";
+import type { STTProvider, STTSettings } from "../../stt/index";
 import type { CardState, SessionStatus, SttStatus } from "../session-types";
 
 export type SessionRuntimeDetector = { detect(transcript: string): Entity[] };

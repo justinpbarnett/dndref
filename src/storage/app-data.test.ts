@@ -44,7 +44,7 @@ import {
   setAppDataItem,
 } from "./app-data";
 import { CARD_SIZE_KEY, COLOR_SCHEME_KEY, DATA_SOURCES_KEY, SRD_CACHE_KEY_PREFIX, UPLOADS_KEY } from "./keys";
-import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY } from "../stt";
+import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY } from "../stt/index";
 
 function blockStorageOperation(operation: keyof typeof storageControls): () => void {
   let releaseGate = () => {};
