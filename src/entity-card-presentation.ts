@@ -9,7 +9,7 @@ export interface EntityCardPinTogglePresentation {
   iconName: "bookmark" | "bookmark-outline";
 }
 export type EntityCardPresentation = Record<
-  "instanceId" | "name" | "typeLabel" | "accentColor" | "bulletMarker" | "details",
+  "instanceId" | "name" | "typeLabel" | "accentColor" | "bulletMarker",
   string
 > & {
   type: EntityType;
@@ -63,7 +63,6 @@ export function deriveEntityCardPresentation({
   colors,
 }: DeriveEntityCardPresentationInput): EntityCardPresentation {
   const { entity, pinned } = card;
-  const details = entity.details || entity.summary;
 
   return {
     instanceId: card.instanceId,
@@ -75,8 +74,7 @@ export function deriveEntityCardPresentation({
     imageUri: entity.image || null,
     bulletMarker: ">",
     summaryBullets: extractEntityCardSummaryBullets(entity.summary),
-    detailBullets: extractEntityDetailBullets(details),
-    details,
+    detailBullets: extractEntityDetailBullets(entity.details || entity.summary),
     actions: {
       pinToggle: derivePinTogglePresentation(pinned),
       dismiss: { kind: "dismiss", accessibilityLabel: "Dismiss", iconName: "close" },
