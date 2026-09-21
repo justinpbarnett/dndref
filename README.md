@@ -117,42 +117,45 @@ After deploying, add a CNAME in Cloudflare DNS: `proxy` -> `dnd-ref-proxy.<accou
 
 ```
 app/
-  index.tsx          -- session screen (card grid + controls)
-  settings.tsx       -- data sources, STT, file uploads
-  debug.tsx          -- transcript feed for troubleshooting
-  _layout.tsx        -- tab layout + context providers
+  index.tsx             -- session screen (card grid + controls)
+  settings.tsx          -- data sources, STT, file uploads
+  debug.tsx             -- transcript feed for troubleshooting
+  _layout.tsx           -- tab layout + context providers
 
 src/
   entities/
-    index.ts         -- Entity type + WorldDataProvider interface
-    ingestion.ts     -- Raw source records -> EntityIndex (one normalizer)
-    detector.ts      -- fuse.js fuzzy matching
-    ai-parser.ts     -- Claude entity extraction
+    index.ts            -- Entity type + WorldDataProvider interface
+    ingestion.ts        -- Raw source records -> EntityIndex (one normalizer)
+    detector.ts         -- fuse.js fuzzy matching
+    detection-tuning.ts -- Every detection knob (tune here, not in the detector)
+    ai-parser.ts        -- Claude entity extraction
     providers/
-      srd.ts         -- D&D 5e SRD via Open5e API (cached)
-      kanka.ts       -- Kanka campaign API
-      homebrewery.ts -- Homebrewery public brews
-      notion.ts      -- Notion workspace pages
-      google-docs.ts -- Google Docs public export
-      markdown.ts    -- Generic markdown parser
-      file-upload.ts -- AsyncStorage-backed file uploads
+      srd.ts            -- D&D 5e SRD via Open5e API (cached)
+      kanka.ts          -- Kanka campaign API
+      homebrewery.ts    -- Homebrewery public brews
+      notion/           -- Notion workspace pages
+      google-docs.ts    -- Google Docs public export
+      markdown.ts       -- Generic markdown parser
+      file-upload.ts    -- AsyncStorage-backed file uploads
   stt/
-    index.ts         -- STTProvider interface
-    deepgram.ts      -- Deepgram streaming WebSocket
-    web-speech.ts    -- Web Speech API
+    index.ts            -- STTProvider interface
+    deepgram.ts         -- Deepgram streaming WebSocket
+    web-speech.ts       -- Web Speech API
   context/
-    session.tsx      -- Session state, STT lifecycle, entity detection
-    data-sources/    -- Data source settings + upload versioning
-    ui-settings.tsx  -- Card size preference
-  storage/           -- AsyncStorage-backed app data, settings, uploads
-  proxy-routes.ts    -- CORS proxy route table (shared with the Worker)
-  proxy.ts           -- Outbound world source requests
-  theme.ts           -- Colors + fonts
+    session.tsx         -- Session state + the card stack
+    session-runtime/    -- STT lifecycle + the detection loop
+    detection-window.ts -- Transcript tail carried between detection passes
+    data-sources/       -- Data source settings + upload versioning
+    ui-settings.tsx     -- Card size + color scheme
+  storage/              -- AsyncStorage-backed app data, settings, uploads
+  proxy-routes.ts       -- CORS proxy route table (shared with the Worker)
+  proxy.ts              -- Outbound world source requests
+  theme.ts              -- Colors + fonts
 
 workers/
   cors-proxy/
-    index.ts         -- Cloudflare Worker: proxies Notion, Google Docs, Anthropic
-    wrangler.toml    -- Deployment config
+    index.ts            -- Cloudflare Worker: serves every route in proxy-routes.ts
+    wrangler.toml       -- Deployment config
 ```
 
 ## Stack
