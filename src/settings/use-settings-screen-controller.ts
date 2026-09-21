@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { createDefaultDataSourceSettings, type DataSourcesSettings, useDataSources } from "../context/data-sources/provider";
+import { useDataSources } from "../context/data-sources/provider";
 import { useSession } from "../context/session";
 import { useUISettings } from "../context/ui-settings";
 import { parseWithAI } from "../entities/ai-parser";
 import { getErrorMessage } from "../utils/error-message";
-import { createAppDataWriteToken, isAppDataWriteTokenCurrent } from "../storage/app-data";
+import { openAppData } from "../storage/app-data";
+import { createDefaultDataSourceSettings, type DataSourcesSettings } from "../storage/settings";
 import type { Category } from "./constants";
 import { useFilesSettingsCategory } from "./files-settings-category";
 import { useVoiceSettingsCategory } from "./voice-settings-category";
@@ -52,15 +53,15 @@ export function useSettingsScreenController() {
 
   const handleAIParse = async () => {
     if (!aiContent.trim() || !dsLocal.aiApiKey) return;
-    const token = createAppDataWriteToken();
+    const appData = openAppData();
     setAiParsing(true);
     setAiResult("");
     try {
       const entities = await parseWithAI(aiContent, dsLocal.aiApiKey);
-      if (!isAppDataWriteTokenCurrent(token)) return;
+      if (!appData.isCurrent()) return;
       const name = `AI Parsed ${new Date().toLocaleDateString()}.json`;
       await filesCategory.saveUpload(name, JSON.stringify(entities));
-      if (!isAppDataWriteTokenCurrent(token)) return;
+      if (!appData.isCurrent()) return;
       setAiResult(`Found ${entities.length} entities. Saved as "${name}".`);
       setAiContent("");
     } catch (e: unknown) {

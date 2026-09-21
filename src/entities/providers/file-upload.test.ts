@@ -16,13 +16,13 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 import { addUpload, FileUploadProvider, getUploads, removeUpload } from "./file-upload";
-import { resetAppDataControlsForTests, resetStoredAppData } from "../../storage/app-data";
+import { resetAppDataForTests, resetStoredAppData } from "../../storage/app-data";
 
 describe("file upload storage", () => {
   beforeEach(() => {
     storage.clear();
     storageControls.getItemGate = null;
-    resetAppDataControlsForTests();
+    resetAppDataForTests();
   });
 
   afterEach(() => vi.restoreAllMocks());

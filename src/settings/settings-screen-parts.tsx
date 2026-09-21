@@ -2,7 +2,7 @@ import React, { type Dispatch, type SetStateAction } from "react";
 import { Text, TouchableOpacity } from "react-native";
 
 import { Ionicon } from "../components/Ionicon";
-import type { DataSourcesSettings } from "../storage/app-data/data-source-settings-model";
+import type { DataSourcesSettings } from "../storage/settings";
 import type { CardSize, ColorScheme } from "../context/ui-settings";
 import type { Colors } from "../theme";
 import { type Category, CATEGORIES } from "./constants";

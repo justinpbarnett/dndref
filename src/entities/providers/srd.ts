@@ -1,4 +1,4 @@
-import { createAppDataCacheSession } from "../../storage/app-data";
+import { openAppData, type AppDataSession } from "../../storage/app-data";
 import { SRD_CACHE_KEY_PREFIX } from "../../storage/keys";
 import { fetchAll } from "../../utils/providers";
 import { EntityIndex, WorldDataProvider } from "../index";
@@ -28,7 +28,7 @@ export const SRD_SOURCES: SRDSource[] = [
 ];
 
 type SRDCache = { ts: number; entities: EntityIndex };
-type CacheSession = ReturnType<typeof createAppDataCacheSession>;
+type CacheSession = AppDataSession;
 
 export class SRDProvider implements WorldDataProvider {
   readonly name = "D&D 5e SRD";
@@ -36,7 +36,7 @@ export class SRDProvider implements WorldDataProvider {
 
   async load(): Promise<EntityIndex> {
     if (this.sources.length === 0) return [];
-    const cacheSession = createAppDataCacheSession();
+    const cacheSession = openAppData();
     const cacheKey = `${SRD_CACHE_KEY_PREFIX}v3-${[...this.sources].sort().join(",")}`;
     const cached = await loadCache(cacheKey, cacheSession);
     if (cached) return cached;
@@ -54,7 +54,7 @@ export class SRDProvider implements WorldDataProvider {
 
 async function loadCache(key: string, cacheSession: CacheSession): Promise<EntityIndex | null> {
   try {
-    const raw = await cacheSession.getItem(key);
+    const raw = await cacheSession.read(key);
     if (!raw) return null;
     const cache = JSON.parse(raw) as SRDCache;
     if (Date.now() - cache.ts > 7 * 24 * 60 * 60 * 1000) return null;
@@ -68,6 +68,6 @@ async function saveCache(key: string, entities: EntityIndex, cacheSession: Cache
   const cache: SRDCache = { ts: Date.now(), entities };
 
   try {
-    await cacheSession.setItem(key, JSON.stringify(cache));
+    await cacheSession.cache(key, JSON.stringify(cache));
   } catch {}
 }

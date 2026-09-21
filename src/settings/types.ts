@@ -1,4 +1,4 @@
-import { DataSourcesSettings } from "../storage/app-data/data-source-settings-model";
+import { DataSourcesSettings } from "../storage/settings";
 import { UploadedFile } from "../entities/providers/file-upload";
 import { STTSettings } from "../stt/index";
 

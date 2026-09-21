@@ -6,7 +6,7 @@ import {
   loadVoiceSettings as loadStoredVoiceSettings,
   mergeVoiceSettings,
   saveVoiceSettings as saveStoredVoiceSettings,
-} from "../storage/app-data";
+} from "../storage/settings";
 import type { STTSettings } from "../stt/index";
 import { SnapshotStore } from "../utils/snapshot-store";
 

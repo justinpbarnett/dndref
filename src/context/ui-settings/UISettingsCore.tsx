@@ -10,7 +10,7 @@ import {
   isColorScheme,
   type ColorScheme,
 } from "./color-scheme-model";
-import { createCurrentUISettingsToken, loadNativeUISettings, saveUISetting } from "./persistence";
+import { loadNativeUISettings, saveUISetting } from "./persistence";
 
 export { COLOR_SCHEMES, DEFAULT_COLOR_SCHEME, isColorScheme, type ColorScheme } from "./color-scheme-model";
 
@@ -44,17 +44,11 @@ export function UISettingsCoreProvider({ children, initialCardSize, initialColor
   }, []);
 
   const setCardSize = useCallback((size: CardSize) => {
-    const token = createCurrentUISettingsToken();
-    if (token === null) return;
-    setCardSizeState(size);
-    saveUISetting(CARD_SIZE_KEY, size, "card size", token);
+    if (saveUISetting(CARD_SIZE_KEY, size, "card size")) setCardSizeState(size);
   }, []);
 
   const setColorScheme = useCallback((scheme: ColorScheme) => {
-    const token = createCurrentUISettingsToken();
-    if (token === null) return;
-    setColorSchemeState(scheme);
-    saveUISetting(COLOR_SCHEME_KEY, scheme, "color scheme", token);
+    if (saveUISetting(COLOR_SCHEME_KEY, scheme, "color scheme")) setColorSchemeState(scheme);
   }, []);
 
   const resetUISettings = useCallback(() => {

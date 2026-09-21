@@ -21,29 +21,16 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
   },
 }));
 
+import { APP_STORAGE_KEYS, isAppStorageKey, openAppData, resetAppDataForTests, resetStoredAppData } from "./app-data";
+import { CARD_SIZE_KEY, COLOR_SCHEME_KEY, DATA_SOURCES_KEY, SRD_CACHE_KEY_PREFIX, UPLOADS_KEY } from "./keys";
 import {
-  APP_STORAGE_KEYS,
   DEFAULT_DATA_SOURCES_SETTINGS,
-  addUploadedFile,
-  allowAppDataCacheWrites,
-  beginAppDataReset,
-  canPersistAppDataCache,
-  createAppDataCacheSession,
-  createAppDataWriteToken,
-  finishAppDataReset,
-  getAppDataItem,
-  getUploadedFiles,
-  isAppStorageKey,
   loadDataSourceSettings,
   loadVoiceSettings,
-  removeUploadedFile,
-  resetAppDataControlsForTests,
-  resetStoredAppData,
   saveDataSourceSettings,
   saveVoiceSettings,
-  setAppDataItem,
-} from "./app-data";
-import { CARD_SIZE_KEY, COLOR_SCHEME_KEY, DATA_SOURCES_KEY, SRD_CACHE_KEY_PREFIX, UPLOADS_KEY } from "./keys";
+} from "./settings";
+import { addUploadedFile, getUploadedFiles, removeUploadedFile } from "./uploads";
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY } from "../stt/index";
 
 function blockStorageOperation(operation: keyof typeof storageControls): () => void {
@@ -59,8 +46,7 @@ async function expectStaleHydrationReadDropped(readStaleValue: () => Promise<unk
   const read = readStaleValue();
   await Promise.resolve();
 
-  const generation = beginAppDataReset();
-  finishAppDataReset(generation);
+  await resetStoredAppData();
   releaseGetItem();
 
   await expect(read).resolves.toBeNull();
@@ -78,9 +64,9 @@ async function resetWhileStorageBlocked(
   await Promise.all([write, reset]);
 }
 
-describe("app data storage clearing", () => {
+describe("local app data", () => {
   beforeEach(() => {
-    resetAppDataControlsForTests();
+    resetAppDataForTests();
     storageControls.getItemGate = null;
     storageControls.setItemGate = null;
     storage.clear();
@@ -115,7 +101,43 @@ describe("app data storage clearing", () => {
     );
   });
 
-  it("adds, removes, and reads uploaded files through the local app data seam", async () => {
+  it("refuses writes from a session opened before a wipe", async () => {
+    const stale = openAppData();
+    await resetStoredAppData();
+
+    expect(stale.isCurrent()).toBe(false);
+    await expect(stale.write(CARD_SIZE_KEY, "L")).resolves.toBe(false);
+    expect(storage.has(CARD_SIZE_KEY)).toBe(false);
+  });
+
+  it("blocks cache writes after a wipe until a real write lands", async () => {
+    await resetStoredAppData();
+    const blockedKey = `${SRD_CACHE_KEY_PREFIX}blocked`;
+    const allowedKey = `${SRD_CACHE_KEY_PREFIX}allowed`;
+
+    await expect(openAppData().cache(blockedKey, "{}")).resolves.toBe(false);
+    expect(storage.has(blockedKey)).toBe(false);
+
+    await expect(openAppData().write(CARD_SIZE_KEY, "L")).resolves.toBe(true);
+
+    await expect(openAppData().cache(allowedKey, "{}")).resolves.toBe(true);
+    expect(storage.get(allowedKey)).toBe("{}");
+  });
+
+  it("waits for in-flight writes before clearing storage", async () => {
+    await resetWhileStorageBlocked("setItemGate", () =>
+      openAppData().write(DATA_SOURCES_KEY, '{"aiApiKey":"secret"}'),
+    );
+
+    expect(storage.get(DATA_SOURCES_KEY)).toBeUndefined();
+    expect(storage.get("unrelated:other-app")).toBe("keep");
+  });
+
+  it("ignores hydration reads that resolve after a wipe", async () => {
+    await expectStaleHydrationReadDropped(() => openAppData().read(STT_SETTINGS_KEY));
+  });
+
+  it("adds, removes, and reads uploaded files", async () => {
     await expect(addUploadedFile("one.md", "# One")).resolves.toBe(true);
     await expect(addUploadedFile("two.md", "# Two")).resolves.toBe(true);
 
@@ -123,6 +145,12 @@ describe("app data storage clearing", () => {
     await expect(removeUploadedFile(first.id)).resolves.toBe(true);
 
     expect((await getUploadedFiles()).map((u) => u.name)).toEqual(["two.md"]);
+  });
+
+  it("keeps concurrent upload mutations from losing each other", async () => {
+    await Promise.all([addUploadedFile("a.md", "# A"), addUploadedFile("b.md", "# B")]);
+
+    expect((await getUploadedFiles()).map((u) => u.name).sort()).toEqual(["a.md", "b.md"]);
   });
 
   it("waits for in-flight upload mutations before clearing storage", async () => {
@@ -133,78 +161,21 @@ describe("app data storage clearing", () => {
     expect(storage.get("unrelated:other-app")).toBe("keep");
   });
 
-  it("invalidates stale async write tokens after a reset starts", () => {
-    const token = createAppDataWriteToken();
-    const generation = beginAppDataReset();
-
-    expect(token).not.toBe(createAppDataWriteToken());
-    expect(canPersistAppDataCache(token)).toBe(false);
-
-    finishAppDataReset(generation);
-    expect(canPersistAppDataCache(token)).toBe(false);
-  });
-
-  it("blocks cache writes for the reset generation until explicitly allowed", async () => {
-    await resetStoredAppData();
-    const token = createAppDataWriteToken();
-
-    expect(canPersistAppDataCache(token)).toBe(false);
-
-    allowAppDataCacheWrites();
-    expect(canPersistAppDataCache(token)).toBe(true);
-  });
-
-  it("routes cache writes through sessions and re-allows them after non-cache app data writes", async () => {
-    await resetStoredAppData();
-    const blockedCache = createAppDataCacheSession();
-    const blockedKey = `${SRD_CACHE_KEY_PREFIX}blocked`;
-    const allowedKey = `${SRD_CACHE_KEY_PREFIX}allowed`;
-
-    await expect(blockedCache.setItem(blockedKey, "{}")).resolves.toBe(false);
-    expect(storage.has(blockedKey)).toBe(false);
-
-    await expect(setAppDataItem(CARD_SIZE_KEY, "L")).resolves.toBe(true);
-
-    const allowedCache = createAppDataCacheSession();
-    await expect(allowedCache.setItem(allowedKey, "{}")).resolves.toBe(true);
-    expect(storage.get(allowedKey)).toBe("{}");
-  });
-
-  it("waits for in-flight settings writes before clearing storage", async () => {
-    await resetWhileStorageBlocked("setItemGate", () => setAppDataItem(DATA_SOURCES_KEY, '{"aiApiKey":"secret"}'));
-
-    expect(storage.get(DATA_SOURCES_KEY)).toBeUndefined();
-    expect(storage.get("unrelated:other-app")).toBe("keep");
-  });
-
-  it("ignores stale hydration reads that resolve after reset starts", async () => {
-    await expectStaleHydrationReadDropped(() => getAppDataItem(STT_SETTINGS_KEY));
-  });
-
-  it("loads and saves voice settings through the local app data seam", async () => {
-    const settings = {
-      provider: "deepgram" as const,
-      deepgramApiKey: "voice-secret",
-    };
+  it("loads and saves voice settings", async () => {
+    const settings = { provider: "deepgram" as const, deepgramApiKey: "voice-secret" };
 
     await expect(saveVoiceSettings(settings)).resolves.toBe(true);
     expect(JSON.parse(storage.get(STT_SETTINGS_KEY)!)).toEqual(settings);
     await expect(loadVoiceSettings()).resolves.toEqual(settings);
   });
 
-  it("validates loaded voice settings through the local app data seam", async () => {
-    storage.set(
-      STT_SETTINGS_KEY,
-      JSON.stringify({
-        provider: "bogus-provider",
-        deepgramApiKey: 42,
-      }),
-    );
+  it("validates loaded voice settings", async () => {
+    storage.set(STT_SETTINGS_KEY, JSON.stringify({ provider: "bogus-provider", deepgramApiKey: 42 }));
 
     await expect(loadVoiceSettings()).resolves.toEqual(DEFAULT_STT_SETTINGS);
   });
 
-  it("loads data source settings through the local app data seam", async () => {
+  it("loads data source settings", async () => {
     storage.set(
       DATA_SOURCES_KEY,
       JSON.stringify({ srdEnabled: false, kankaToken: "kanka-secret", srdSources: ["kobold-press-tob"] }),
@@ -218,33 +189,30 @@ describe("app data storage clearing", () => {
     });
   });
 
-  it("saves data source settings through the local app data seam", async () => {
+  it("saves data source settings and re-allows cache writes", async () => {
     await resetStoredAppData();
-    const cacheWriteToken = createAppDataWriteToken();
+    const cacheKey = `${SRD_CACHE_KEY_PREFIX}after-save`;
     const settings = {
       ...DEFAULT_DATA_SOURCES_SETTINGS,
       googleDocsUrl: "https://docs.google.com/document/d/campaign",
     };
 
-    expect(canPersistAppDataCache(cacheWriteToken)).toBe(false);
+    await expect(openAppData().cache(cacheKey, "{}")).resolves.toBe(false);
     await expect(saveDataSourceSettings(settings)).resolves.toBe(true);
 
     expect(JSON.parse(storage.get(DATA_SOURCES_KEY)!)).toEqual(settings);
-    expect(canPersistAppDataCache(cacheWriteToken)).toBe(true);
+    await expect(openAppData().cache(cacheKey, "{}")).resolves.toBe(true);
   });
 
-  it("drops stale data source settings hydration through the local app data seam", async () => {
+  it("drops stale data source settings hydration", async () => {
     storage.set(DATA_SOURCES_KEY, JSON.stringify({ aiApiKey: "stale-secret" }));
     await expectStaleHydrationReadDropped(loadDataSourceSettings);
   });
 
-  it("drops stale data source settings writes through the local app data seam", async () => {
+  it("drops data source settings writes that a wipe overtakes", async () => {
     const releaseSetItem = blockStorageOperation("setItemGate");
 
-    const write = saveDataSourceSettings({
-      ...DEFAULT_DATA_SOURCES_SETTINGS,
-      aiApiKey: "secret",
-    });
+    const write = saveDataSourceSettings({ ...DEFAULT_DATA_SOURCES_SETTINGS, aiApiKey: "secret" });
     await Promise.resolve();
 
     const reset = resetStoredAppData();

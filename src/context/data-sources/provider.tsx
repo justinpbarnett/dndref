@@ -2,13 +2,11 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 
 import {
   createDefaultDataSourceSettings,
+  loadDataSourceSettings,
   mergeDataSourceSettings,
+  saveDataSourceSettings,
   type DataSourcesSettings,
-} from "../../storage/app-data/data-source-settings-model";
-import { DATA_SOURCES_KEY } from "../../storage/keys";
-import { appDataStorage } from "../data-sources";
-
-export { createDefaultDataSourceSettings, type DataSourcesSettings } from "../../storage/app-data/data-source-settings-model";
+} from "../../storage/settings";
 
 type DataSourcesContextType = {
   settings: DataSourcesSettings;
@@ -17,24 +15,6 @@ type DataSourcesContextType = {
 } & Record<"bumpUploads" | "reset", () => void>;
 
 const DataSourcesContext = createContext<DataSourcesContextType | null>(null);
-
-async function loadDataSourceSettings(): Promise<DataSourcesSettings | null> {
-  try {
-    const raw = await appDataStorage.getItem(DATA_SOURCES_KEY);
-    return raw ? mergeDataSourceSettings(JSON.parse(raw) as Partial<DataSourcesSettings>) : null;
-  } catch (e) {
-    console.warn("[dnd-ref] Failed to load data source settings:", e);
-    return null;
-  }
-}
-
-async function saveDataSourceSettings(settings: DataSourcesSettings): Promise<void> {
-  try {
-    await appDataStorage.setItem(DATA_SOURCES_KEY, JSON.stringify(settings));
-  } catch (e) {
-    console.warn("[dnd-ref] Failed to save data source settings:", e);
-  }
-}
 
 export function DataSourcesProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<DataSourcesSettings>(() => createDefaultDataSourceSettings());

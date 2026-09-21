@@ -50,7 +50,8 @@ vi.mock("./deepgram", () => ({ DeepgramProvider: sttMocks.DeepgramProvider }));
 vi.mock("./web-speech", () => ({ WebSpeechProvider: sttMocks.WebSpeechProvider }));
 
 import { buildProvider, loadSettings } from "./build-provider";
-import { resetAppDataControlsForTests, saveVoiceSettings } from "../storage/app-data";
+import { resetAppDataForTests } from "../storage/app-data";
+import { saveVoiceSettings } from "../storage/settings";
 
 describe("STT provider settings", () => {
   beforeEach(() => {
@@ -60,7 +61,7 @@ describe("STT provider settings", () => {
     sttMocks.deepgramStartError = null;
     sttMocks.webSpeechInstances.length = 0;
     sttMocks.webSpeechStartError = null;
-    resetAppDataControlsForTests();
+    resetAppDataForTests();
     vi.clearAllMocks();
   });
 

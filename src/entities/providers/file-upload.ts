@@ -1,8 +1,8 @@
-import { addUploadedFile, getUploadedFiles, removeUploadedFile, type UploadedFile } from "../../storage/app-data";
+import { addUploadedFile, getUploadedFiles, removeUploadedFile, type UploadedFile } from "../../storage/uploads";
 import { EntityIndex, WorldDataProvider } from "../index";
 import { ingestUploadedFile } from "../ingestion";
 
-export type { UploadedFile } from "../../storage/app-data";
+export type { UploadedFile } from "../../storage/uploads";
 
 export const getUploads = getUploadedFiles;
 export const addUpload = addUploadedFile;

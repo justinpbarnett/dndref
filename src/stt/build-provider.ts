@@ -2,7 +2,7 @@ import { Platform } from "react-native";
 
 import { DeepgramProvider } from "./deepgram";
 import { WebSpeechProvider } from "./web-speech";
-import { createDefaultVoiceSettings, loadVoiceSettings } from "../storage/app-data";
+import { createDefaultVoiceSettings, loadVoiceSettings } from "../storage/settings";
 
 import type { STTProvider, STTSettings } from "./index";
 

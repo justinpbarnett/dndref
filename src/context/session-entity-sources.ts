@@ -1,4 +1,4 @@
-import type { DataSourcesSettings } from "../storage/app-data/data-source-settings-model";
+import type { DataSourcesSettings } from "../storage/settings";
 import type { EntityIndex, WorldDataProvider } from "../entities/index";
 import { FileUploadProvider } from "../entities/providers/file-upload";
 import { GoogleDocsProvider } from "../entities/providers/google-docs";

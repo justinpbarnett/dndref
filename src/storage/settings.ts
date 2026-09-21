@@ -1,19 +1,39 @@
 import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, type STTSettings } from "../stt/index";
-import {
-  createDefaultDataSourceSettings,
-  DEFAULT_DATA_SOURCES_SETTINGS,
-  mergeDataSourceSettings,
-  type DataSourcesSettings,
-} from "./app-data/data-source-settings-model";
-import { getAppDataItem, setAppDataItem } from "./app-data-core";
+import { openAppData } from "./app-data";
 import { DATA_SOURCES_KEY } from "./keys";
 
-export {
-  createDefaultDataSourceSettings,
-  DEFAULT_DATA_SOURCES_SETTINGS,
-  mergeDataSourceSettings,
-  type DataSourcesSettings,
-} from "./app-data/data-source-settings-model";
+export type DataSourcesSettings = {
+  srdEnabled: boolean;
+  srdSources: string[];
+} & Record<
+  "kankaToken" | "kankaCampaignId" | "homebreweryUrl" | "notionToken" | "notionPageIds" | "googleDocsUrl" | "aiApiKey",
+  string
+>;
+
+export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
+  srdEnabled: true,
+  srdSources: ["wotc-srd"],
+  kankaToken: "",
+  kankaCampaignId: "",
+  homebreweryUrl: "",
+  notionToken: "",
+  notionPageIds: "",
+  googleDocsUrl: "",
+  aiApiKey: "",
+};
+
+export const createDefaultDataSourceSettings = (): DataSourcesSettings => ({
+  ...DEFAULT_DATA_SOURCES_SETTINGS,
+  srdSources: [...DEFAULT_DATA_SOURCES_SETTINGS.srdSources],
+});
+
+export function mergeDataSourceSettings(settings?: Partial<DataSourcesSettings> | null): DataSourcesSettings {
+  const patch = settings ?? {};
+  const defaultSettings = createDefaultDataSourceSettings();
+  const srdSources = Array.isArray(patch.srdSources) ? [...patch.srdSources] : defaultSettings.srdSources;
+
+  return { ...defaultSettings, ...patch, srdSources };
+}
 
 type VoiceSettingsPatch = Partial<Record<keyof STTSettings, unknown>>;
 
@@ -32,8 +52,10 @@ function normalizeVoiceSettings(settings: unknown): STTSettings {
 }
 
 export const mergeVoiceSettings: (settings?: Partial<STTSettings> | null) => STTSettings = normalizeVoiceSettings;
+
 export const loadVoiceSettings = (): Promise<STTSettings | null> =>
   loadJsonSetting(STT_SETTINGS_KEY, normalizeVoiceSettings, "voice settings");
+
 export const saveVoiceSettings = (settings: STTSettings): Promise<boolean> =>
   saveJsonSetting(STT_SETTINGS_KEY, mergeVoiceSettings(settings), "voice settings");
 
@@ -50,7 +72,7 @@ export const saveDataSourceSettings = (settings: DataSourcesSettings): Promise<b
 async function loadJsonSetting<T>(key: string, normalize: (value: unknown) => T, label: string): Promise<T | null> {
   let raw: string | null;
   try {
-    raw = await getAppDataItem(key);
+    raw = await openAppData().read(key);
   } catch (e) {
     console.warn(`[dnd-ref] Failed to load ${label}:`, e);
     return null;
@@ -68,7 +90,7 @@ async function loadJsonSetting<T>(key: string, normalize: (value: unknown) => T,
 
 async function saveJsonSetting(key: string, value: unknown, label: string): Promise<boolean> {
   try {
-    return await setAppDataItem(key, JSON.stringify(value));
+    return await openAppData().write(key, JSON.stringify(value));
   } catch (e) {
     console.warn(`[dnd-ref] Failed to save ${label}:`, e);
     return false;

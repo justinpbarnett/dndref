@@ -1,12 +1,7 @@
 import { Platform } from "react-native";
 
 import { isCardSize, type CardSize } from "../../card-size-configs";
-import {
-  createAppDataWriteToken,
-  getAppDataItem,
-  isAppDataWriteTokenCurrent,
-  setAppDataItem,
-} from "../../storage/app-data";
+import { openAppData } from "../../storage/app-data";
 import { CARD_SIZE_KEY, COLOR_SCHEME_KEY } from "../../storage/keys";
 import { isColorScheme, type ColorScheme } from "./color-scheme-model";
 
@@ -14,12 +9,9 @@ export type StoredUISettings = { cardSize?: CardSize; colorScheme?: ColorScheme 
 
 export async function loadNativeUISettings(): Promise<StoredUISettings | null> {
   if (Platform.OS === "web") return null;
-  const token = createAppDataWriteToken();
+  const appData = openAppData();
   try {
-    const [rawSize, rawScheme] = await Promise.all([
-      getAppDataItem(CARD_SIZE_KEY, token),
-      getAppDataItem(COLOR_SCHEME_KEY, token),
-    ]);
+    const [rawSize, rawScheme] = await Promise.all([appData.read(CARD_SIZE_KEY), appData.read(COLOR_SCHEME_KEY)]);
     return {
       cardSize: isCardSize(rawSize) ? rawSize : undefined,
       colorScheme: isColorScheme(rawScheme) ? rawScheme : undefined,
@@ -30,13 +22,19 @@ export async function loadNativeUISettings(): Promise<StoredUISettings | null> {
   }
 }
 
-export function createCurrentUISettingsToken(): number | null {
-  const token = createAppDataWriteToken();
-  return isAppDataWriteTokenCurrent(token) ? token : null;
-}
+/**
+ * Saves one preference and reports whether the app should show it.
+ *
+ * Returns false when a "delete all data" wipe is under way. The caller then
+ * leaves its own state alone, so the screen never shows a preference that
+ * storage refused.
+ */
+export function saveUISetting(key: string, value: string, label: string): boolean {
+  const appData = openAppData();
+  if (!appData.isCurrent()) return false;
 
-export function saveUISetting(key: string, value: string, label: string, token: number): void {
-  setAppDataItem(key, value, { token }).catch((e: unknown) => {
+  appData.write(key, value).catch((e: unknown) => {
     console.warn(`[dnd-ref] Failed to save ${label} preference:`, e);
   });
+  return true;
 }

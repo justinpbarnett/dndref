@@ -17,7 +17,7 @@ vi.mock("../../utils/providers", () => ({
 }));
 
 import { SRDProvider } from "./srd";
-import { resetAppDataControlsForTests, resetStoredAppData } from "../../storage/app-data";
+import { resetAppDataForTests, resetStoredAppData } from "../../storage/app-data";
 import { SRD_CACHE_KEY_PREFIX } from "../../storage/keys";
 
 describe("SRD cache persistence", () => {
@@ -30,7 +30,7 @@ describe("SRD cache persistence", () => {
       }
       return [{ name: "Bag of Holding", slug: "bag-of-holding", desc: "A magic bag." }];
     });
-    resetAppDataControlsForTests();
+    resetAppDataForTests();
   });
 
   it("writes SRD cache during normal provider loads", async () => {
