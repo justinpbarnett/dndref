@@ -15,7 +15,7 @@ export function monsterToEntity(m: any): Entity | null {
   const summary = `CR ${m.challenge_rating ?? "?"} · ${m.size ?? ""} ${m.type ?? ""}. AC ${m.armor_class ?? "?"}, HP ${m.hit_points ?? "?"}. ${statSummary}.`;
   return normalizeIngestedEntity(
     { ...m, type: "NPC", summary: summary.trim(), image: m.img_main },
-    { id: m.slug ? `srd-monster-${m.slug}` : undefined, idPrefix: "srd-monster" },
+    srdId("monster", m.slug),
   );
 }
 
@@ -26,6 +26,12 @@ export function itemToEntity(item: any): Entity | null {
   const summary = [rarity, desc.slice(0, 200)].filter(Boolean).join(". ");
   return normalizeIngestedEntity(
     { ...item, type: "Item", summary, details },
-    { id: item.slug ? `srd-item-${item.slug}` : undefined, idPrefix: "srd-item" },
+    srdId("item", item.slug),
   );
 }
+
+/** Open5e records carry a slug. Where one is missing, the name supplies the id. */
+const srdId = (kind: "monster" | "item", slug: unknown) => ({
+  id: typeof slug === "string" && slug ? `srd-${kind}-${slug}` : undefined,
+  idPrefix: `srd-${kind}`,
+});
