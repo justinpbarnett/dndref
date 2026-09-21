@@ -1,5 +1,6 @@
 import Fuse from "fuse.js";
 
+import { DETECTION_TUNING } from "./detection-tuning";
 import { Entity, EntityIndex } from "./index";
 
 type SearchTerm = { term: string; entity: Entity };
@@ -15,21 +16,22 @@ export class EntityDetector {
 
     this.fuse = new Fuse(terms, {
       keys: ["term"],
-      threshold: 0.28,
-      minMatchCharLength: 4,
+      threshold: DETECTION_TUNING.threshold,
+      minMatchCharLength: DETECTION_TUNING.minMatchChars,
       includeScore: true,
     });
   }
 
   detect(transcript: string): Entity[] {
-    const words = transcript.split(/\s+/).filter((w) => w.replace(/[^a-z]/gi, "").length >= 4);
+    const words = transcript
+      .split(/\s+/)
+      .filter((w) => w.replace(/[^a-z]/gi, "").length >= DETECTION_TUNING.minWordChars);
     const found = new Map<string, { entity: Entity; score: number }>();
 
     const phrases: string[] = [...words];
-    for (let i = 0; i < words.length - 1; i++) {
-      phrases.push(`${words[i]} ${words[i + 1]}`);
-      if (i < words.length - 2) {
-        phrases.push(`${words[i]} ${words[i + 1]} ${words[i + 2]}`);
+    for (let i = 0; i < words.length; i++) {
+      for (let width = 2; width <= DETECTION_TUNING.maxPhraseWords && i + width <= words.length; width++) {
+        phrases.push(words.slice(i, i + width).join(" "));
       }
     }
 

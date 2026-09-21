@@ -52,9 +52,9 @@ all of it; the classic symptom is aliases silently never matching.
 
 Providers live in `src/entities/providers/`: `MarkdownProvider` (sample world + file uploads), `SRDProvider`, `KankaProvider`, `HomebreweryProvider`, `NotionProvider`, `GoogleDocsProvider`, `FileUploadProvider`. On web, external API calls go through the CORS proxy at `proxy.dndref.com`. `src/proxy-routes.ts` holds the one route table; both `src/proxy.ts` (`upstreamUrl`, `fetchUpstream`) and the Worker in `workers/cors-proxy/` import it, so adding a route is one edit. Native calls the upstream directly.
 
-The combined `EntityIndex` is fed into `EntityDetector` (Fuse.js, `src/entities/detector.ts`). Detection searches single words, 2-word, and 3-word phrases from the transcript against entity names and aliases. Threshold is 0.28; minimum 4 chars.
+The combined `EntityIndex` is fed into `EntityDetector` (Fuse.js, `src/entities/detector.ts`). Detection searches every one- to three-word phrase from the transcript against entity names and aliases. Every number this depends on -- match threshold, the two different minimum lengths, phrase width, carry-over window, interval -- lives in `src/entities/detection-tuning.ts`. Tune detection there, not in the detector.
 
-Every 2 seconds while active, the detector runs against only the _new_ transcript text since last check (`processedUpToRef`). Matches are added to the card stack (max 6 cards). Pinned cards are sorted to the front. When the stack is full, the rightmost unpinned card is evicted.
+While active, `RuntimeDetectionLoop` (`src/context/session-runtime/detection-loop.ts`) runs the detector on an interval against only the _new_ transcript text since the last pass (`processedTranscriptLength`), plus a short tail of the previous pass so a name spoken across the boundary is still matched. Matches are added to the card stack (max 6 cards). Pinned cards are sorted to the front. When the stack is full, the rightmost unpinned card is evicted.
 
 ### STT abstraction
 

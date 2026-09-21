@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { DETECTION_TUNING } from "../entities/detection-tuning";
 import { buildProvider, loadSettings } from "../stt/build-provider";
 import { SessionRuntime } from "./session-runtime";
 
@@ -9,7 +10,7 @@ export function useSessionRuntimeController() {
       new SessionRuntime({
         loadSttSettings: loadSettings,
         buildSttProvider: buildProvider,
-        detectIntervalMs: 2000,
+        detectIntervalMs: DETECTION_TUNING.intervalMs,
       }),
   );
   const [snapshot, setSnapshot] = useState(() => runtime.getSnapshot());

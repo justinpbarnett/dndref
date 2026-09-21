@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildDetectionInput, nextDetectionContext } from "./detection-window";
+import { DETECTION_TUNING } from "../entities/detection-tuning";
 import { EntityType } from "../entities/index";
 import { EntityDetector } from "../entities/detector";
 
@@ -25,6 +26,13 @@ describe("detection transcript windows", () => {
 
     expect(detectionInput).toBe("The party reached Red Oak Keep before sunset");
     expect(detector.detect(detectionInput).map((e) => e.name)).toContain("Red Oak Keep");
+  });
+
+  it("carries only the tail of a long session transcript", () => {
+    const carried = nextDetectionContext(`${"the party argues about rations. ".repeat(20)}Red Oak Keep`);
+
+    expect(carried).toHaveLength(DETECTION_TUNING.carryOverChars);
+    expect(carried.endsWith("Red Oak Keep")).toBe(true);
   });
 
   it("can intentionally drop context so paused transcript is not carried after resume", () => {

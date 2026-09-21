@@ -48,6 +48,22 @@ describe("EntityDetector", () => {
   it("deduplicates multiple matches to same entity", () => {
     expect(detector.detect("Gimble Lock is the bard").map((e) => e.name)).toEqual(["Gimble Lock"]);
   });
+
+  // `minWordChars` filters the transcript side; `minMatchChars` filters the
+  // entity side. Both are 4, and they answer different questions.
+  it("never searches transcript words below the minimum, whatever the table has been named", () => {
+    const shortNamed = new EntityDetector([
+      { id: "elm", name: "Elm", type: "Location" as EntityType, aliases: [], summary: "An old elm" },
+    ]);
+
+    expect(shortNamed.detect("They camped by the Elm")).toHaveLength(0);
+  });
+
+  it("searches multi-word phrases so a name is found mid-sentence", () => {
+    expect(detector.detect("they walk into The Prancing Pony at dusk").map((e) => e.name)).toContain(
+      "The Prancing Pony",
+    );
+  });
 });
 
 describe("slugify", () => {
