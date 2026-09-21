@@ -1,4 +1,4 @@
-import { fetchUpstream } from "../../../proxy";
+import { fetchOutbound } from "../../../proxy";
 
 const NOTION_VERSION = "2022-06-28";
 
@@ -35,7 +35,7 @@ export class NotionApiClient {
 
   private async fetchChildrenPage(blockId: string, cursor?: string): Promise<NotionChildrenResponse> {
     const path = `/v1/blocks/${blockId}/children${cursor ? `?start_cursor=${cursor}` : ""}`;
-    const res = await fetchUpstream("notion", path, { sourceName: "Notion API", headers: this.headers });
+    const res = await fetchOutbound("notion", path, { sourceName: "Notion API", headers: this.headers });
     if (!res.ok) throw new Error(`Notion API error: ${res.status}`);
     return (await res.json()) as NotionChildrenResponse;
   }

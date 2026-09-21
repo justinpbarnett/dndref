@@ -13,23 +13,26 @@ export type { ProxyRoute };
  */
 export const usesProxy = (): boolean => Platform.OS === "web";
 
-/** Where a request for `path` on `route` actually goes from this platform. */
-export const upstreamUrl = (route: ProxyRoute, path: string): string =>
+/**
+ * The address this platform sends the request to: the proxy Worker on web, the
+ * upstream itself on native. Either way the route and path are the same.
+ */
+export const outboundUrl = (route: ProxyRoute, path: string): string =>
   usesProxy() ? `${PROXY_ORIGIN}/${route}${path}` : `${PROXY_UPSTREAMS[route]}${path}`;
 
 /**
  * Fetch from a world source, turning the browser's opaque CORS failure into an
  * error that names the source and says what to do instead.
  */
-export async function fetchUpstream(
+export async function fetchOutbound(
   route: ProxyRoute,
   path: string,
-  options: RequestInit & { sourceName: string; fallbackMessage?: string },
+  options: RequestInit & { sourceName: string },
 ): Promise<Response> {
-  const { sourceName, fallbackMessage, ...init } = options;
+  const { sourceName, ...init } = options;
   try {
-    return await fetch(upstreamUrl(route, path), init);
+    return await fetch(outboundUrl(route, path), init);
   } catch (e: unknown) {
-    throw handleCorsError(e, sourceName, fallbackMessage);
+    throw handleCorsError(e, sourceName);
   }
 }

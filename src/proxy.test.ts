@@ -7,7 +7,7 @@ vi.mock("react-native", () => ({ Platform: platform }));
 
 import corsProxyWorker from "../workers/cors-proxy/index";
 import { PROXY_UPSTREAMS, type ProxyRoute } from "./proxy-routes";
-import { fetchUpstream, upstreamUrl } from "./proxy";
+import { fetchOutbound, outboundUrl } from "./proxy";
 
 const ROUTES = Object.keys(PROXY_UPSTREAMS) as ProxyRoute[];
 
@@ -19,9 +19,10 @@ describe("outbound world source requests", () => {
   });
 
   it("sends every route through the proxy on web", () => {
-    expect(ROUTES.map((route) => upstreamUrl(route, "/v1/ping"))).toEqual([
+    expect(ROUTES.map((route) => outboundUrl(route, "/v1/ping"))).toEqual([
       "https://proxy.dndref.com/notion/v1/ping",
       "https://proxy.dndref.com/google-docs/v1/ping",
+      "https://proxy.dndref.com/homebrewery/v1/ping",
       "https://proxy.dndref.com/anthropic/v1/ping",
     ]);
   });
@@ -29,9 +30,10 @@ describe("outbound world source requests", () => {
   it("calls the upstream directly on native", () => {
     platform.OS = "ios";
 
-    expect(ROUTES.map((route) => upstreamUrl(route, "/v1/ping"))).toEqual([
+    expect(ROUTES.map((route) => outboundUrl(route, "/v1/ping"))).toEqual([
       "https://api.notion.com/v1/ping",
       "https://docs.google.com/v1/ping",
+      "https://homebrewery.naturalcrit.com/v1/ping",
       "https://api.anthropic.com/v1/ping",
     ]);
   });
@@ -42,7 +44,7 @@ describe("outbound world source requests", () => {
     fetchMock.mockResolvedValue(new Response("ok"));
 
     await corsProxyWorker.fetch(
-      new Request(`${upstreamUrl(route, "/v1/things?cursor=2")}`, { headers: { Origin: "https://dndref.com" } }),
+      new Request(`${outboundUrl(route, "/v1/things?cursor=2")}`, { headers: { Origin: "https://dndref.com" } }),
     );
 
     expect(fetchMock).toHaveBeenCalledWith(`${PROXY_UPSTREAMS[route]}/v1/things?cursor=2`, expect.anything());
@@ -51,7 +53,7 @@ describe("outbound world source requests", () => {
   it("names the source when the browser blocks the request", async () => {
     fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
 
-    await expect(fetchUpstream("notion", "/v1/ping", { sourceName: "Notion API" })).rejects.toThrow(
+    await expect(fetchOutbound("notion", "/v1/ping", { sourceName: "Notion API" })).rejects.toThrow(
       "Cannot reach Notion API from the browser (CORS). Use the iOS app or paste content via file upload.",
     );
   });

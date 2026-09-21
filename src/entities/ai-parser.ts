@@ -1,9 +1,7 @@
-import { upstreamUrl, usesProxy } from "../proxy";
+import { fetchOutbound, usesProxy } from "../proxy";
 
 import { EntityIndex } from "./index";
 import { ingestEntityRecords } from "./ingestion";
-
-const ANTHROPIC_API = upstreamUrl("anthropic", "/v1/messages");
 
 const PROMPT = `Extract all named D&D entities from the content below.
 
@@ -23,8 +21,9 @@ Content:
 `;
 
 export async function parseWithAI(content: string, apiKey: string): Promise<EntityIndex> {
-  const res = await fetch(ANTHROPIC_API, {
+  const res = await fetchOutbound("anthropic", "/v1/messages", {
     method: "POST",
+    sourceName: "Claude",
     headers: {
       "Content-Type": "application/json",
       "x-api-key": apiKey,

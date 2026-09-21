@@ -9,7 +9,7 @@ vi.mock("react-native", () => ({ Platform: platform }));
 vi.mock("../ingestion", () => ingestionMocks);
 
 import { ingestMarkdownContent } from "../ingestion";
-import { buildGoogleDocsExportUrl, fetchGoogleDocText, GoogleDocsProvider } from "./google-docs";
+import { fetchGoogleDocText, GoogleDocsProvider } from "./google-docs";
 
 const mockedIngestMarkdownContent = vi.mocked(ingestMarkdownContent);
 
@@ -36,12 +36,17 @@ describe("GoogleDocsProvider", () => {
     );
   });
 
-  it("builds direct Google Docs export URLs for native callers", () => {
+  it("exports straight from Google Docs on native, from a URL or a bare id", async () => {
     platform.OS = "ios";
-    const documentUrl = "https://docs.google.com/document/d/doc_123/edit#heading=h.1";
+    fetchMock.mockImplementation(async () => textResponse(""));
 
-    expect(buildGoogleDocsExportUrl(documentUrl)).toBe("https://docs.google.com/document/d/doc_123/export?format=txt");
-    expect(buildGoogleDocsExportUrl("doc_123")).toBe("https://docs.google.com/document/d/doc_123/export?format=txt");
+    await fetchGoogleDocText("https://docs.google.com/document/d/doc_123/edit#heading=h.1");
+    await fetchGoogleDocText("doc_123");
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      "https://docs.google.com/document/d/doc_123/export?format=txt",
+      "https://docs.google.com/document/d/doc_123/export?format=txt",
+    ]);
   });
 
   it("loads fetched document text through shared ingestion", async () => {
