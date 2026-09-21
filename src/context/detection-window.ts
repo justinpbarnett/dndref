@@ -1,3 +1,8 @@
+/**
+ * A name can arrive split across two transcript slices, so each detection pass
+ * is fed the tail of the previous one. Whether the rejoined text then matches
+ * is the detector's question, not this module's.
+ */
 import { DETECTION_TUNING } from "../entities/detection-tuning";
 
 export const nextDetectionContext = (transcript: string): string =>

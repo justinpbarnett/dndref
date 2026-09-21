@@ -14,7 +14,10 @@ describe("KankaProvider", () => {
     fetchAllMock.mockReset();
   });
 
-  it("detects a campaign entity by the aliases its source carries", async () => {
+  // Whether Kanka's list endpoints carry `aliases` is a question about Kanka.
+  // What this pins is the app's side: aliases a record does carry now reach the
+  // entity, where the old hardcoded `aliases: []` threw them away.
+  it("carries a record's aliases through to the entity", async () => {
     fetchAllMock.mockImplementation(
       onlyCharacters([
         {
