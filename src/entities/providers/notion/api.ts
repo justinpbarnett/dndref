@@ -1,8 +1,6 @@
-import { CORS_PROXY } from "../../../proxy";
-import { handleCorsError } from "../../../utils/providers";
+import { fetchUpstream } from "../../../proxy";
 
 const NOTION_VERSION = "2022-06-28";
-const NOTION_API_BASE = CORS_PROXY ? `${CORS_PROXY}/notion/v1` : "https://api.notion.com/v1";
 
 type NotionChildrenResponse = { results: any[]; has_more: boolean; next_cursor: string | null };
 
@@ -36,13 +34,8 @@ export class NotionApiClient {
   }
 
   private async fetchChildrenPage(blockId: string, cursor?: string): Promise<NotionChildrenResponse> {
-    const url = `${NOTION_API_BASE}/blocks/${blockId}/children${cursor ? `?start_cursor=${cursor}` : ""}`;
-    let res: Response;
-    try {
-      res = await fetch(url, { headers: this.headers });
-    } catch (e) {
-      throw handleCorsError(e, "Notion API");
-    }
+    const path = `/v1/blocks/${blockId}/children${cursor ? `?start_cursor=${cursor}` : ""}`;
+    const res = await fetchUpstream("notion", path, { sourceName: "Notion API", headers: this.headers });
     if (!res.ok) throw new Error(`Notion API error: ${res.status}`);
     return (await res.json()) as NotionChildrenResponse;
   }

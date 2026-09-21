@@ -1,10 +1,10 @@
-import { CORS_PROXY } from "../proxy";
+import { upstreamUrl, usesProxy } from "../proxy";
 
 import { Entity, EntityIndex, normalizeEntityType, slugify } from "./index";
 
 type AIEntityInput = { name: string; type?: string; aliases?: string[]; summary?: string };
 
-const ANTHROPIC_API = CORS_PROXY ? `${CORS_PROXY}/anthropic/v1/messages` : "https://api.anthropic.com/v1/messages";
+const ANTHROPIC_API = upstreamUrl("anthropic", "/v1/messages");
 
 const PROMPT = `Extract all named D&D entities from the content below.
 
@@ -30,7 +30,7 @@ export async function parseWithAI(content: string, apiKey: string): Promise<Enti
       "Content-Type": "application/json",
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
-      ...(!CORS_PROXY && { "anthropic-dangerous-direct-browser-access": "true" }),
+      ...(!usesProxy() && { "anthropic-dangerous-direct-browser-access": "true" }),
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",

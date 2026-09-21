@@ -1,8 +1,10 @@
-const UPSTREAM: Record<string, string> = {
-  '/notion': 'https://api.notion.com',
-  '/google-docs': 'https://docs.google.com',
-  '/anthropic': 'https://api.anthropic.com',
-};
+import { PROXY_UPSTREAMS } from '../../src/proxy-routes';
+
+// The app addresses this Worker as /<route>/<upstream path>; the route table it
+// builds those URLs from is the same one routing them here.
+const UPSTREAM: Record<string, string> = Object.fromEntries(
+  Object.entries(PROXY_UPSTREAMS).map(([route, origin]) => [`/${route}`, origin]),
+);
 
 const ALLOWED_ORIGINS = new Set([
   'https://dndref.com',

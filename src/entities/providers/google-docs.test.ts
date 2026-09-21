@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const fetchMock = vi.hoisted(() => vi.fn());
 const ingestionMocks = vi.hoisted(() => ({ ingestMarkdownContent: vi.fn() }));
 
-vi.mock("react-native", () => ({ Platform: { OS: "web" } }));
+const platform = vi.hoisted(() => ({ OS: "web" }));
+
+vi.mock("react-native", () => ({ Platform: platform }));
 vi.mock("../ingestion", () => ingestionMocks);
 
 import { ingestMarkdownContent } from "../ingestion";
@@ -13,6 +15,7 @@ const mockedIngestMarkdownContent = vi.mocked(ingestMarkdownContent);
 
 describe("GoogleDocsProvider", () => {
   beforeEach(() => {
+    platform.OS = "web";
     fetchMock.mockReset();
     mockedIngestMarkdownContent.mockReset();
     vi.stubGlobal("fetch", fetchMock);
@@ -27,18 +30,18 @@ describe("GoogleDocsProvider", () => {
       "# Moonlit Bazaar",
     );
 
-    expect(fetchMock).toHaveBeenCalledWith("https://proxy.dndref.com/google-docs/document/d/doc_123/export?format=txt");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://proxy.dndref.com/google-docs/document/d/doc_123/export?format=txt",
+      expect.anything(),
+    );
   });
 
   it("builds direct Google Docs export URLs for native callers", () => {
+    platform.OS = "ios";
     const documentUrl = "https://docs.google.com/document/d/doc_123/edit#heading=h.1";
 
-    expect(buildGoogleDocsExportUrl(documentUrl, null)).toBe(
-      "https://docs.google.com/document/d/doc_123/export?format=txt",
-    );
-    expect(buildGoogleDocsExportUrl("doc_123", null)).toBe(
-      "https://docs.google.com/document/d/doc_123/export?format=txt",
-    );
+    expect(buildGoogleDocsExportUrl(documentUrl)).toBe("https://docs.google.com/document/d/doc_123/export?format=txt");
+    expect(buildGoogleDocsExportUrl("doc_123")).toBe("https://docs.google.com/document/d/doc_123/export?format=txt");
   });
 
   it("loads fetched document text through shared ingestion", async () => {
