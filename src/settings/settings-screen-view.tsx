@@ -18,22 +18,7 @@ type SettingsScreenViewProps = {
 };
 
 export function SettingsScreenView({ colors, controller, isWide, styles }: SettingsScreenViewProps) {
-  const {
-    category,
-    setCategory,
-    dataSaved,
-    uiSettings: { cardSize, setCardSize, colorScheme, setColorScheme },
-    voiceCategory,
-    dsLocal,
-    setDsLocal,
-    filesCategory,
-    aiContent,
-    setAiContent,
-    aiParsing,
-    aiResult,
-    saveData,
-    handleAIParse,
-  } = controller;
+  const { category, setCategory } = controller;
 
   return (
     <View style={styles.root}>
@@ -73,25 +58,7 @@ export function SettingsScreenView({ colors, controller, isWide, styles }: Setti
       )}
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentPad} showsVerticalScrollIndicator={false}>
-        <SettingsContent
-          category={category}
-          cardSize={cardSize}
-          setCardSize={setCardSize}
-          colorScheme={colorScheme}
-          setColorScheme={setColorScheme}
-          dsLocal={dsLocal}
-          setDsLocal={setDsLocal}
-          saveData={saveData}
-          dataSaved={dataSaved}
-          filesCategory={filesCategory}
-          voiceCategory={voiceCategory}
-          aiContent={aiContent}
-          setAiContent={setAiContent}
-          aiParsing={aiParsing}
-          aiResult={aiResult}
-          handleAIParse={handleAIParse}
-          styles={styles}
-        />
+        <SettingsContent controller={controller} styles={styles} />
       </ScrollView>
     </View>
   );

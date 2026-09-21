@@ -1,14 +1,16 @@
-import { DataSourcesSettings } from "../storage/settings";
-import { UploadedFile } from "../entities/providers/file-upload";
-import { STTSettings } from "../stt/index";
+import type { CardSize, ColorScheme } from "../context/ui-settings";
+import type { UploadedFile } from "../entities/providers/file-upload";
+import type { DataSourcesSettings } from "../storage/settings";
+import type { STTSettings } from "../stt/index";
+import type { createStyles } from "./styles";
 
-type StyledSectionProps = { styles: any };
+type StyledSectionProps = { styles: ReturnType<typeof createStyles> };
 
 export interface DisplaySectionProps extends StyledSectionProps {
-  cardSize: import("../context/ui-settings").CardSize;
-  setCardSize: (size: import("../context/ui-settings").CardSize) => void;
-  colorScheme: import("../context/ui-settings").ColorScheme;
-  setColorScheme: (scheme: import("../context/ui-settings").ColorScheme) => void;
+  cardSize: CardSize;
+  setCardSize: (size: CardSize) => void;
+  colorScheme: ColorScheme;
+  setColorScheme: (scheme: ColorScheme) => void;
 }
 
 export interface VoiceSectionProps extends StyledSectionProps {

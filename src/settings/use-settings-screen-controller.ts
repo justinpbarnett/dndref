@@ -71,20 +71,15 @@ export function useSettingsScreenController() {
     }
   };
 
+  // One slice per settings category, so the view passes a slice to its section
+  // instead of threading every field through the tree.
   return {
     category,
     setCategory,
-    dataSaved,
-    uiSettings,
-    voiceCategory,
-    dsLocal,
-    setDsLocal,
-    filesCategory,
-    aiContent,
-    setAiContent,
-    aiParsing,
-    aiResult,
-    saveData,
-    handleAIParse,
+    display: uiSettings,
+    voice: voiceCategory,
+    data: { dsLocal, setDsLocal, saveData, dataSaved },
+    files: filesCategory,
+    ai: { dsLocal, setDsLocal, aiContent, setAiContent, aiParsing, aiResult, handleAIParse },
   };
 }

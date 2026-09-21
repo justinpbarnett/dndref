@@ -1,101 +1,36 @@
-import React, { type Dispatch, type SetStateAction } from "react";
+import React from "react";
 import { Text, TouchableOpacity } from "react-native";
 
 import { Ionicon } from "../components/Ionicon";
-import type { DataSourcesSettings } from "../storage/settings";
-import type { CardSize, ColorScheme } from "../context/ui-settings";
 import type { Colors } from "../theme";
 import { type Category, CATEGORIES } from "./constants";
-import type { useFilesSettingsCategory } from "./files-settings-category";
 import { AISection } from "./renderers/AISection";
 import { DataSection } from "./renderers/DataSection";
 import { DisplaySection } from "./renderers/DisplaySection";
 import { FilesSection } from "./renderers/FilesSection";
 import { VoiceSection } from "./renderers/VoiceSection";
 import type { createStyles } from "./styles";
-import type { useVoiceSettingsCategory } from "./voice-settings-category";
+import type { useSettingsScreenController } from "./use-settings-screen-controller";
 
 type SettingsStyles = ReturnType<typeof createStyles>;
-type FilesCategory = ReturnType<typeof useFilesSettingsCategory>;
-type VoiceCategory = ReturnType<typeof useVoiceSettingsCategory>;
 
 type SettingsContentProps = {
-  category: Category;
-  cardSize: CardSize;
-  setCardSize: (value: CardSize) => void;
-  colorScheme: ColorScheme;
-  setColorScheme: (value: ColorScheme) => void;
-  dsLocal: DataSourcesSettings;
-  setDsLocal: Dispatch<SetStateAction<DataSourcesSettings>>;
-  saveData: () => Promise<void>;
-  dataSaved: boolean;
-  filesCategory: FilesCategory;
-  voiceCategory: VoiceCategory;
-  aiContent: string;
-  setAiContent: Dispatch<SetStateAction<string>>;
-  aiParsing: boolean;
-  aiResult: string;
-  handleAIParse: () => Promise<void>;
+  controller: ReturnType<typeof useSettingsScreenController>;
   styles: SettingsStyles;
 };
 
-export function SettingsContent({
-  category,
-  cardSize,
-  setCardSize,
-  colorScheme,
-  setColorScheme,
-  dsLocal,
-  setDsLocal,
-  saveData,
-  dataSaved,
-  filesCategory,
-  voiceCategory,
-  aiContent,
-  setAiContent,
-  aiParsing,
-  aiResult,
-  handleAIParse,
-  styles,
-}: SettingsContentProps) {
-  switch (category) {
+export function SettingsContent({ controller, styles }: SettingsContentProps) {
+  switch (controller.category) {
     case "display":
-      return (
-        <DisplaySection
-          cardSize={cardSize}
-          setCardSize={setCardSize}
-          colorScheme={colorScheme}
-          setColorScheme={setColorScheme}
-          styles={styles}
-        />
-      );
+      return <DisplaySection {...controller.display} styles={styles} />;
     case "voice":
-      return <VoiceSection {...voiceCategory} styles={styles} />;
+      return <VoiceSection {...controller.voice} styles={styles} />;
     case "data":
-      return (
-        <DataSection
-          dsLocal={dsLocal}
-          setDsLocal={setDsLocal}
-          saveData={saveData}
-          dataSaved={dataSaved}
-          styles={styles}
-        />
-      );
+      return <DataSection {...controller.data} styles={styles} />;
     case "files":
-      return <FilesSection {...filesCategory} styles={styles} />;
+      return <FilesSection {...controller.files} styles={styles} />;
     case "ai":
-      return (
-        <AISection
-          dsLocal={dsLocal}
-          setDsLocal={setDsLocal}
-          aiContent={aiContent}
-          setAiContent={setAiContent}
-          aiParsing={aiParsing}
-          aiResult={aiResult}
-          handleAIParse={handleAIParse}
-          styles={styles}
-        />
-      );
+      return <AISection {...controller.ai} styles={styles} />;
   }
 }
 

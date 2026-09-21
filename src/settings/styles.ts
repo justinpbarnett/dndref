@@ -3,7 +3,7 @@ import { Colors, F } from "../theme";
 export function createStyles(C: Colors, isWide: boolean) {
   const cardBorder = { backgroundColor: C.bgCard, borderRadius: 4, borderWidth: 1, borderColor: C.border };
   const compactCardBorder = { ...cardBorder, borderRadius: 3 };
-  const centerBorder = { alignItems: "center", justifyContent: "center", borderRadius: 3, borderWidth: 1 };
+  const centerBorder = { alignItems: "center", justifyContent: "center", borderRadius: 3, borderWidth: 1 } as const;
   const actionBorder = {
     flexDirection: "row",
     alignItems: "center",
@@ -11,7 +11,7 @@ export function createStyles(C: Colors, isWide: boolean) {
     borderWidth: 1,
     borderRadius: 3,
     paddingVertical: 10,
-  };
+  } as const;
   return {
     root: { flex: 1, flexDirection: isWide ? "row" : "column", backgroundColor: C.bg },
     sidebar: {
