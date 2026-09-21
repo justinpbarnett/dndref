@@ -3,18 +3,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const storage = vi.hoisted(() => new Map<string, string>());
 const platform = vi.hoisted(() => ({ OS: "web" }));
 
-type MockProviderInstance = { emitError(error: string): void; emitTranscript(text: string): void };
-
 const sttMocks = vi.hoisted(() => {
   const state = {
-    deepgramInstances: [] as MockProviderInstance[],
+    deepgramInstances: [] as unknown[],
     deepgramStartError: null as Error | null,
-    webSpeechInstances: [] as MockProviderInstance[],
+    webSpeechInstances: [] as unknown[],
     webSpeechStartError: null as Error | null,
   };
   const createProvider = (
     name: string,
-    instances: MockProviderInstance[],
+    instances: unknown[],
     errorKey: "deepgramStartError" | "webSpeechStartError",
   ) =>
     class {
@@ -80,20 +78,18 @@ describe("STT provider settings", () => {
     expect(provider.name).toBe("Deepgram");
   });
 
-  it("wraps Web Speech so stopped capture events do not reach session callbacks", async () => {
-    const onTranscript = vi.fn();
-    const onError = vi.fn();
-    const provider = buildProvider({ provider: "web-speech", deepgramApiKey: "" }, onTranscript, onError);
+  it("falls back to Web Speech on web when no Deepgram key is configured", () => {
+    const provider = buildProvider({ provider: "deepgram", deepgramApiKey: "" }, vi.fn(), vi.fn());
 
-    await provider.start();
-    sttMocks.webSpeechInstances[0].emitTranscript("active speech");
-    await provider.stop();
-    sttMocks.webSpeechInstances[0].emitTranscript("late speech");
-    sttMocks.webSpeechInstances[0].emitError("late error");
+    expect(provider.name).toBe("Web Speech");
+  });
 
-    expect(onTranscript).toHaveBeenCalledTimes(1);
-    expect(onTranscript).toHaveBeenCalledWith("active speech");
-    expect(onError).not.toHaveBeenCalled();
+  it("uses Deepgram on native even when settings name Web Speech", () => {
+    platform.OS = "ios";
+
+    const provider = buildProvider({ provider: "web-speech", deepgramApiKey: "native-key" }, vi.fn(), vi.fn());
+
+    expect(provider.name).toBe("Deepgram");
   });
 
   it("still propagates Web Speech and Deepgram startup failures", async () => {

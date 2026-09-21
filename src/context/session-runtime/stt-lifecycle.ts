@@ -1,6 +1,5 @@
-import type { STTProvider } from "../../stt/index";
-import { getErrorMessage } from "../../utils/error-message";
-import { SingleFlight } from "../../utils/single-flight";
+import { CaptureSession } from "../../stt/capture-session";
+import type { CaptureSessionState } from "../../stt/capture-session";
 import type { SessionRuntimeOptions, SessionRuntimeSnapshotPatch } from "./runtime-types";
 
 type RuntimeSttCallbacks = {
@@ -10,118 +9,71 @@ type RuntimeSttCallbacks = {
   updateSnapshot: (patch: SessionRuntimeSnapshotPatch) => void;
 };
 
+/**
+ * Maps capture states onto session snapshot patches.
+ *
+ * `CaptureSession` owns the microphone. This class only translates. It holds no
+ * generation counters and no provider handle, because the capture session
+ * already drops late events from a capture the session no longer runs.
+ */
 export class RuntimeSttLifecycle {
-  private acceptingTranscript = false;
-  private generation = 0;
-  private provider: STTProvider | null = null;
-  private readonly starts = new SingleFlight();
+  private readonly capture: CaptureSession;
 
   constructor(
-    private readonly options: SessionRuntimeOptions,
+    options: SessionRuntimeOptions,
     private readonly callbacks: RuntimeSttCallbacks,
-  ) {}
-
-  start(): Promise<void> {
-    return this.starts.run(() =>
-      this.provider ? this.resumeExistingProvider(this.provider, this.generation) : this.startNewProvider(),
-    );
+  ) {
+    this.capture = new CaptureSession({
+      loadSettings: () => {
+        const { loadSttSettings } = options;
+        if (!loadSttSettings) return Promise.reject(new Error("STT provider factory not configured."));
+        return loadSttSettings();
+      },
+      buildProvider: (settings, onTranscript, onError) => {
+        const { buildSttProvider } = options;
+        if (!buildSttProvider) throw new Error("STT provider factory not configured.");
+        return buildSttProvider(settings, onTranscript, onError);
+      },
+      onTranscript: (text) => this.callbacks.appendTranscript(text),
+      onState: (state) => this.apply(state),
+    });
   }
 
+  start = (): Promise<void> => this.capture.start();
+
   pause(): void {
-    this.acceptingTranscript = false;
-    const provider = this.provider;
-    if (provider) void Promise.resolve(provider.pause()).catch(() => {});
+    void this.capture.pause();
     this.callbacks.setSessionPaused({ sttStatus: "idle" });
   }
 
   stop(): void {
-    const provider = this.invalidate();
-    if (provider) void this.stopProvider(provider);
+    void this.capture.stop();
   }
 
-  private async startNewProvider(): Promise<void> {
-    const generation = this.generation + 1;
-    this.generation = generation;
-    this.acceptingTranscript = false;
-    this.callbacks.updateSnapshot({ sttStatus: "connecting", sttError: null });
-
-    try {
-      const { loadSttSettings, buildSttProvider } = this.options;
-      if (!loadSttSettings || !buildSttProvider) throw new Error("STT provider factory not configured.");
-      const settings = await loadSttSettings();
-      if (this.generation !== generation) return;
-      const provider = buildSttProvider(
-        settings,
-        (text) => this.acceptProviderTranscript(text, generation),
-        (error) => this.handleProviderError(error, generation),
-      );
-      this.provider = provider;
-      this.callbacks.updateSnapshot({ sttProviderName: provider.name });
-
-      await provider.start();
-      if (this.generation !== generation || this.provider !== provider) {
-        await this.stopProvider(provider);
-        return;
-      }
-      this.acceptingTranscript = true;
-      this.callbacks.setSessionActive({ sttStatus: "active", sttError: null });
-    } catch (e) {
-      if (this.generation !== generation) return;
-      const provider = this.provider;
-      if (provider) void this.stopProvider(provider);
-      this.provider = null;
-      this.acceptingTranscript = false;
+  private apply(state: CaptureSessionState): void {
+    if (state.status === "connecting") {
       this.callbacks.updateSnapshot({
-        sttProviderName: "",
-        sttError: `Failed to start mic: ${getErrorMessage(e)}`,
-        sttStatus: "error",
+        sttStatus: "connecting",
+        sttError: null,
+        ...(state.providerName ? { sttProviderName: state.providerName } : {}),
       });
+      return;
     }
-  }
 
-  private async resumeExistingProvider(provider: STTProvider, generation: number): Promise<void> {
-    try {
-      await Promise.resolve(provider.resume());
-      if (this.generation !== generation || this.provider !== provider) return;
-      this.acceptingTranscript = true;
-      this.callbacks.setSessionActive({ sttStatus: "active", sttError: null });
-    } catch (e) {
-      if (this.generation !== generation || this.provider !== provider) return;
-      this.acceptingTranscript = false;
-      await this.stopProvider(provider);
-      if (this.provider === provider) this.provider = null;
-      this.callbacks.setSessionPaused({
-        sttError: `Failed to resume mic: ${getErrorMessage(e)}`,
-        sttStatus: "error",
+    if (state.status === "active") {
+      this.callbacks.setSessionActive({
+        sttStatus: "active",
+        sttError: null,
+        sttProviderName: state.providerName,
       });
+      return;
     }
-  }
 
-  private acceptProviderTranscript(text: string, generation: number): void {
-    if (this.generation === generation && this.acceptingTranscript) this.callbacks.appendTranscript(text);
-  }
+    if (state.cause === "start") {
+      this.callbacks.updateSnapshot({ sttProviderName: "", sttError: state.error, sttStatus: "error" });
+      return;
+    }
 
-  private handleProviderError(error: string, generation: number): void {
-    if (this.generation !== generation) return;
-    this.acceptingTranscript = false;
-    const provider = this.provider;
-    if (provider) void this.stopProvider(provider);
-    this.provider = null;
-    this.callbacks.setSessionPaused({ sttError: error, sttStatus: "error" });
-  }
-
-  private invalidate(): STTProvider | null {
-    this.generation += 1;
-    this.starts.reset();
-    this.acceptingTranscript = false;
-    const provider = this.provider;
-    this.provider = null;
-    return provider;
-  }
-
-  private async stopProvider(provider: STTProvider): Promise<void> {
-    try {
-      await Promise.resolve(provider.stop());
-    } catch {}
+    this.callbacks.setSessionPaused({ sttError: state.error, sttStatus: "error" });
   }
 }
