@@ -1,6 +1,6 @@
 import { test } from "@playwright/test";
 
-import { waitForSettledPage as waitForApp } from "./helpers";
+import { waitForSettledPage } from "./helpers";
 
 test.use({ colorScheme: "dark" });
 
@@ -10,30 +10,30 @@ for (const [name, url, path] of [
 ] as const) {
   test(name, async ({ page }) => {
     await page.goto(url);
-    await waitForApp(page);
+    await waitForSettledPage(page);
     await page.screenshot({ path });
   });
 }
 
 test("set light mode in settings, check reference matches", async ({ page }) => {
   await page.goto("/");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   await page.screenshot({ path: "e2e/screenshots/dark-03-ref-before.png" });
 
   await page.goto("/settings");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   await page.getByText("Light", { exact: true }).first().click({ force: true });
   await page.waitForTimeout(500);
   await page.screenshot({ path: "e2e/screenshots/dark-04-settings-light.png" });
 
   await page.goto("/");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   await page.screenshot({ path: "e2e/screenshots/dark-05-ref-after-light.png" });
 });
 
 test("tab bar close-up", async ({ page }) => {
   await page.goto("/");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   const viewport = page.viewportSize()!;
   await page.screenshot({
     path: "e2e/screenshots/dark-06-tabbar.png",

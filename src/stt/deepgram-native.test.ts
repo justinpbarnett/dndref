@@ -75,6 +75,13 @@ describe("Deepgram native capture adapter", () => {
 
   afterEach(() => vi.useRealTimers());
 
+  it("refuses to start capture when no API key is configured", async () => {
+    const provider = new DeepgramNativeCaptureAdapter("", vi.fn(), vi.fn());
+
+    await expect(provider.start()).rejects.toThrow("Deepgram API key not set");
+    expect(nativeState.recordings).toHaveLength(0);
+  });
+
   it("unloads native recording if stop happens during first chunk startup", async () => {
     nativeState.nextPrepare = deferred();
     const onError = vi.fn();

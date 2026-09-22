@@ -1,6 +1,8 @@
 import type { Entity } from "../entities/index";
 import type { CardState } from "./session-types";
 
+export const MAX_CARDS = 6;
+
 export function extractCard(cards: CardState[], instanceId: string): [CardState, CardState[]] | null {
   const card = cards.find((candidate) => candidate.instanceId === instanceId);
   return card ? [card, cards.filter((candidate) => candidate.instanceId !== instanceId)] : null;
@@ -16,19 +18,23 @@ export function insertAfterPinned(cards: CardState[], card: CardState): CardStat
   return nextCards;
 }
 
+/**
+ * Room is made before the insert, never after it. Deciding afterwards let the
+ * new card stand as its own eviction candidate, so a stack of pinned cards
+ * dropped the newcomer and still returned a fresh array holding the same cards.
+ * Callers compare stacks by identity, so that read as a change.
+ */
 export function addCard(cards: CardState[], entity: Entity): CardState[] {
   if (cards.some((card) => card.entity.id === entity.id)) return cards;
 
-  const newCard: CardState = { instanceId: `${entity.id}-${Date.now()}`, entity, pinned: false };
-  const nextCards = insertAfterPinned(cards, newCard);
-
-  if (nextCards.length > 6) {
-    const evictionIndex = nextCards.findLastIndex((card) => !card.pinned);
+  let withRoom = cards;
+  if (withRoom.length >= MAX_CARDS) {
+    const evictionIndex = withRoom.findLastIndex((card) => !card.pinned);
     if (evictionIndex === -1) return cards;
-    nextCards.splice(evictionIndex, 1);
+    withRoom = withRoom.filter((_, index) => index !== evictionIndex);
   }
 
-  return nextCards;
+  return insertAfterPinned(withRoom, { instanceId: `${entity.id}-${Date.now()}`, entity, pinned: false });
 }
 
 export function pinCard(cards: CardState[], instanceId: string): CardState[] {

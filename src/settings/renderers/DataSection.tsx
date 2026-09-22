@@ -1,6 +1,7 @@
 import { Switch, Text, TouchableOpacity, View } from "react-native";
 
 import { Ionicon } from "../../components/Ionicon";
+import { useColors } from "../../context/ui-settings";
 import { SRD_SOURCES } from "../../entities/providers/srd";
 import { KeyLink } from "../KeyLink";
 import { DataSectionProps } from "../types";
@@ -14,7 +15,7 @@ const SRD_PUBLISHER_GROUPS = Array.from(
 );
 
 export function DataSection({ dsLocal, setDsLocal, saveData, dataSaved, styles }: DataSectionProps) {
-  const C = styles.__colors;
+  const C = useColors();
 
   const toggleSrdSource = (slug: string) => {
     setDsLocal((s) => {

@@ -1,6 +1,18 @@
+/**
+ * One detection pass, start to finish: what text the detector reads, where the
+ * cursor lands afterwards, and which part of the snapshot the results change.
+ *
+ * Those three used to sit in three files, which hid the rule that ties them
+ * together. A pass reads only the speech since the last one, and the cursor
+ * advances only after the detector has answered, so nothing spoken during a
+ * pass is skipped. A name can also arrive split across two passes, so each one
+ * is fed the tail of the transcript before it. Whether the rejoined text then
+ * matches is the detector's question, not this module's.
+ */
+import { DETECTION_TUNING } from "../../entities/detection-tuning";
 import type { Entity } from "../../entities/index";
-import { buildDetectionInput, nextDetectionContext } from "../detection-window";
-import { buildDetectionResultsUpdate } from "../session-detection-results";
+import { addCard } from "../card-stack";
+import type { CardState } from "../session-types";
 import type { SessionRuntimeDetector, SessionRuntimeSnapshot, SessionRuntimeSnapshotPatch } from "./runtime-types";
 
 type RuntimeDetectionLoopOptions = {
@@ -54,18 +66,48 @@ export class RuntimeDetectionLoop {
     if (!newText.trim()) return;
 
     const detectedEntities = this.detectEntities(snapshot.transcript, newText);
-    const update = buildDetectionResultsUpdate(snapshot.cards, this.lastDetectionKey, detectedEntities);
-    if (!update) return;
-    if (update.detectionKey) this.lastDetectionKey = update.detectionKey;
-    this.options.updateSnapshot(update.patch);
+    if (detectedEntities.length === 0) return;
+
+    const detectionKey = detectedEntities.map((entity) => entity.id).join(",");
+    const patch = this.buildResultsPatch(snapshot.cards, detectedEntities, detectionKey);
+    this.lastDetectionKey = detectionKey;
+    if (patch) this.options.updateSnapshot(patch);
   }
 
   private detectEntities(transcript: string, newText: string): Entity[] {
-    const detectionInput = buildDetectionInput(this.previousDetectionContext, newText);
+    const carried = this.previousDetectionContext;
+    const detectionInput = carried.trim() ? `${carried} ${newText}` : newText;
     const detectedEntities = this.detector?.detect(detectionInput) ?? [];
     this.processedTranscriptLength = transcript.length;
-    this.previousDetectionContext = nextDetectionContext(transcript);
+    this.previousDetectionContext = transcript.slice(-DETECTION_TUNING.carryOverChars);
     return detectedEntities;
+  }
+
+  /**
+   * Cards and recent detections move on their own schedules. A name said twice
+   * running changes neither, and a name already on the stack changes only the
+   * recent detections. Each one is left out of the patch when it did not move,
+   * so a caller comparing by identity sees a change only when there was one.
+   *
+   * This only reads the last reported key. Advancing it is the caller's job, so
+   * asking what changed never changes the answer to asking again.
+   */
+  private buildResultsPatch(
+    currentCards: CardState[],
+    detectedEntities: Entity[],
+    detectionKey: string,
+  ): SessionRuntimeSnapshotPatch | null {
+    let nextCards = currentCards;
+    for (const entity of detectedEntities) nextCards = addCard(nextCards, entity);
+
+    const cardsChanged = nextCards !== currentCards;
+    const detectionsChanged = detectionKey !== this.lastDetectionKey;
+    if (!cardsChanged && !detectionsChanged) return null;
+
+    return {
+      ...(cardsChanged ? { cards: nextCards } : {}),
+      ...(detectionsChanged ? { recentDetections: detectedEntities } : {}),
+    };
   }
 
   private startInterval(): void {

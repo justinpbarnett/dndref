@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { SessionRuntime, type SessionRuntimeDetector } from "./session-runtime";
+import { DETECTION_TUNING } from "../entities/detection-tuning";
 import type { Entity } from "../entities/index";
 import type { STTProvider } from "../stt/index";
-import { SessionRuntime, type SessionRuntimeDetector } from "./session-runtime";
 
 const makeEntity = (id: string, name: string): Entity => ({
   id,
@@ -80,6 +81,56 @@ describe("SessionRuntime", () => {
     expect(normalizeSpaces(lastInput)).toContain("Red Oak Keep before sunset");
     expect(runtime.getSnapshot().cards.map((card) => card.entity.name)).toEqual(["Red Oak Keep"]);
     expect(runtime.getSnapshot().recentDetections).toEqual([redOakKeep]);
+  });
+
+  it("reads only the speech since the last pass, plus a bounded carried tail", () => {
+    const detector = new FakeDetector(() => []);
+    const runtime = new SessionRuntime();
+    const longAside = `the party argues about rations. ${"they argue some more. ".repeat(20)}`;
+    const newSpeech = "Valdrath watches from the throne";
+
+    runtime.setDetector(detector);
+    runtime.activate();
+    runtime.appendTranscript(longAside);
+    runtime.processTranscript();
+    runtime.appendTranscript(newSpeech);
+    runtime.processTranscript();
+
+    // Stated as the exact tail rather than as a bound: a carry-over that never
+    // truncated would satisfy any bound this fixture is large enough to state.
+    const carriedTail = longAside.slice(-DETECTION_TUNING.carryOverChars);
+    expect(detector.inputs).toHaveLength(2);
+    expect(detector.inputs[1].startsWith(carriedTail)).toBe(true);
+    expect(normalizeSpaces(detector.inputs[1])).toBe(normalizeSpaces(`${carriedTail} ${newSpeech}`));
+  });
+
+  it("reads only the speech since a resume, never the transcript from before the pause", async () => {
+    const detector = new FakeDetector(() => []);
+    const { runtime } = makeRuntimeWithFakeStt();
+
+    runtime.setDetector(detector);
+    await runtime.start();
+    runtime.appendTranscript("Valdrath watches from the throne");
+    runtime.pause();
+    await runtime.resume();
+    runtime.appendTranscript("Seraphine speaks after the resume");
+    runtime.processTranscript();
+
+    expect(detector.inputs.map(normalizeSpaces)).toEqual(["Seraphine speaks after the resume"]);
+  });
+
+  it("stops feeding the detector once a pass has nothing new to read", () => {
+    const detector = new FakeDetector(() => []);
+    const runtime = new SessionRuntime();
+
+    runtime.setDetector(detector);
+    runtime.activate();
+    runtime.appendTranscript("Valdrath watches from the throne");
+    runtime.processTranscript();
+    runtime.processTranscript();
+    runtime.processTranscript();
+
+    expect(detector.inputs).toHaveLength(1);
   });
 
   it("suppresses duplicate detections without replacing recent detections or cards", () => {

@@ -1,6 +1,7 @@
 import { Text, TouchableOpacity, View } from "react-native";
 
 import { Ionicon } from "../../components/Ionicon";
+import { useColors } from "../../context/ui-settings";
 import { KeyLink } from "../KeyLink";
 import { AISectionProps } from "../types";
 import { SettingsInput } from "./SettingsInput";
@@ -15,7 +16,7 @@ export function AISection({
   handleAIParse,
   styles,
 }: AISectionProps) {
-  const C = styles.__colors;
+  const C = useColors();
   const parseDisabled = !aiContent.trim() || !dsLocal.aiApiKey || aiParsing;
 
   return (

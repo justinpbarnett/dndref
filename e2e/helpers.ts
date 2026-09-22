@@ -3,7 +3,7 @@ import * as path from "path";
 
 import { Page } from "@playwright/test";
 
-export async function injectSpeechMock(page: Page) {
+async function injectSpeechMock(page: Page) {
   await page.addInitScript(() => {
     let recognition: any = null;
     let failNextStart: Error | null = null;
@@ -65,7 +65,7 @@ export async function injectSpeechMock(page: Page) {
   });
 }
 
-export async function waitForApp(page: Page) {
+async function waitForApp(page: Page) {
   await page.waitForLoadState("load");
   await page.waitForSelector("text=Ready", { timeout: 20000 });
 }
@@ -75,18 +75,18 @@ export async function waitForSettledPage(page: Page) {
   await page.waitForTimeout(1500);
 }
 
-export async function gotoSettings(page: Page) {
+async function gotoSettings(page: Page) {
   await page.goto("/settings");
   await page.waitForLoadState("load");
   await page.waitForSelector("text=Display", { timeout: 20000 });
 }
 
-export async function speak(page: Page, text: string) {
+async function speak(page: Page, text: string) {
   const ok = await page.evaluate((t) => (window as any).__speak(t), text);
   if (!ok) throw new Error(`speak() failed -- SpeechRecognition not active. text: "${text}"`);
 }
 
-export async function failNextSpeechStart(
+async function failNextSpeechStart(
   page: Page,
   name = "NotAllowedError",
   message = "Microphone permission required",
@@ -99,37 +99,44 @@ export async function failNextSpeechStart(
   );
 }
 
-export const emitSpeechError = (page: Page, error = "audio-capture") =>
+const emitSpeechError = (page: Page, error = "audio-capture") =>
   page.evaluate((value) => (window as any).__speechMock.emitError(value), error);
 
-export const emitSpeechEnd = (page: Page) => page.evaluate(() => (window as any).__speechMock.emitEnd());
+const emitSpeechEnd = (page: Page) => page.evaluate(() => (window as any).__speechMock.emitEnd());
 
-export const getSpeechStartCount = (page: Page): Promise<number> =>
+const getSpeechStartCount = (page: Page): Promise<number> =>
   page.evaluate(() => (window as any).__speechMock.startCount);
 
-export async function startSession(page: Page) {
+async function startSession(page: Page) {
   await page.getByText("Start", { exact: true }).click();
   await page.waitForTimeout(300);
 }
 
-export async function pauseSession(page: Page) {
+async function pauseSession(page: Page) {
   await page.getByText("Pause", { exact: true }).click();
   await page.waitForTimeout(300);
 }
 
-export async function stopSession(page: Page) {
+async function resumeSession(page: Page) {
+  await page.getByText("Resume", { exact: true }).click();
+  await page.waitForTimeout(300);
+}
+
+async function stopSession(page: Page) {
   await page.getByText("Stop", { exact: true }).click();
   await page.waitForSelector("text=Ready", { timeout: 5000 });
 }
 
-export const DETECT_WAIT_MS = 2500;
+const DETECT_WAIT_MS = 2500;
 
-export async function speakAndWait(page: Page, text: string) {
+const waitForDetectionPass = (page: Page) => page.waitForTimeout(DETECT_WAIT_MS);
+
+async function speakAndWait(page: Page, text: string) {
   await speak(page, text);
-  await page.waitForTimeout(DETECT_WAIT_MS);
+  await waitForDetectionPass(page);
 }
 
-export async function mockExternalRoutes(page: Page) {
+async function mockExternalRoutes(page: Page) {
   await page.route("**/cdn.jsdelivr.net/**", async (route) => {
     const body = fs.readFileSync(
       path.join(
@@ -148,11 +155,58 @@ export async function mockExternalRoutes(page: Page) {
   });
 }
 
-export async function setupTest(page: Page) {
+/**
+ * One table, driven the way a player drives it: say something, pause, stop.
+ *
+ * The ordering rules live here and nowhere else. Speech only lands once
+ * recognition is running, a detection pass only finishes after the interval, and
+ * the controls need a moment to settle. A spec that had to know all three either
+ * rebuilt `say` by hand or reached past the helpers into the page.
+ */
+export type TableSession = {
+  readonly page: Page;
+  say(text: string): Promise<void>;
+  sayWithoutWaiting(text: string): Promise<void>;
+  waitForDetection(): Promise<void>;
+  start(): Promise<void>;
+  pause(): Promise<void>;
+  resume(): Promise<void>;
+  stop(): Promise<void>;
+  openSettings(): Promise<void>;
+  failNextStart(name?: string, message?: string): Promise<void>;
+  emitError(error?: string): Promise<void>;
+  emitEnd(): Promise<void>;
+  startCount(): Promise<number>;
+};
+
+const driveTable = (page: Page): TableSession => ({
+  page,
+  say: (text) => speakAndWait(page, text),
+  sayWithoutWaiting: (text) => speak(page, text),
+  waitForDetection: () => waitForDetectionPass(page),
+  start: () => startSession(page),
+  pause: () => pauseSession(page),
+  resume: () => resumeSession(page),
+  stop: () => stopSession(page),
+  openSettings: () => gotoSettings(page),
+  failNextStart: (name, message) => failNextSpeechStart(page, name, message),
+  emitError: (error) => emitSpeechError(page, error),
+  emitEnd: () => emitSpeechEnd(page),
+  startCount: () => getSpeechStartCount(page),
+});
+
+/** A loaded app with the voice mock in place, before anyone hits Start. */
+export async function openTable(page: Page): Promise<TableSession> {
   await injectSpeechMock(page);
   await mockExternalRoutes(page);
   await page.goto("/");
   await waitForApp(page);
+  return driveTable(page);
 }
 
-export const setupTestWithSession = (page: Page) => setupTest(page).then(() => startSession(page));
+/** The same table, already listening. */
+export async function openTableSession(page: Page): Promise<TableSession> {
+  const table = await openTable(page);
+  await table.start();
+  return table;
+}

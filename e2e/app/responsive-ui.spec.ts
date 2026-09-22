@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-import { DETECT_WAIT_MS, setupTest, speak, startSession, gotoSettings } from "../helpers";
+import { openTable, type TableSession } from "../helpers";
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 360, height: 640 };
@@ -34,21 +34,19 @@ async function expectTabLabelReadable(page: Page, text: string) {
   expect(metrics.overflow).toBe("visible");
 }
 
-async function populateCards(page: Page) {
-  await startSession(page);
-  await speak(
-    page,
+async function populateCards(table: TableSession) {
+  await table.start();
+  await table.say(
     "Valdrath summoned Malachar and Seraphine to Ironspire. Gorm carries the Sundering Blade through Silvermarsh.",
   );
-  await page.waitForTimeout(DETECT_WAIT_MS);
-  await expect(page.getByTestId("entity-card")).toHaveCount(6);
+  await expect(table.page.getByTestId("entity-card")).toHaveCount(6);
 }
 
 test.describe("responsive UI coverage", () => {
   test("empty reference state keeps primary tab labels visible on desktop and mobile", async ({ page }) => {
     for (const viewport of [DESKTOP, MOBILE]) {
       await page.setViewportSize(viewport);
-      await setupTest(page);
+      await openTable(page);
 
       await expect(page.getByText("Session not started")).toBeVisible();
       await expectTabLabelReadable(page, "REFERENCE");
@@ -58,8 +56,7 @@ test.describe("responsive UI coverage", () => {
 
   test("mobile populated cards use a readable single-column layout", async ({ page }) => {
     await page.setViewportSize(MOBILE);
-    await setupTest(page);
-    await populateCards(page);
+    await populateCards(await openTable(page));
 
     const first = await page.getByTestId("entity-card").nth(0).boundingBox();
     const second = await page.getByTestId("entity-card").nth(1).boundingBox();
@@ -75,8 +72,7 @@ test.describe("responsive UI coverage", () => {
 
   test("desktop populated cards stay constrained and centered", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
-    await setupTest(page);
-    await populateCards(page);
+    await populateCards(await openTable(page));
 
     const first = await page.getByTestId("entity-card").nth(0).boundingBox();
     const second = await page.getByTestId("entity-card").nth(1).boundingBox();
@@ -93,15 +89,15 @@ test.describe("responsive UI coverage", () => {
 
   test("settings content is constrained on desktop and category tabs fit on mobile", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
-    await setupTest(page);
-    await gotoSettings(page);
+    const table = await openTable(page);
+    await table.openSettings();
 
     const desktopContent = await page.getByTestId("settings-content").boundingBox();
     expect(desktopContent).not.toBeNull();
     expect(desktopContent!.width).toBeLessThanOrEqual(900);
 
     await page.setViewportSize(MOBILE);
-    await gotoSettings(page);
+    await table.openSettings();
 
     for (const label of ["DISPLAY", "VOICE", "SOURCES", "FILES", "AI PARSE"]) {
       await expectInsideViewport(page, label);
@@ -110,8 +106,8 @@ test.describe("responsive UI coverage", () => {
 
   test("settings subviews cover empty and full-content states on mobile", async ({ page }) => {
     await page.setViewportSize(MOBILE);
-    await setupTest(page);
-    await gotoSettings(page);
+    const table = await openTable(page);
+    await table.openSettings();
 
     await page.getByText("FILES", { exact: true }).click();
     await expect(page.getByText("UPLOAD FILES")).toBeVisible();
@@ -128,8 +124,8 @@ test.describe("responsive UI coverage", () => {
   });
 
   test("settings file uploads can be removed one at a time", async ({ page }) => {
-    await setupTest(page);
-    await gotoSettings(page);
+    const table = await openTable(page);
+    await table.openSettings();
     await page.getByText("Files", { exact: true }).click();
 
     await page.getByPlaceholder("File name (e.g. my-campaign.md)").fill("keep-me.md");

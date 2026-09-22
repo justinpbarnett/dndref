@@ -1,18 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-import {
-  emitSpeechEnd,
-  emitSpeechError,
-  failNextSpeechStart,
-  getSpeechStartCount,
-  setupTest,
-  startSession,
-  pauseSession,
-  stopSession,
-} from "../helpers";
+import { openTable, type TableSession } from "../helpers";
 
 test.describe("session controls", () => {
-  test.beforeEach(async ({ page }) => setupTest(page));
+  let table: TableSession;
+
+  test.beforeEach(async ({ page }) => {
+    table = await openTable(page);
+  });
 
   test("idle: Start button and Ready status visible", async ({ page }) => {
     await expect(page.getByText("Start", { exact: true })).toBeVisible();
@@ -21,13 +16,15 @@ test.describe("session controls", () => {
   });
 
   test("start: Listening status, Pause and Stop appear", async ({ page }) => {
-    await startSession(page);
+    await table.start();
     await expect(page.getByText("Listening", { exact: true })).toBeVisible();
     await expect(page.getByText("Pause", { exact: true })).toBeVisible();
     await expect(page.getByText("Stop", { exact: true })).toBeVisible();
     await expect(page.getByText("Start", { exact: true })).not.toBeVisible();
   });
 
+  // Start is clicked directly here, and only here: the subject is the button
+  // under a second click too fast for the settle the driver waits out.
   test("rapid duplicate Start creates only one speech recognizer start", async ({ page }) => {
     const startButton = page.getByText("Start", { exact: true });
     await startButton.click();
@@ -37,48 +34,47 @@ test.describe("session controls", () => {
       .catch(() => undefined);
     await expect(page.getByText("Listening", { exact: true })).toBeVisible();
 
-    await expect.poll(() => getSpeechStartCount(page)).toBe(1);
+    await expect.poll(() => table.startCount()).toBe(1);
   });
 
   test("start failure stays out of Listening and allows retry", async ({ page }) => {
-    await failNextSpeechStart(page);
+    await table.failNextStart();
 
-    await page.getByText("Start", { exact: true }).click();
+    await table.start();
     await expect(page.getByText("Mic Error", { exact: true })).toBeVisible();
     await expect(page.getByText("Listening", { exact: true })).not.toBeVisible();
     await expect(page.getByText("Start", { exact: true })).toBeVisible();
 
-    await page.getByText("Start", { exact: true }).click();
+    await table.start();
     await expect(page.getByText("Listening", { exact: true })).toBeVisible();
 
-    expect(await getSpeechStartCount(page)).toBe(2);
+    expect(await table.startCount()).toBe(2);
   });
 
   test("active: empty grid shows Awaiting entities", async ({ page }) => {
-    await startSession(page);
+    await table.start();
     await expect(page.getByText("Awaiting entities…")).toBeVisible();
   });
 
   test("pause: Paused status, Resume replaces Pause", async ({ page }) => {
-    await startSession(page);
-    await pauseSession(page);
+    await table.start();
+    await table.pause();
     await expect(page.getByText("Paused", { exact: true })).toBeVisible();
     await expect(page.getByText("Resume", { exact: true })).toBeVisible();
     await expect(page.getByText("Pause", { exact: true })).not.toBeVisible();
   });
 
   test("resume: back to Listening", async ({ page }) => {
-    await startSession(page);
-    await pauseSession(page);
-    await page.getByText("Resume", { exact: true }).click();
-    await page.waitForTimeout(300);
+    await table.start();
+    await table.pause();
+    await table.resume();
     await expect(page.getByText("Listening", { exact: true })).toBeVisible();
     await expect(page.getByText("Pause", { exact: true })).toBeVisible();
   });
 
   test("ignored speech errors do not tear down the mic", async ({ page }) => {
-    await startSession(page);
-    await emitSpeechError(page, "no-speech");
+    await table.start();
+    await table.emitError("no-speech");
     await page.waitForTimeout(150);
 
     await expect(page.getByText("Listening", { exact: true })).toBeVisible();
@@ -86,19 +82,19 @@ test.describe("session controls", () => {
   });
 
   test("fatal speech errors stop restart attempts and show recovery controls", async ({ page }) => {
-    await startSession(page);
-    await emitSpeechError(page);
+    await table.start();
+    await table.emitError();
     await expect(page.getByText("Mic Error", { exact: true })).toBeVisible();
     await expect(page.getByText("Resume", { exact: true })).toBeVisible();
 
-    await emitSpeechEnd(page);
+    await table.emitEnd();
     await page.waitForTimeout(300);
-    expect(await getSpeechStartCount(page)).toBe(1);
+    expect(await table.startCount()).toBe(1);
   });
 
   test("stop: resets to idle, clears session", async ({ page }) => {
-    await startSession(page);
-    await stopSession(page);
+    await table.start();
+    await table.stop();
     await expect(page.getByText("Ready", { exact: true })).toBeVisible();
     await expect(page.getByText("Start", { exact: true })).toBeVisible();
     await expect(page.getByText("Stop", { exact: true })).not.toBeVisible();

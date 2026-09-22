@@ -1,5 +1,5 @@
 import type { CardSize, ColorScheme } from "../context/ui-settings";
-import type { UploadedFile } from "../entities/providers/file-upload";
+import type { UploadedFile } from "../storage/uploads";
 import type { DataSourcesSettings } from "../storage/settings";
 import type { STTSettings } from "../stt/index";
 import type { createStyles } from "./styles";

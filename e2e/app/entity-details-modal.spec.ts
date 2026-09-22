@@ -1,19 +1,23 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
-import { setupTestWithSession, speakAndWait } from "../helpers";
-
-async function showScarabCard(page: Page) {
-  await speakAndWait(page, "Scarab of Protection");
-  const card = page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
-  await expect(card).toBeVisible();
-  return card;
-}
+import { openTableSession, type TableSession } from "../helpers";
 
 test.describe("entity details modal", () => {
-  test.beforeEach(async ({ page }) => setupTestWithSession(page));
+  let table: TableSession;
+
+  const showScarabCard = async () => {
+    await table.say("Scarab of Protection");
+    const card = table.page.getByTestId("entity-card").filter({ hasText: "Scarab of Protection" });
+    await expect(card).toBeVisible();
+    return card;
+  };
+
+  test.beforeEach(async ({ page }) => {
+    table = await openTableSession(page);
+  });
 
   test("clicking a card opens full details and closing keeps the card visible", async ({ page }) => {
-    const card = await showScarabCard(page);
+    const card = await showScarabCard();
 
     await card.click();
 
@@ -32,7 +36,7 @@ test.describe("entity details modal", () => {
   });
 
   test("clicking outside the modal closes details without dismissing the card", async ({ page }) => {
-    const card = await showScarabCard(page);
+    const card = await showScarabCard();
 
     await card.click();
     const dialog = page.getByRole("dialog", { name: "Scarab of Protection details" });
@@ -45,7 +49,7 @@ test.describe("entity details modal", () => {
   });
 
   test("pinning and dismissing cards do not open details", async ({ page }) => {
-    const card = await showScarabCard(page);
+    const card = await showScarabCard();
 
     await card.locator('[aria-label="Pin"]').click();
     await expect(page.getByRole("dialog", { name: "Scarab of Protection details" })).not.toBeVisible();

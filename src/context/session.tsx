@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import type { EntityIndex } from "../entities/index";
 import { EntityDetector } from "../entities/detector";
 import { useDataSources } from "./data-sources/provider";
-import { buildWorldDataProviders, loadEntityIndex } from "./session-entity-sources";
+import { buildWorldDataProviders, loadEntityIndex, dataSourcesSettingsKey } from "./session-entity-sources";
 import type { EntityStatus, SessionContextType } from "./session-types";
 import { useSessionRuntimeController } from "./use-session-runtime-controller";
 
@@ -29,18 +29,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => void (cancelled = true);
-  }, [
-    ds.srdEnabled,
-    ds.srdSources.join(","),
-    ds.kankaToken,
-    ds.kankaCampaignId,
-    ds.homebreweryUrl,
-    ds.notionToken,
-    ds.notionPageIds,
-    ds.googleDocsUrl,
-    uploadsVersion,
-    runtime,
-  ]);
+    // The settings key stands in for every field a provider could be built from,
+    // so `session-entity-sources` stays the one file a new source is added to.
+  }, [dataSourcesSettingsKey(ds), uploadsVersion, runtime]);
 
   return (
     <SessionContext.Provider

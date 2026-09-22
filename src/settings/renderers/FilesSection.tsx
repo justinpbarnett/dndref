@@ -1,6 +1,7 @@
 import { Platform, Text, TouchableOpacity, View } from "react-native";
 
 import { Ionicon } from "../../components/Ionicon";
+import { useColors } from "../../context/ui-settings";
 import { FilesSectionProps } from "../types";
 import { SettingsInput } from "./SettingsInput";
 
@@ -19,7 +20,7 @@ export function FilesSection({
   deleteAllStatus,
   styles,
 }: FilesSectionProps) {
-  const C = styles.__colors;
+  const C = useColors();
 
   return (
     <View testID="settings-content" style={styles.contentInner}>

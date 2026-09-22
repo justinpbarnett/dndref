@@ -1,6 +1,6 @@
 import { test } from "@playwright/test";
 
-import { waitForSettledPage as waitForApp } from "./helpers";
+import { waitForSettledPage } from "./helpers";
 
 for (const [name, url, path] of [
   ["reference tab - dark mode (default)", "/", "e2e/screenshots/01-reference-dark.png"],
@@ -9,14 +9,14 @@ for (const [name, url, path] of [
 ] as const) {
   test(name, async ({ page }) => {
     await page.goto(url);
-    await waitForApp(page);
+    await waitForSettledPage(page);
     await page.screenshot({ path, fullPage: false });
   });
 }
 
 test("settings tab - switch to light mode", async ({ page }) => {
   await page.goto("/settings");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   await page.getByText("Light", { exact: true }).first().click({ force: true });
   await page.waitForTimeout(500);
   await page.screenshot({ path: "e2e/screenshots/03-settings-after-light.png", fullPage: false });
@@ -24,17 +24,17 @@ test("settings tab - switch to light mode", async ({ page }) => {
 
 test("reference tab - after light mode set in same session", async ({ page }) => {
   await page.goto("/settings");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   await page.getByText("Light", { exact: true }).first().click({ force: true });
   await page.waitForTimeout(500);
   await page.goto("/");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   await page.screenshot({ path: "e2e/screenshots/04-reference-after-light.png", fullPage: false });
 });
 
 test("tab bar inspection", async ({ page }) => {
   await page.goto("/");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   const tabBar = page.locator('[role="tablist"]').first();
   await tabBar.screenshot({ path: "e2e/screenshots/05-tabbar.png" }).catch(() => {});
   const iconDivs = await page.locator('[style*="font-family: ionicons"]').all();
@@ -51,7 +51,7 @@ test("tab bar inspection", async ({ page }) => {
 
 test("settings - all categories", async ({ page }) => {
   await page.goto("/settings");
-  await waitForApp(page);
+  await waitForSettledPage(page);
   for (const cat of ["Display", "Voice", "Sources", "Files", "AI Parse"]) {
     const btn = page.getByText(cat).first();
     if (await btn.isVisible()) {

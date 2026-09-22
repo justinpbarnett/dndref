@@ -175,6 +175,5 @@ export function createStyles(C: Colors, isWide: boolean) {
       borderColor: C.error + "70",
     },
     fileRemoveBtnDisabled: { opacity: 0.45 },
-    __colors: C,
   } as const;
 }

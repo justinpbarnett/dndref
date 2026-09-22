@@ -1,17 +1,12 @@
 import { test } from "@playwright/test";
 
-import { injectSpeechMock, mockExternalRoutes } from "./helpers";
+import { openTableSession } from "./helpers";
 
 test("og image", async ({ page }) => {
-  await injectSpeechMock(page);
-  await mockExternalRoutes(page);
   // 900px wide, taller than wide → portrait mode → 2 columns (M size).
+  // The viewport is set before the app loads, so the first layout is the one we shoot.
   await page.setViewportSize({ width: 900, height: 2000 });
-  await page.goto("/");
-  await page.waitForSelector("text=Ready", { timeout: 20000 });
-
-  await page.getByText("Start", { exact: true }).click();
-  await page.waitForTimeout(300);
+  const table = await openTableSession(page);
 
   const phrases = [
     "Valdrath the Undying speaks",
@@ -23,8 +18,7 @@ test("og image", async ({ page }) => {
   ];
 
   for (const phrase of phrases) {
-    await page.evaluate((t) => (window as any).__speak(t), phrase);
-    await page.waitForTimeout(2100);
+    await table.say(phrase);
   }
 
   // Measure the bottom of the last card row, then clip screenshot to that height.

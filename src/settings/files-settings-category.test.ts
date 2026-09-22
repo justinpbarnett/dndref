@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("react-native", () => ({ Alert: { alert: vi.fn() }, Platform: { OS: "web" } }));
 
 import { createFilesSettingsCategoryController } from "./files-settings-category";
-import type { UploadedFile } from "../entities/providers/file-upload";
+import type { UploadedFile } from "../storage/uploads";
 
 type FilesSettingsCategoryController = ReturnType<typeof createFilesSettingsCategoryController>;
 type FilesSettingsCategoryControllerOptions = NonNullable<Parameters<typeof createFilesSettingsCategoryController>[0]>;

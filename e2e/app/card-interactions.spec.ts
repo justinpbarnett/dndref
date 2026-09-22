@@ -1,11 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-import { setupTestWithSession, speakAndWait } from "../helpers";
+import { openTableSession, type TableSession } from "../helpers";
 
 test.describe("card interactions", () => {
+  let table: TableSession;
+
   test.beforeEach(async ({ page }) => {
-    await setupTestWithSession(page);
-    await speakAndWait(page, "Valdrath the Undying speaks");
+    table = await openTableSession(page);
+    await table.say("Valdrath the Undying speaks");
     await expect(page.getByTestId("entity-card")).toHaveCount(1);
   });
 
@@ -34,12 +36,12 @@ test.describe("card interactions", () => {
     await card.locator('[aria-label="Dismiss"]').click();
     await expect(page.getByText("Valdrath the Undying")).not.toBeVisible();
 
-    await speakAndWait(page, "Valdrath returned to the chamber");
+    await table.say("Valdrath returned to the chamber");
     await expect(page.getByText("Valdrath the Undying")).toBeVisible();
   });
 
   test("dismissing one card leaves others intact", async ({ page }) => {
-    await speakAndWait(page, "Seraphine arrived to brief us");
+    await table.say("Seraphine arrived to brief us");
     await expect(page.getByTestId("entity-card")).toHaveCount(2);
 
     const valdrath = page.getByTestId("entity-card").filter({ hasText: "Valdrath the Undying" });

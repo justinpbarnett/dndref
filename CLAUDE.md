@@ -60,12 +60,13 @@ While active, `RuntimeDetectionLoop` (`src/context/session-runtime/detection-loo
 
 ### STT abstraction
 
-`src/stt/index.ts` defines `STTProvider` (start/pause/resume/stop). Two implementations:
+`src/stt/index.ts` defines `STTProvider` (start/pause/resume/stop). Three implementations:
 
 - `WebSpeechProvider` -- browser Web Speech API, zero config, web only
-- `DeepgramProvider` -- Deepgram WebSocket streaming, works on web and native
+- `DeepgramBrowserCaptureAdapter` -- Deepgram WebSocket streaming from a browser mic
+- `DeepgramNativeCaptureAdapter` -- the same streaming from a native recording
 
-On native, Deepgram is always used (requires key). On web, falls back to Web Speech if no Deepgram key is configured.
+Both Deepgram adapters extend `DeepgramCaptureAdapterBase`, which holds the name, the API key check, and the capture lifecycle; each subclass only supplies its platform's audio. `buildProvider` (`src/stt/build-provider.ts`) is the one place the platform is branched on. On native, Deepgram is always used (requires key). On web, falls back to Web Speech if no Deepgram key is configured.
 
 ### Theming
 
@@ -77,6 +78,6 @@ Cloudflare Pages can't serve paths containing `@` as static assets, so the bundl
 
 ## Testing
 
-- Playwright (`e2e/`) -- screenshot tests and a behavioral app spec with a voice mock
-- No unit test framework -- logic lives in the context providers and is exercised via e2e tests
+- Vitest (`src/**/*.test.ts`) -- unit tests, `environment: 'node'`, so a `.tsx` file cannot be unit tested. Logic that needs covering belongs in a `.ts` module the component calls.
+- Playwright (`e2e/`) -- screenshot tests and behavioral app specs with a voice mock. Specs drive the app through the `TableSession` object from `e2e/helpers.ts` (`openTable` / `openTableSession`) rather than clicking controls and timing detection passes themselves.
 - The debug tab (`app/debug.tsx`) is only visible in dev builds (`__DEV__`)

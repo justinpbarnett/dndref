@@ -1,18 +1,12 @@
-import { addUploadedFile, getUploadedFiles, removeUploadedFile, type UploadedFile } from "../../storage/uploads";
+import { getUploadedFiles } from "../../storage/uploads";
 import { EntityIndex, WorldDataProvider } from "../index";
 import { ingestUploadedFile } from "../ingestion";
-
-export type { UploadedFile } from "../../storage/uploads";
-
-export const getUploads = getUploadedFiles;
-export const addUpload = addUploadedFile;
-export const removeUpload = removeUploadedFile;
 
 export class FileUploadProvider implements WorldDataProvider {
   readonly name = "Uploaded Files";
 
   async load(): Promise<EntityIndex> {
-    const uploads = await getUploads();
+    const uploads = await getUploadedFiles();
     return uploads.flatMap((upload) =>
       ingestUploadedFile(upload, {
         onJsonParseError: () => {

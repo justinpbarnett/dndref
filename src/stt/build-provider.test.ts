@@ -5,7 +5,8 @@ const platform = vi.hoisted(() => ({ OS: "web" }));
 
 const sttMocks = vi.hoisted(() => {
   const state = {
-    deepgramInstances: [] as unknown[],
+    browserInstances: [] as unknown[],
+    nativeInstances: [] as unknown[],
     deepgramStartError: null as Error | null,
     webSpeechInstances: [] as unknown[],
     webSpeechStartError: null as Error | null,
@@ -34,7 +35,8 @@ const sttMocks = vi.hoisted(() => {
       emitError = (error: string) => this.onError(error);
     };
   return Object.assign(state, {
-    DeepgramProvider: createProvider("Deepgram", state.deepgramInstances, "deepgramStartError"),
+    DeepgramBrowserCaptureAdapter: createProvider("Deepgram", state.browserInstances, "deepgramStartError"),
+    DeepgramNativeCaptureAdapter: createProvider("Deepgram", state.nativeInstances, "deepgramStartError"),
     WebSpeechProvider: createProvider("Web Speech", state.webSpeechInstances, "webSpeechStartError"),
   });
 });
@@ -46,7 +48,8 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
   },
 }));
 vi.mock("react-native", () => ({ Platform: platform }));
-vi.mock("./deepgram", () => ({ DeepgramProvider: sttMocks.DeepgramProvider }));
+vi.mock("./deepgram-browser", () => ({ DeepgramBrowserCaptureAdapter: sttMocks.DeepgramBrowserCaptureAdapter }));
+vi.mock("./deepgram-native", () => ({ DeepgramNativeCaptureAdapter: sttMocks.DeepgramNativeCaptureAdapter }));
 vi.mock("./web-speech", () => ({ WebSpeechProvider: sttMocks.WebSpeechProvider }));
 
 import { buildProvider, loadSettings } from "./build-provider";
@@ -57,7 +60,8 @@ describe("STT provider settings", () => {
   beforeEach(() => {
     storage.clear();
     platform.OS = "web";
-    sttMocks.deepgramInstances.length = 0;
+    sttMocks.browserInstances.length = 0;
+    sttMocks.nativeInstances.length = 0;
     sttMocks.deepgramStartError = null;
     sttMocks.webSpeechInstances.length = 0;
     sttMocks.webSpeechStartError = null;
@@ -77,6 +81,22 @@ describe("STT provider settings", () => {
 
     expect(loadedSettings).toEqual(savedSettings);
     expect(provider.name).toBe("Deepgram");
+  });
+
+  it("captures through the browser adapter when the web build uses Deepgram", () => {
+    buildProvider({ provider: "deepgram", deepgramApiKey: "browser-key" }, vi.fn(), vi.fn());
+
+    expect(sttMocks.browserInstances).toHaveLength(1);
+    expect(sttMocks.nativeInstances).toHaveLength(0);
+  });
+
+  it("captures through the native adapter off web", () => {
+    platform.OS = "ios";
+
+    buildProvider({ provider: "deepgram", deepgramApiKey: "native-key" }, vi.fn(), vi.fn());
+
+    expect(sttMocks.nativeInstances).toHaveLength(1);
+    expect(sttMocks.browserInstances).toHaveLength(0);
   });
 
   it("falls back to Web Speech on web when no Deepgram key is configured", () => {

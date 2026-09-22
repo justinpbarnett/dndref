@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 
 import {
-  addUpload as addStoredUpload,
-  getUploads as getStoredUploads,
-  removeUpload as removeStoredUpload,
+  addUploadedFile as addStoredUpload,
+  getUploadedFiles as getStoredUploads,
+  removeUploadedFile as removeStoredUpload,
   type UploadedFile,
-} from "../entities/providers/file-upload";
+} from "../storage/uploads";
 import { resetStoredAppData as resetStoredLocalAppData } from "../storage/app-data";
 import { getErrorMessage } from "../utils/error-message";
 import { SnapshotStore } from "../utils/snapshot-store";
