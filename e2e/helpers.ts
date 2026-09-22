@@ -127,14 +127,39 @@ async function stopSession(page: Page) {
   await page.waitForSelector("text=Ready", { timeout: 5000 });
 }
 
+/**
+ * Move between tabs the way a player does, without reloading the page.
+ *
+ * `page.goto` would work and would also throw away the session, which lives in
+ * React state. A spec that switches game mid-session needs the session still
+ * running on the other side of the trip.
+ */
+async function openTab(page: Page, tab: "index" | "settings") {
+  await page.getByTestId(`tab-${tab}`).click();
+  await page.waitForTimeout(300);
+}
+
+async function openSources(page: Page) {
+  await openTab(page, "settings");
+  await page.getByText("Sources", { exact: true }).click();
+  await page.getByTestId("ruleset-hint").waitFor({ timeout: 20000 });
+}
+
+/**
+ * Switch the game, from the one screen that switches it.
+ *
+ * Picking only edits the draft, so Save is what applies it, and the world
+ * reloads behind the save. Waiting for the confirmation first means the wait for
+ * the world cannot read the outgoing one and call it finished. The table is left
+ * back on the reference screen, which is where it was.
+ */
 async function switchRuleset(page: Page, ruleset: "dnd" | "mtg") {
+  await openSources(page);
   await page.getByTestId(`ruleset-${ruleset}`).click();
-  // The world reloads before the detector can match anything in it.
-  await page.waitForFunction(
-    (label) => !document.body.innerText.includes(label),
-    "Loading world",
-    { timeout: 20000 },
-  );
+  await page.getByText("Save", { exact: true }).click();
+  await page.getByText("Saved", { exact: true }).waitFor({ timeout: 10000 });
+  await page.waitForFunction(() => !document.body.innerText.includes("Loading world"), undefined, { timeout: 20000 });
+  await openTab(page, "index");
 }
 
 const DETECT_WAIT_MS = 2500;
@@ -224,6 +249,7 @@ export type TableSession = {
   resume(): Promise<void>;
   stop(): Promise<void>;
   openSettings(): Promise<void>;
+  openSources(): Promise<void>;
   switchTo(ruleset: "dnd" | "mtg"): Promise<void>;
   failNextStart(name?: string, message?: string): Promise<void>;
   emitError(error?: string): Promise<void>;
@@ -241,6 +267,7 @@ const driveTable = (page: Page): TableSession => ({
   resume: () => resumeSession(page),
   stop: () => stopSession(page),
   openSettings: () => gotoSettings(page),
+  openSources: () => openSources(page),
   switchTo: (ruleset) => switchRuleset(page, ruleset),
   failNextStart: (name, message) => failNextSpeechStart(page, name, message),
   emitError: (error) => emitSpeechError(page, error),

@@ -7,7 +7,7 @@
  * with cards nobody said. A campaign's names are invented, and exact matching
  * against them drops every name the microphone slightly mangles. Picking the
  * world and picking the matcher separately is picking a way to get it wrong, so
- * the toggle in the Reference tab picks one of these instead.
+ * the picker in Settings > Sources picks one of these instead.
  *
  * Adding a third game is one entry in `RULESETS` plus its id in `./id.ts`.
  */
@@ -27,11 +27,24 @@ import type { DataSourcesSettings } from "../storage/settings";
 
 export { DEFAULT_RULESET_ID, isRulesetId, RULESET_IDS, type RulesetId } from "./id";
 
+/**
+ * A block of source settings the Sources screen can offer.
+ *
+ * Which of them a game offers is the ruleset's to say, because it is the same
+ * question as which providers it builds: a field Sources collects for a game
+ * that never reads it is a field that does nothing.
+ */
+export const SOURCE_GROUP_IDS = ["srd", "kanka", "homebrewery", "notion", "googleDocs", "scryfall"] as const;
+
+export type SourceGroupId = (typeof SOURCE_GROUP_IDS)[number];
+
 export type Ruleset = {
   readonly id: RulesetId;
   /** What the toggle calls it. */
   readonly label: string;
   readonly matching: MatchingMode;
+  /** The source groups Sources offers for this game, in the order it shows them. */
+  readonly sources: readonly SourceGroupId[];
   providers(settings: DataSourcesSettings): WorldDataProvider[];
   /**
    * Fills in entities a source could only name. Present on a ruleset whose index
@@ -44,6 +57,7 @@ const dnd: Ruleset = {
   id: "dnd",
   label: "D&D",
   matching: "fuzzy",
+  sources: ["srd", "kanka", "homebrewery", "notion", "googleDocs"],
   providers(settings) {
     const providers: WorldDataProvider[] = [
       new MarkdownProvider(SAMPLE_WORLD, "Sample World"),
@@ -68,13 +82,15 @@ const dnd: Ruleset = {
  *
  * A campaign's notes and a card index share no names worth matching, and every
  * entity the other sources add is one more chance for table talk to raise
- * something from the wrong game. The sources configured in Settings are not
- * lost, only unused: switching back to D&D loads them again.
+ * something from the wrong game. Uploaded files go unread for the same reason.
+ * None of it is lost, only unused: switching back to D&D loads it all again,
+ * which is why Sources hides those fields rather than clearing them.
  */
 const mtg: Ruleset = {
   id: "mtg",
   label: "MTG",
   matching: "exact",
+  sources: ["scryfall"],
   providers: () => [new ScryfallProvider()],
   hydrate: hydrateScryfallCards,
 };

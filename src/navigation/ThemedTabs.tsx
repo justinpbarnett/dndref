@@ -49,6 +49,7 @@ export function ThemedTabs() {
           options={{
             title: tab.title,
             href: "href" in tab ? tab.href : undefined,
+            tabBarButtonTestID: `tab-${tab.name}`,
             tabBarIcon: ({ color, focused }) => (
               <Ionicon name={focused ? tab.focusedIcon : tab.icon} size={20} color={color} />
             ),
