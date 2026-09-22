@@ -127,6 +127,16 @@ async function stopSession(page: Page) {
   await page.waitForSelector("text=Ready", { timeout: 5000 });
 }
 
+async function switchRuleset(page: Page, ruleset: "dnd" | "mtg") {
+  await page.getByTestId(`ruleset-${ruleset}`).click();
+  // The world reloads before the detector can match anything in it.
+  await page.waitForFunction(
+    (label) => !document.body.innerText.includes(label),
+    "Loading world",
+    { timeout: 20000 },
+  );
+}
+
 const DETECT_WAIT_MS = 2500;
 
 const waitForDetectionPass = (page: Page) => page.waitForTimeout(DETECT_WAIT_MS);
@@ -153,6 +163,47 @@ async function mockExternalRoutes(page: Page) {
       body: JSON.stringify({ count: 0, next: null, previous: null, results: [] }),
     });
   });
+  await mockScryfall(page);
+}
+
+/**
+ * A card index small enough to reason about.
+ *
+ * The real catalog is 35k names, which no spec wants to assert against. The
+ * shape is what matters: the catalog spells a two-faced card with a `//`, and
+ * `/cards/collection` answers to a face name but never to that combined
+ * spelling -- the same rule the live API enforces.
+ */
+const MTG_CARDS = [
+  { name: "Lightning Bolt", type_line: "Instant", mana_cost: "{R}", oracle_text: "Deals 3 damage to any target." },
+  {
+    name: "Delver of Secrets // Insectile Aberration",
+    type_line: "Creature — Human Wizard",
+    card_faces: [
+      { name: "Delver of Secrets", mana_cost: "{U}", oracle_text: "Look at the top card of your library." },
+      { name: "Insectile Aberration", oracle_text: "Flying." },
+    ],
+  },
+];
+
+const cardFaceNames = (card: (typeof MTG_CARDS)[number]): string[] =>
+  (card.card_faces ?? [{ name: card.name }]).map((face) => face.name);
+
+async function mockScryfall(page: Page) {
+  await page.route("**api.scryfall.com/catalog/card-names**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ object: "catalog", data: MTG_CARDS.map((card) => card.name) }),
+    });
+  });
+
+  await page.route("**api.scryfall.com/cards/collection**", async (route) => {
+    const { identifiers = [] } = JSON.parse(route.request().postData() ?? "{}");
+    const asked = new Set(identifiers.map((identifier: { name: string }) => identifier.name));
+    const data = MTG_CARDS.filter((card) => cardFaceNames(card).some((name) => asked.has(name)));
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ data }) });
+  });
 }
 
 /**
@@ -173,6 +224,7 @@ export type TableSession = {
   resume(): Promise<void>;
   stop(): Promise<void>;
   openSettings(): Promise<void>;
+  switchTo(ruleset: "dnd" | "mtg"): Promise<void>;
   failNextStart(name?: string, message?: string): Promise<void>;
   emitError(error?: string): Promise<void>;
   emitEnd(): Promise<void>;
@@ -189,6 +241,7 @@ const driveTable = (page: Page): TableSession => ({
   resume: () => resumeSession(page),
   stop: () => stopSession(page),
   openSettings: () => gotoSettings(page),
+  switchTo: (ruleset) => switchRuleset(page, ruleset),
   failNextStart: (name, message) => failNextSpeechStart(page, name, message),
   emitError: (error) => emitSpeechError(page, error),
   emitEnd: () => emitSpeechEnd(page),

@@ -1,6 +1,6 @@
 /**
  * Detection by exact name -- the alternative the fuzzy detector is swapped for
- * when a build sets EXPO_PUBLIC_EXACT_MATCHING (see `detection-mode.ts`).
+ * when the ruleset in play asks for it (see `detection-mode.ts`).
  *
  * Fuzzy matching asks what a transcript is nearly saying, which is the right
  * question for a campaign whose names are invented. It is the wrong one for a

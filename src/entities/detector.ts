@@ -1,6 +1,6 @@
 import Fuse from "fuse.js";
 
-import { exactMatchingEnabled } from "./detection-mode";
+import { DEFAULT_MATCHING_MODE, type MatchingMode } from "./detection-mode";
 import { DETECTION_TUNING } from "./detection-tuning";
 import { exactDetection } from "./exact-detection";
 
@@ -11,8 +11,8 @@ type SearchTerm = { term: string; entity: Entity };
 export class EntityDetector {
   private readonly matchTranscript: TranscriptMatcher;
 
-  constructor(entities: EntityIndex) {
-    this.matchTranscript = exactMatchingEnabled() ? exactDetection(entities) : fuzzyDetection(entities);
+  constructor(entities: EntityIndex, mode: MatchingMode = DEFAULT_MATCHING_MODE) {
+    this.matchTranscript = mode === "exact" ? exactDetection(entities) : fuzzyDetection(entities);
   }
 
   detect(transcript: string): Entity[] {

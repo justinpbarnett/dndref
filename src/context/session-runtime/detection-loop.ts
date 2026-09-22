@@ -19,6 +19,8 @@ type RuntimeDetectionLoopOptions = {
   detectIntervalMs: number;
   getSnapshot: () => SessionRuntimeSnapshot;
   updateSnapshot: (patch: SessionRuntimeSnapshotPatch) => void;
+  /** Told about the entities a pass put on the stack, so their text can be fetched. */
+  onCardsAdded?: (entities: Entity[]) => void;
 };
 
 export class RuntimeDetectionLoop {
@@ -71,7 +73,10 @@ export class RuntimeDetectionLoop {
     const detectionKey = detectedEntities.map((entity) => entity.id).join(",");
     const patch = this.buildResultsPatch(snapshot.cards, detectedEntities, detectionKey);
     this.lastDetectionKey = detectionKey;
-    if (patch) this.options.updateSnapshot(patch);
+    if (!patch) return;
+
+    this.options.updateSnapshot(patch);
+    if (patch.cards) this.options.onCardsAdded?.(detectedEntities);
   }
 
   private detectEntities(transcript: string, newText: string): Entity[] {

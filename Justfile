@@ -35,13 +35,11 @@ screenshot-dark:
     npx playwright test e2e/screenshots-dark.spec.ts --config playwright.config.ts
 
 # ── Web build + deploy ────────────────────────────────────────────────────────
-# How the detector matches is a build-time flag, EXPO_PUBLIC_EXACT_MATCHING.
-# Every export clears Metro's cache, which costs a slower build and buys the
-# only thing that makes the flag safe: that cache does not key on
-# EXPO_PUBLIC_* vars, so without --clear an export silently reuses whichever
-# mode was built last -- and ship-web would put the prototype on dndref.com.
+# Every export clears Metro's cache. It costs a slower build and buys an export
+# that is only ever built from what is on disk, which is what makes ship-web
+# safe to run without reading the build log.
 
-# Export static web build to dist/ (prefix EXPO_PUBLIC_EXACT_MATCHING=1 for exact matching)
+# Export static web build to dist/
 build-web:
     npx expo export --platform web --clear
 

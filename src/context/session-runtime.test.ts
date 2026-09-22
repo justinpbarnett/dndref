@@ -171,6 +171,61 @@ describe("SessionRuntime", () => {
     expect(recentDetections).toEqual([valdrath, malachar]);
   });
 
+  it("fills in a detected card whose source could only name it", async () => {
+    const bolt = { ...makeEntity("mtg-bolt", "Lightning Bolt"), summary: "" };
+    const runtime = new SessionRuntime();
+
+    runtime.setDetector(new FakeDetector(() => [bolt]));
+    runtime.setHydrator(async (entities) => entities.map((entity) => ({ ...entity, summary: "Deals 3 damage." })));
+    runtime.activate();
+    runtime.appendTranscript("I cast Lightning Bolt");
+    runtime.processTranscript();
+    await vi.waitFor(() => expect(runtime.getSnapshot().cards[0].entity.summary).toBe("Deals 3 damage."));
+  });
+
+  it("does not ask the hydrator about a name that raised no new card", async () => {
+    const bolt = { ...makeEntity("mtg-bolt", "Lightning Bolt"), summary: "" };
+    const asked: string[][] = [];
+    const runtime = new SessionRuntime();
+
+    runtime.setDetector(new FakeDetector(() => [bolt]));
+    runtime.setHydrator(async (entities) => (asked.push(entities.map((e) => e.name)), entities));
+    runtime.activate();
+    runtime.appendTranscript("I cast Lightning Bolt");
+    runtime.processTranscript();
+    runtime.appendTranscript("Lightning Bolt again");
+    runtime.processTranscript();
+
+    // The first pass put the card up. The second raised the same name, so the
+    // stack did not move and there was nothing new to fill in.
+    await vi.waitFor(() => expect(asked).toEqual([["Lightning Bolt"]]));
+  });
+
+  it("empties the stack when the table switches game, without stopping the session", () => {
+    const valdrath = makeEntity("valdrath", "Valdrath the Undying");
+    const runtime = new SessionRuntime();
+
+    runtime.setDetector(new FakeDetector(() => [valdrath]));
+    runtime.activate();
+    runtime.appendTranscript("Valdrath is here");
+    runtime.processTranscript();
+    expect(runtime.getSnapshot().cards).toHaveLength(1);
+
+    runtime.clearCards();
+
+    expect(runtime.getSnapshot().cards).toEqual([]);
+    expect(runtime.getSnapshot().status).toBe("active");
+  });
+
+  it("leaves the snapshot alone when there is no stack to empty", () => {
+    const runtime = new SessionRuntime();
+    const before = runtime.getSnapshot();
+
+    runtime.clearCards();
+
+    expect(runtime.getSnapshot()).toBe(before);
+  });
+
   it("runs detection from its own active interval and clears the interval when paused", () => {
     vi.useFakeTimers();
     let runtime: SessionRuntime | null = null;

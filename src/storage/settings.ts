@@ -1,8 +1,11 @@
-import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, type STTSettings } from "../stt/index";
 import { openAppData } from "./app-data";
 import { DATA_SOURCES_KEY } from "./keys";
+import { DEFAULT_RULESET_ID, isRulesetId, type RulesetId } from "../rulesets/id";
+import { DEFAULT_STT_SETTINGS, STT_SETTINGS_KEY, type STTSettings } from "../stt/index";
 
 export type DataSourcesSettings = {
+  /** Which game the table is playing. It decides both the world and the matcher. */
+  rulesetId: RulesetId;
   srdEnabled: boolean;
   srdSources: string[];
 } & Record<
@@ -11,6 +14,7 @@ export type DataSourcesSettings = {
 >;
 
 export const DEFAULT_DATA_SOURCES_SETTINGS: DataSourcesSettings = {
+  rulesetId: DEFAULT_RULESET_ID,
   srdEnabled: true,
   srdSources: ["wotc-srd"],
   kankaToken: "",
@@ -31,8 +35,11 @@ export function mergeDataSourceSettings(settings?: Partial<DataSourcesSettings> 
   const patch = settings ?? {};
   const defaultSettings = createDefaultDataSourceSettings();
   const srdSources = Array.isArray(patch.srdSources) ? [...patch.srdSources] : defaultSettings.srdSources;
+  // A stored id from a build that knew another game must not leave the session
+  // with a ruleset nothing can load.
+  const rulesetId = isRulesetId(patch.rulesetId) ? patch.rulesetId : defaultSettings.rulesetId;
 
-  return { ...defaultSettings, ...patch, srdSources };
+  return { ...defaultSettings, ...patch, rulesetId, srdSources };
 }
 
 type VoiceSettingsPatch = Partial<Record<keyof STTSettings, unknown>>;

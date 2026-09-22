@@ -65,18 +65,21 @@ describe("EntityDetector", () => {
     );
   });
 
-  // Every other test here runs with the flag unset, which is what pins the
-  // default. This one pins the other side: a build that asks for exact
-  // matching gets a detector that will not answer to a partial name.
-  describe("with EXPO_PUBLIC_EXACT_MATCHING set", () => {
-    afterEach(() => vi.unstubAllEnvs());
-
-    it("matches names exactly rather than fuzzily", () => {
-      vi.stubEnv("EXPO_PUBLIC_EXACT_MATCHING", "1");
-      const exact = new EntityDetector(entities);
+  // Every other test here builds a detector without naming a mode, which is what
+  // pins the default. These pin the other side: the ruleset a table picks
+  // decides how its names are matched, in the build it is already running.
+  describe("asked for exact matching", () => {
+    it("will not answer to a partial name", () => {
+      const exact = new EntityDetector(entities, "exact");
 
       expect(exact.detect("Gimble walks in")).toHaveLength(0);
       expect(exact.detect("Gimble Lock walks in").map((e) => e.name)).toEqual(["Gimble Lock"]);
+    });
+
+    it("still answers to a partial name when the same index is matched fuzzily", () => {
+      expect(new EntityDetector(entities, "fuzzy").detect("Gimble walks in").map((e) => e.name)).toContain(
+        "Gimble Lock",
+      );
     });
   });
 });

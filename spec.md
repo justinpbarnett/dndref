@@ -102,10 +102,11 @@ Not NLP -- fuzzy string matching against the known entity list. Uses Fuse.js wit
 
 Runs every 2 seconds on only the _new_ transcript text since the last check (`processedUpToRef`).
 
-A prototype build flag, `EXPO_PUBLIC_EXACT_MATCHING=1`, swaps Fuse.js for exact
-name matching instead (`src/entities/exact-detection.ts`). It is off by default
-and aimed at worlds whose names are ordinary English, where a near miss is a
-false positive rather than a lucky catch.
+The ruleset in play decides which matcher runs. A D&D table matches fuzzily. A
+Magic table matches exactly (`src/entities/exact-detection.ts`), because card
+names are ordinary English, where a near miss is a false positive rather than a
+lucky catch. One build serves both, and the toggle above the card grid switches
+between them.
 
 ### Card stack behavior
 
