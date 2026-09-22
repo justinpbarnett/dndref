@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 
 import { EntityDetector } from "./detector";
 
@@ -63,6 +63,21 @@ describe("EntityDetector", () => {
     expect(detector.detect("they walk into The Prancing Pony at dusk").map((e) => e.name)).toContain(
       "The Prancing Pony",
     );
+  });
+
+  // Every other test here runs with the flag unset, which is what pins the
+  // default. This one pins the other side: a build that asks for exact
+  // matching gets a detector that will not answer to a partial name.
+  describe("with EXPO_PUBLIC_EXACT_MATCHING set", () => {
+    afterEach(() => vi.unstubAllEnvs());
+
+    it("matches names exactly rather than fuzzily", () => {
+      vi.stubEnv("EXPO_PUBLIC_EXACT_MATCHING", "1");
+      const exact = new EntityDetector(entities);
+
+      expect(exact.detect("Gimble walks in")).toHaveLength(0);
+      expect(exact.detect("Gimble Lock walks in").map((e) => e.name)).toEqual(["Gimble Lock"]);
+    });
   });
 });
 

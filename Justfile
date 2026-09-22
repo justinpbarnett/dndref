@@ -35,10 +35,22 @@ screenshot-dark:
     npx playwright test e2e/screenshots-dark.spec.ts --config playwright.config.ts
 
 # ── Web build + deploy ────────────────────────────────────────────────────────
+# How the detector matches is a build-time flag, EXPO_PUBLIC_EXACT_MATCHING.
+# Metro does not key its cache on EXPO_PUBLIC_* vars, so the two mode recipes
+# pass --clear; setting the var in front of a plain build-web silently reuses
+# whichever mode was built last.
 
 # Export static web build to dist/
 build-web:
     npx expo export --platform web
+
+# Export a web build that matches entity names exactly, not fuzzily
+build-web-exact:
+    EXPO_PUBLIC_EXACT_MATCHING=1 npx expo export --platform web --clear
+
+# Export a web build back on the default fuzzy matching
+build-web-fuzzy:
+    npx expo export --platform web --clear
 
 # Deploy web to Cloudflare Pages (run build-web first)
 deploy-web:

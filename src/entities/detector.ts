@@ -1,28 +1,39 @@
 import Fuse from "fuse.js";
 
+import { exactMatchingEnabled } from "./detection-mode";
 import { DETECTION_TUNING } from "./detection-tuning";
+import { exactDetection } from "./exact-detection";
+
 import { Entity, EntityIndex } from "./index";
 
 type SearchTerm = { term: string; entity: Entity };
 
 export class EntityDetector {
-  private fuse: Fuse<SearchTerm>;
+  private readonly matchTranscript: (transcript: string) => Entity[];
 
   constructor(entities: EntityIndex) {
-    const terms: SearchTerm[] = entities.flatMap((e) => [
-      { term: e.name, entity: e },
-      ...e.aliases.map((a) => ({ term: a, entity: e })),
-    ]);
-
-    this.fuse = new Fuse(terms, {
-      keys: ["term"],
-      threshold: DETECTION_TUNING.threshold,
-      minMatchCharLength: DETECTION_TUNING.minMatchChars,
-      includeScore: true,
-    });
+    this.matchTranscript = exactMatchingEnabled() ? exactDetection(entities) : fuzzyDetection(entities);
   }
 
   detect(transcript: string): Entity[] {
+    return this.matchTranscript(transcript);
+  }
+}
+
+function fuzzyDetection(entities: EntityIndex): (transcript: string) => Entity[] {
+  const terms: SearchTerm[] = entities.flatMap((e) => [
+    { term: e.name, entity: e },
+    ...e.aliases.map((a) => ({ term: a, entity: e })),
+  ]);
+
+  const fuse = new Fuse(terms, {
+    keys: ["term"],
+    threshold: DETECTION_TUNING.threshold,
+    minMatchCharLength: DETECTION_TUNING.minMatchChars,
+    includeScore: true,
+  });
+
+  return (transcript) => {
     const words = transcript
       .split(/\s+/)
       .filter((w) => w.replace(/[^a-z]/gi, "").length >= DETECTION_TUNING.minWordChars);
@@ -36,7 +47,7 @@ export class EntityDetector {
     }
 
     for (const phrase of phrases) {
-      const results = this.fuse.search(phrase);
+      const results = fuse.search(phrase);
       if (results.length === 0) continue;
       const best = results[0];
       const score = best.score ?? 1;
@@ -50,5 +61,5 @@ export class EntityDetector {
     return Array.from(found.values())
       .sort((a, b) => a.score - b.score)
       .map((r) => r.entity);
-  }
+  };
 }

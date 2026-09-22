@@ -54,6 +54,8 @@ Providers live in `src/entities/providers/`: `MarkdownProvider` (sample world + 
 
 The combined `EntityIndex` is fed into `EntityDetector` (Fuse.js, `src/entities/detector.ts`). Detection searches every one- to three-word phrase from the transcript against entity names and aliases. Every number this depends on -- match threshold, the two different minimum lengths, phrase width, carry-over window, interval -- lives in `src/entities/detection-tuning.ts`. Tune detection there, not in the detector.
 
+Matching itself is swappable. A build that sets `EXPO_PUBLIC_EXACT_MATCHING=1` (`just build-web-exact`) matches entity names exactly instead of fuzzily -- see `src/entities/detection-mode.ts` for why, and `exact-detection.ts` for what it does. It is a prototype flag, off by default, aimed at worlds whose names are ordinary English rather than invented.
+
 While active, `RuntimeDetectionLoop` (`src/context/session-runtime/detection-loop.ts`) runs the detector on an interval against only the _new_ transcript text since the last pass (`processedTranscriptLength`), plus a short tail of the previous pass so a name spoken across the boundary is still matched. Matches are added to the card stack (max 6 cards). Pinned cards are sorted to the front. When the stack is full, the rightmost unpinned card is evicted.
 
 ### STT abstraction
