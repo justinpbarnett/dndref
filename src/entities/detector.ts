@@ -4,12 +4,12 @@ import { exactMatchingEnabled } from "./detection-mode";
 import { DETECTION_TUNING } from "./detection-tuning";
 import { exactDetection } from "./exact-detection";
 
-import { Entity, EntityIndex } from "./index";
+import { Entity, EntityIndex, TranscriptMatcher } from "./index";
 
 type SearchTerm = { term: string; entity: Entity };
 
 export class EntityDetector {
-  private readonly matchTranscript: (transcript: string) => Entity[];
+  private readonly matchTranscript: TranscriptMatcher;
 
   constructor(entities: EntityIndex) {
     this.matchTranscript = exactMatchingEnabled() ? exactDetection(entities) : fuzzyDetection(entities);
@@ -20,7 +20,7 @@ export class EntityDetector {
   }
 }
 
-function fuzzyDetection(entities: EntityIndex): (transcript: string) => Entity[] {
+export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
   const terms: SearchTerm[] = entities.flatMap((e) => [
     { term: e.name, entity: e },
     ...e.aliases.map((a) => ({ term: a, entity: e })),

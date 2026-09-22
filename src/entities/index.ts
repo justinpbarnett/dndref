@@ -11,6 +11,13 @@ export type EntityIndex = Entity[];
 
 export type WorldDataProvider = { readonly name: string; load(): Promise<EntityIndex> };
 
+/**
+ * What a detection strategy is: a transcript in, the entities it named out.
+ * Both the fuzzy and the exact strategy are built as one of these, which is
+ * how `EntityDetector` can pick between them without knowing either.
+ */
+export type TranscriptMatcher = (transcript: string) => Entity[];
+
 export const slugify = (name: string): string =>
   name
     .toLowerCase()

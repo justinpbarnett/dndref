@@ -22,7 +22,7 @@ ios:
 check:
     npx tsc --noEmit
 
-# Lint: check file limits (max 300 lines, max 20 files per dir)
+# Lint
 lint:
     npm run lint
 
@@ -36,20 +36,13 @@ screenshot-dark:
 
 # ── Web build + deploy ────────────────────────────────────────────────────────
 # How the detector matches is a build-time flag, EXPO_PUBLIC_EXACT_MATCHING.
-# Metro does not key its cache on EXPO_PUBLIC_* vars, so the two mode recipes
-# pass --clear; setting the var in front of a plain build-web silently reuses
-# whichever mode was built last.
+# Every export clears Metro's cache, which costs a slower build and buys the
+# only thing that makes the flag safe: that cache does not key on
+# EXPO_PUBLIC_* vars, so without --clear an export silently reuses whichever
+# mode was built last -- and ship-web would put the prototype on dndref.com.
 
-# Export static web build to dist/
+# Export static web build to dist/ (prefix EXPO_PUBLIC_EXACT_MATCHING=1 for exact matching)
 build-web:
-    npx expo export --platform web
-
-# Export a web build that matches entity names exactly, not fuzzily
-build-web-exact:
-    EXPO_PUBLIC_EXACT_MATCHING=1 npx expo export --platform web --clear
-
-# Export a web build back on the default fuzzy matching
-build-web-fuzzy:
     npx expo export --platform web --clear
 
 # Deploy web to Cloudflare Pages (run build-web first)

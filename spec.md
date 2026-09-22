@@ -102,6 +102,11 @@ Not NLP -- fuzzy string matching against the known entity list. Uses Fuse.js wit
 
 Runs every 2 seconds on only the _new_ transcript text since the last check (`processedUpToRef`).
 
+A prototype build flag, `EXPO_PUBLIC_EXACT_MATCHING=1`, swaps Fuse.js for exact
+name matching instead (`src/entities/exact-detection.ts`). It is off by default
+and aimed at worlds whose names are ordinary English, where a near miss is a
+false positive rather than a lucky catch.
+
 ### Card stack behavior
 
 - New match always lands at position 1 (after pinned cards), shifting others right
@@ -187,5 +192,5 @@ just build-ios      # EAS build for TestFlight
 ## Notes
 
 - AI parser available in settings for converting campaign notes to entities (uses Claude API)
-- No AI in the live detection path -- all entity matching is deterministic Fuse.js
+- No AI in the live detection path -- all entity matching is deterministic string matching (Fuse.js by default)
 - Debug tab only visible in dev builds (`__DEV__` flag)

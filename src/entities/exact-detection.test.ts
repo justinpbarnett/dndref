@@ -25,6 +25,11 @@ describe("exact name detection", () => {
     expect(detect("I'll cast Lightning Bolt").map((e) => e.name)).toEqual(["Lightning Bolt"]);
   });
 
+  it("passes over a name that starts inside a longer one it already took", () => {
+    const detect = exactDetection([card("Sword Coast"), card("Coast Road")]);
+    expect(detect("we rode up the Sword Coast Road").map((e) => e.name)).toEqual(["Sword Coast"]);
+  });
+
   it("names an entity once however often it is spoken", () => {
     const detect = exactDetection([card("Sol Ring")]);
 
@@ -37,10 +42,20 @@ describe("exact name detection", () => {
     expect(detect("just Swords the commander").map((e) => e.name)).toEqual(["Swords to Plowshares"]);
   });
 
+  it("prefers the entity a name belongs to over one that only carries it as an alias", () => {
+    const detect = exactDetection([card("Shock"), card("Lightning Bolt", ["Shock"])]);
+    expect(detect("take three from Shock").map((e) => e.name)).toEqual(["Shock"]);
+  });
+
   it("matches a hyphenated name the way a transcript spells it out", () => {
     const detect = exactDetection([card("Eight-and-a-Half-Tails")]);
 
     expect(detect("blocking with Eight and a Half Tails").map((e) => e.name)).toEqual(["Eight-and-a-Half-Tails"]);
+  });
+
+  it("matches an accented name the way a transcript spells it without accents", () => {
+    const detect = exactDetection([card("Faerûn")]);
+    expect(detect("we sailed back to Faerun").map((e) => e.name)).toEqual(["Faerûn"]);
   });
 
   it("matches a possessive name whether or not the transcript kept the apostrophe", () => {
@@ -48,6 +63,19 @@ describe("exact name detection", () => {
 
     expect(detect("tapping Gaeas Cradle").map((e) => e.name)).toEqual(["Gaea's Cradle"]);
     expect(detect("tapping Gaea's Cradle").map((e) => e.name)).toEqual(["Gaea's Cradle"]);
+  });
+
+  // The other side of the same coin, and the trait to know before pointing this
+  // at Magic: 44% of one-word card names are ordinary English words, so a card
+  // named Vigilance answers whenever the word is spoken, about anything. That
+  // is exact matching working -- the word was said -- and it is pinned here so
+  // the trait is a decision on the record rather than a surprise at a table.
+  it("answers a one-word name whenever that ordinary word is spoken", () => {
+    const detect = exactDetection([card("Serra Angel"), card("Vigilance")]);
+    expect(detect("I attack with Serra Angel it has flying and vigilance").map((e) => e.name)).toEqual([
+      "Serra Angel",
+      "Vigilance",
+    ]);
   });
 
   // Each of these entities is one the fuzzy detector returned for the sentence

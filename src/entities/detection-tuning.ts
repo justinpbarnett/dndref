@@ -6,6 +6,11 @@
  * and `carryOverChars` only matters because `intervalMs` cuts the transcript
  * into passes that a spoken name can straddle. Tuning detection means editing
  * this file and nothing else.
+ *
+ * All of it governs fuzzy matching, which is how the app matches by default.
+ * A build that sets EXPO_PUBLIC_EXACT_MATCHING takes none of these: exact
+ * matching derives its phrase width from the longest name indexed and filters
+ * no words out at all. See `detection-mode.ts`.
  */
 export const DETECTION_TUNING = {
   /** How often the detector runs over new transcript while a session is active. */

@@ -7,10 +7,10 @@
  * fuzzily matches Mightstone and Comeuppance and the stack fills with noise.
  *
  * This is a prototype switch, so it is read at build time rather than offered
- * in settings. Build it either way with `just build-web-exact` or
- * `just build-web-fuzzy`, which clear Metro's cache -- that cache does not key
- * on EXPO_PUBLIC_* vars, so setting this in front of a plain `just build-web`
- * silently returns whichever mode was built last.
+ * in settings: `EXPO_PUBLIC_EXACT_MATCHING=1 just build-web` for exact, a plain
+ * `just build-web` for fuzzy. Both clear Metro's cache, which they have to --
+ * that cache does not key on EXPO_PUBLIC_* vars, so an export that skipped
+ * --clear would quietly hand back whichever mode was built last.
  *
  * Metro inlines `process.env.EXPO_PUBLIC_*` as a literal, so the reference
  * below has to stay written out in full for the build to see it.
