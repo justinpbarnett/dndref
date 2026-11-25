@@ -10,6 +10,8 @@ import { DataSectionProps } from "../types";
 import { RulesetPicker } from "./RulesetPicker";
 import { SettingsInput } from "./SettingsInput";
 
+const OPEN5E_LABEL = "Open5e";
+
 const SRD_PUBLISHER_GROUPS = Array.from(
   SRD_SOURCES.reduce((map, src) => {
     map.set(src.publisher, [...(map.get(src.publisher) ?? []), { slug: src.slug, label: src.label }]);
@@ -65,10 +67,11 @@ function SrdGroup({ dsLocal, setDsLocal, styles }: SourceGroupProps) {
       <Text style={styles.groupLabel}>D&D 5E SRD</Text>
       <View style={styles.toggleRow}>
         <View style={styles.toggleBody}>
-          <Text style={styles.optionTitle}>Open5e</Text>
+          <Text style={styles.optionTitle}>{OPEN5E_LABEL}</Text>
           <Text style={styles.optionDesc}>Monsters and magic items. No key required.</Text>
         </View>
         <Switch
+          accessibilityLabel={OPEN5E_LABEL}
           value={dsLocal.srdEnabled}
           onValueChange={(v) => setDsLocal((s) => ({ ...s, srdEnabled: v }))}
           trackColor={{ false: C.border, true: C.active + "80" }}
