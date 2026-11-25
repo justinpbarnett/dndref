@@ -54,7 +54,9 @@ export function SettingsCategoryButton({
   const active = activeCategory === cat.id;
   return (
     <TouchableOpacity
-      key={cat.id}
+      accessibilityRole="button"
+      accessibilityLabel={cat.label}
+      aria-pressed={active}
       style={[mobile ? styles.tab : styles.sidebarItem, active && (mobile ? styles.tabActive : styles.sidebarItemActive)]}
       onPress={() => onSelect(cat.id)}
       activeOpacity={0.7}

@@ -22,40 +22,26 @@ export function SettingsScreenView({ colors, controller, isWide, styles }: Setti
 
   return (
     <View style={styles.root}>
-      {isWide ? (
-        <View style={styles.sidebar}>
-          <Text style={styles.sidebarTitle}>SETTINGS</Text>
-          {CATEGORIES.map((cat) => (
-            <SettingsCategoryButton
-              key={cat.id}
-              cat={cat}
-              activeCategory={category}
-              colors={colors}
-              styles={styles}
-              onSelect={setCategory}
-            />
-          ))}
-        </View>
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabBar}
-          contentContainerStyle={styles.tabBarContent}
-        >
-          {CATEGORIES.map((cat) => (
-            <SettingsCategoryButton
-              key={cat.id}
-              cat={cat}
-              activeCategory={category}
-              mobile
-              colors={colors}
-              styles={styles}
-              onSelect={setCategory}
-            />
-          ))}
-        </ScrollView>
-      )}
+      <ScrollView
+        horizontal={!isWide}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+        style={isWide ? styles.sidebar : styles.tabBar}
+        contentContainerStyle={isWide ? styles.sidebarContent : styles.tabBarContent}
+      >
+        {isWide ? <Text style={styles.sidebarTitle}>SETTINGS</Text> : null}
+        {CATEGORIES.map((cat) => (
+          <SettingsCategoryButton
+            key={cat.id}
+            cat={cat}
+            activeCategory={category}
+            mobile={!isWide}
+            colors={colors}
+            styles={styles}
+            onSelect={setCategory}
+          />
+        ))}
+      </ScrollView>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentPad} showsVerticalScrollIndicator={false}>
         <SettingsContent controller={controller} styles={styles} />
