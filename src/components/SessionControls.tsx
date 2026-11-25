@@ -81,6 +81,7 @@ export function SessionControls() {
         <View style={styles.buttons}>
           {(status === "idle" || status === "paused") && (
             <TouchableOpacity
+              accessibilityRole="button"
               style={[styles.btn, styles.btnStart, isConnecting && styles.btnDisabled]}
               onPress={start}
               activeOpacity={0.75}
