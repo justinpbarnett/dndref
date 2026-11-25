@@ -16,9 +16,13 @@ export function createStyles(C: Colors, isWide: boolean) {
     root: { flex: 1, flexDirection: isWide ? "row" : "column", backgroundColor: C.bg },
     sidebar: {
       width: 168,
+      flexGrow: 0,
+      flexShrink: 0,
       backgroundColor: C.bgSurface,
       borderRightWidth: 1,
       borderRightColor: C.border,
+    },
+    sidebarContent: {
       paddingTop: 24,
       paddingBottom: 16,
       paddingHorizontal: 10,
