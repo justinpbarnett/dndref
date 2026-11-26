@@ -49,8 +49,8 @@ describe("EntityDetector", () => {
     expect(detector.detect("Gimble Lock is the bard").map((e) => e.name)).toEqual(["Gimble Lock"]);
   });
 
-  // `minWordChars` filters the transcript side; `minMatchChars` filters the
-  // entity side. Both are 4, and they answer different questions.
+  // `minWordChars` filters the transcript side. A name that short is never
+  // searched on its own, whatever the table has been named.
   it("never searches transcript words below the minimum, whatever the table has been named", () => {
     const shortNamed = new EntityDetector([
       { id: "elm", name: "Elm", type: "Location" as EntityType, aliases: [], summary: "An old elm" },
@@ -63,6 +63,14 @@ describe("EntityDetector", () => {
     expect(detector.detect("they walk into The Prancing Pony at dusk").map((e) => e.name)).toContain(
       "The Prancing Pony",
     );
+  });
+
+  it("matches a multi-word name without its leading article", () => {
+    expect(detector.detect("they reach the Prancing Pony at dusk").map((e) => e.name)).toContain("The Prancing Pony");
+  });
+
+  it.each(["Gymble", "Gimbel", "Gimbl", "Gymble Lock"])("treats %s as a misspelling of Gimble Lock", (input) => {
+    expect(detector.detect(input).map((e) => e.name)).toContain("Gimble Lock");
   });
 
   // Every other test here builds a detector without naming a mode, which is what

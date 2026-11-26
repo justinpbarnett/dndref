@@ -126,7 +126,7 @@ src/
   entities/
     index.ts            -- Entity type + WorldDataProvider interface
     ingestion.ts        -- Raw source records -> EntityIndex (one normalizer)
-    detector.ts         -- fuse.js fuzzy matching
+    detector.ts         -- fuzzy name matching
     detection-tuning.ts -- Every detection knob (tune here, not in the detector)
     ai-parser.ts        -- Claude entity extraction
     providers/
@@ -160,4 +160,4 @@ workers/
 
 ## Stack
 
-React Native + Expo SDK 52, Expo Router, fuse.js for fuzzy matching, Deepgram or Web Speech for STT, AsyncStorage for settings and uploads. Hosted on Cloudflare Pages with a Cloudflare Worker handling CORS for the API calls that need it.
+React Native + Expo SDK 52, Expo Router, Deepgram or Web Speech for STT, AsyncStorage for settings and uploads. Hosted on Cloudflare Pages with a Cloudflare Worker handling CORS for the API calls that need it.

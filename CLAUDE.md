@@ -52,7 +52,7 @@ all of it; the classic symptom is aliases silently never matching.
 
 Providers live in `src/entities/providers/`: `MarkdownProvider` (sample world + file uploads), `SRDProvider`, `KankaProvider`, `HomebreweryProvider`, `NotionProvider`, `GoogleDocsProvider`, `FileUploadProvider`, `ScryfallProvider`. On web, external API calls go through the CORS proxy at `proxy.dndref.com`. `src/proxy-routes.ts` holds the one route table; both `src/proxy.ts` (`outboundUrl`, `fetchOutbound`) and the Worker in `workers/cors-proxy/` import it, so adding a route is one edit -- followed by `just proxy-deploy`, since web traffic only reaches a new route once the Worker ships it. Native calls the upstream directly, so every source takes the same way out on both platforms.
 
-The combined `EntityIndex` is fed into `EntityDetector` (Fuse.js, `src/entities/detector.ts`). Detection searches every one- to three-word phrase from the transcript against entity names and aliases. Every number this depends on -- match threshold, the two different minimum lengths, phrase width, carry-over window, interval -- lives in `src/entities/detection-tuning.ts`. Tune detection there, not in the detector.
+The combined `EntityIndex` is fed into `EntityDetector` (`src/entities/detector.ts`). Detection compares phrases from the transcript with entity names and aliases: the whole title, a misspelling of that title, or the leading word of a two-word name when that word is not ordinary speech. Every number this depends on lives in `src/entities/detection-tuning.ts`. Tune detection there, not in the detector.
 
 ### Rulesets
 

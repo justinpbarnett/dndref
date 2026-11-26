@@ -31,6 +31,14 @@ test.describe("voice entity detection", () => {
     await expect(page.getByTestId("entity-card")).toHaveCount(0);
   });
 
+  test("a mundane sentence does not fill the stack", async ({ page }) => {
+    await table.say(
+      "What's the plan? The guard at the gate asks who we are, while the mage casts a spell. I want to order another round. I was a blacksmith.",
+    );
+    await expect(page.getByText("Awaiting entities…")).toBeVisible();
+    await expect(page.getByTestId("entity-card")).toHaveCount(0);
+  });
+
   test("same entity mentioned twice produces only one card", async ({ page }) => {
     await table.say("Valdrath spoke first");
     await table.say("then Valdrath spoke again");
