@@ -12,7 +12,7 @@ iPad app and web app at [dndref.com](https://dndref.com).
 4. Pin to keep a card visible; dismiss when done
 5. Toggle dark/light mode in Settings
 
-Detection runs every 2 seconds using fuzzy matching against your loaded entities. No AI in the live path, just fast deterministic string matching. A short name from your own notes still matches one misheard letter when the heard word is not English, and an alias you wrote as "the order" matches in either case unless that word was cut from the title.
+Detection runs every 2 seconds using fuzzy matching against your loaded entities. No AI in the live path, just fast deterministic string matching. A short name from your own notes still matches one misheard letter when the heard word is not English, and an alias you wrote as "the order" matches in either case unless that word was cut from the title. A three-letter name stays silent even when spoken in full. A longer name can still match a real English word.
 
 ## Data sources
 

@@ -19,6 +19,7 @@ vi.mock("../../utils/providers", () => ({
 import { SRDProvider } from "./srd";
 import { resetAppDataForTests, resetStoredAppData } from "../../storage/app-data";
 import { SRD_CACHE_KEY_PREFIX } from "../../storage/keys";
+import { EntityDetector } from "../detector";
 
 describe("SRD cache persistence", () => {
   beforeEach(() => {
@@ -72,5 +73,34 @@ describe("SRD cache persistence", () => {
     ]);
     expect(entities[0].details).toContain("* The scarab has 12 charges");
     expect(entities[0].summary.length).toBeLessThan(entities[0].details!.length);
+  });
+
+  it("does not load a pre-v4 cache entry as a notes name", async () => {
+    const staleKey = `${SRD_CACHE_KEY_PREFIX}v3-wotc-srd`;
+    storage.set(
+      staleKey,
+      JSON.stringify({
+        ts: Date.now(),
+        entities: [{ id: "srd-monster-worg", name: "Worg", type: "NPC", aliases: [], summary: "" }],
+      }),
+    );
+    fetchAllMock.mockImplementation(async (url: string) => {
+      if (url.includes("/monsters/")) return [{ name: "Worg", slug: "worg", challenge_rating: "1/2" }];
+      return [];
+    });
+
+    const fresh = await new SRDProvider(["wotc-srd"]).load();
+    expect(fresh.length).toBeGreaterThan(0);
+    expect(fresh.every((entity) => entity.catalog === true)).toBe(true);
+
+    fetchAllMock.mockRejectedValue(new Error("network"));
+    const cached = await new SRDProvider(["wotc-srd"]).load();
+    expect(cached.every((entity) => entity.catalog === true)).toBe(true);
+    const detector = new EntityDetector(cached);
+    expect(detector.detect("worb")).toEqual([]);
+    expect(detector.detect("worg").map((entity) => entity.name)).toEqual(["Worg"]);
+    expect(JSON.parse(storage.get(staleKey)!).entities.every((entity: { catalog?: boolean }) => entity.catalog !== true)).toBe(
+      true,
+    );
   });
 });
