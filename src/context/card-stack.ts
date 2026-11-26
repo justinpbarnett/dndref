@@ -26,10 +26,29 @@ export function insertAfterPinned(cards: CardState[], card: CardState): CardStat
  */
 export function addCard(cards: CardState[], entity: Entity): CardState[] {
   if (cards.some((card) => card.entity.id === entity.id)) return cards;
+  return insertCard(cards, entity, () => false);
+}
 
+export function addRankedCards(cards: CardState[], rankedBestFirst: Entity[]): CardState[] {
+  const spared = new Set<string>();
+  let next = cards;
+  for (const entity of rankedBestFirst) {
+    if (next.some((card) => card.entity.id === entity.id)) {
+      spared.add(entity.id);
+      continue;
+    }
+    const placed = insertCard(next, entity, (card) => spared.has(card.entity.id));
+    if (placed === next) return next;
+    spared.add(entity.id);
+    next = placed;
+  }
+  return next;
+}
+
+function insertCard(cards: CardState[], entity: Entity, spare: (card: CardState) => boolean): CardState[] {
   let withRoom = cards;
   if (withRoom.length >= MAX_CARDS) {
-    const evictionIndex = withRoom.findLastIndex((card) => !card.pinned);
+    const evictionIndex = withRoom.findLastIndex((card) => !card.pinned && !spare(card));
     if (evictionIndex === -1) return cards;
     withRoom = withRoom.filter((_, index) => index !== evictionIndex);
   }

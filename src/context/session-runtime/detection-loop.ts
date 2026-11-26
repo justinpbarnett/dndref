@@ -11,7 +11,7 @@
  */
 import { DETECTION_TUNING } from "../../entities/detection-tuning";
 import type { Entity } from "../../entities/index";
-import { addCard } from "../card-stack";
+import { addRankedCards } from "../card-stack";
 import type { CardState } from "../session-types";
 import type { SessionRuntimeDetector, SessionRuntimeSnapshot, SessionRuntimeSnapshotPatch } from "./runtime-types";
 
@@ -102,8 +102,7 @@ export class RuntimeDetectionLoop {
     detectedEntities: Entity[],
     detectionKey: string,
   ): SessionRuntimeSnapshotPatch | null {
-    let nextCards = currentCards;
-    for (const entity of detectedEntities) nextCards = addCard(nextCards, entity);
+    const nextCards = addRankedCards(currentCards, detectedEntities);
 
     const cardsChanged = nextCards !== currentCards;
     const detectionsChanged = detectionKey !== this.lastDetectionKey;
