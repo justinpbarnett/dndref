@@ -13,7 +13,7 @@ The fix: a passive listener that detects when known entities are mentioned and i
 1. Loads world data from multiple sources at session start (SRD, Kanka, Notion, Google Docs, Homebrewery, or uploaded files)
 2. Listens to the table via device mic (Web Speech API on web, Deepgram on native)
 3. Transcribes speech in near-real time via cloud STT provider
-4. Detects entity mentions (characters, locations, factions, items, lore entries) using Fuse.js fuzzy matching
+4. Detects entity mentions (characters, locations, factions, items, lore entries) by comparing spoken phrases to whole names and aliases
 5. Shows entity cards in a pinnable, auto-updating stack (max 6 cards)
 6. No AI in the live path, all detection is deterministic
 
@@ -58,9 +58,9 @@ Implemented providers:
 mic input (STTProvider abstraction)
   -> WebSpeechProvider (Chrome/Edge) or DeepgramProvider (web + native)
   -> rolling transcript buffer
-  -> entity detector (Fuse.js fuzzy match, runs every 2 seconds)
-     - Scans 1, 2, and 3-word phrases from new transcript text
-     - Threshold 0.28, minimum 4 characters
+  -> entity detector (whole-phrase match, runs every 2 seconds)
+     - Exact title, a bounded misspelling, or a distinctive leading word
+     - Spoken forms of punctuated titles, and the longest match owns its span
   -> card stack UI (newest first, pinnable, max 6 cards)
      - Rightmost unpinned card evicted when full
      - Pinned cards sorted to front
@@ -94,13 +94,16 @@ Deepgram is the primary provider on native iPad. On web, falls back to Web Speec
 
 ### Entity detection
 
-Not NLP -- fuzzy string matching against the known entity list. Uses Fuse.js with:
+Not NLP. Each spoken phrase is compared with the loaded names and aliases:
 
-- Threshold: 0.28 (tuned for false positive balance)
-- Minimum match length: 4 characters
-- Matches single words, 2-word phrases, and 3-word phrases
+- The whole title, or a misspelling of a word in it. How far a misspelling may drift, and every other number, lives in `src/entities/detection-tuning.ts`.
+- The leading word of a two-word name when that word is long and not ordinary speech ("Gimble" for Gimble Lock, not "purple" for Purple Worm).
+- A spoken form of a punctuated title. A trailing `, +1, +2, or +3` is dropped, a parenthetical is indexed both without the parentheses and as the text inside them, a slash is indexed as both sides, and apostrophes are dropped the way exact matching drops them (`will o wisp`, `will-o-wisp`, and `will-o'-wisp` all meet).
+- An unqualified color ("red dragon") is the adult. Young, ancient, and wyrmling match when that age is spoken.
 
-Runs every 2 seconds on only the _new_ transcript text since the last check (`processedUpToRef`).
+The longest match owns its span, so "dire wolf" does not also raise Wolf and "wand of the war mage" does not also raise Mage. A one-word alias that is ordinary speech ("the order", "compact") does not fire. A proper name or a multi-word alias does. A catalog name that is itself an ordinary word (Solar, Noble, Scout, Pony) still matches.
+
+Runs every 2 seconds on only the _new_ transcript text since the last check (`processedUpToRef`), plus a short tail so a name split across the boundary is still seen.
 
 The ruleset in play decides which matcher runs. A D&D table matches fuzzily. A
 Magic table matches exactly (`src/entities/exact-detection.ts`), because card
@@ -149,7 +152,7 @@ Configure data sources, STT provider, card size, and theme.
 
 - React Native + Expo (SDK 52+)
 - Expo Router for navigation
-- Fuse.js (fuzzy entity matching)
+- In-tree phrase matcher (`src/entities/detector.ts`, tuned from `src/entities/detection-tuning.ts`)
 - Deepgram SDK (streaming STT via WebSocket on web)
 - AsyncStorage (persist settings)
 - Cloudflare Workers (CORS proxy for web API access)
@@ -193,5 +196,5 @@ just build-ios      # EAS build for TestFlight
 ## Notes
 
 - AI parser available in settings for converting campaign notes to entities (uses Claude API)
-- No AI in the live detection path -- all entity matching is deterministic string matching (Fuse.js by default)
+- No AI in the live detection path -- all entity matching is deterministic string matching (whole-phrase matching by default, exact matching for a catalog of ordinary English names)
 - Debug tab only visible in dev builds (`__DEV__` flag)
