@@ -15,7 +15,7 @@ export function monsterToEntity(m: any): Entity | null {
   const summary = `CR ${m.challenge_rating ?? "?"} · ${m.size ?? ""} ${m.type ?? ""}. AC ${m.armor_class ?? "?"}, HP ${m.hit_points ?? "?"}. ${statSummary}.`;
   return normalizeIngestedEntity(
     { ...m, type: "NPC", summary: summary.trim(), image: m.img_main },
-    srdId("monster", m.slug),
+    { ...srdId("monster", m.slug), catalog: true },
   );
 }
 
@@ -26,7 +26,7 @@ export function itemToEntity(item: any): Entity | null {
   const summary = [rarity, desc.slice(0, 200)].filter(Boolean).join(". ");
   return normalizeIngestedEntity(
     { ...item, type: "Item", summary, details },
-    srdId("item", item.slug),
+    { ...srdId("item", item.slug), catalog: true },
   );
 }
 

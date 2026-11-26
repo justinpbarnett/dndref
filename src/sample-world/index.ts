@@ -1,7 +1,7 @@
 export const SAMPLE_WORLD = `
 # Ironspire Fortress
 **Type:** Location
-**Aliases:** Ironspire, The Fortress, the spire, iron fortress
+**Aliases:** Ironspire, The Fortress, the iron spire, iron fortress
 
 Ancient dwarven stronghold in the Northern Wastes, seized by the Lich King Valdrath in the Third Age. Now his eastern command post. Seven levels deep. The party reached level 3 last session.
 
@@ -33,7 +33,7 @@ Spymaster of the Dawnwarden Order. Recruited the party. Has intel on Ironspire's
 
 # Gorm Ironfist
 **Type:** NPC
-**Aliases:** Gorm, Ironfist, the blacksmith, dwarven smith
+**Aliases:** Gorm, Ironfist, the dwarven blacksmith, dwarven smith
 
 Exiled dwarven master smith. Knows Ironspire's original layout from his ancestors' blueprints. Owes the party a debt after they freed his daughter from Silvermarsh slavers.
 
@@ -57,7 +57,7 @@ Paladin order dedicated to containing Valdrath's influence. Seraphine's organiza
 
 # Thornwall
 **Type:** Location
-**Aliases:** Thornwall Keep, the ruins, old keep, thornwall ruins
+**Aliases:** Thornwall Keep, old keep, thornwall ruins
 
 Ruined fortress 3 days east of Ironspire. Was the Dawnwarden Order's original stronghold before Valdrath destroyed it in the Second Siege. Malachar was last seen here before his capture.
 

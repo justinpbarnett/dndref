@@ -1,5 +1,6 @@
+import { isEnglishWord } from "./common-words";
 import { DEFAULT_MATCHING_MODE, type MatchingMode } from "./detection-mode";
-import { DETECTION_TUNING, genuineOrdinaryAlias, isOrdinarySpeech } from "./detection-tuning";
+import { DETECTION_TUNING, genuineOrdinaryAlias } from "./detection-tuning";
 import { exactDetection } from "./exact-detection";
 
 import { Entity, EntityIndex, TranscriptMatcher } from "./index";
@@ -64,7 +65,7 @@ function editDistance(left: string, right: string): number {
   return scores[left.length][right.length];
 }
 
-function wordClose(spoken: string, indexed: string): boolean {
+function wordClose(spoken: string, indexed: string, allowShortEdit: boolean): boolean {
   if (spoken === indexed) return true;
   if (spoken === `${indexed}s` || indexed === `${spoken}s`) return false;
   if (spoken[0] !== indexed[0]) return false;
@@ -75,8 +76,8 @@ function wordClose(spoken: string, indexed: string): boolean {
   const minLetters = Math.min(spokenLetters, indexedLetters);
   if (minLetters / maxLetters < DETECTION_TUNING.minLengthRatio) return false;
   if (indexedLetters < DETECTION_TUNING.minFuzzyChars) {
+    if (!allowShortEdit || isEnglishWord(spoken)) return false;
     if (indexedLetters < DETECTION_TUNING.minWordChars) return false;
-    if (isOrdinarySpeech(spoken) || isOrdinarySpeech(indexed)) return false;
     const distance = editDistance(spoken, indexed);
     return distance > 0 && distance <= DETECTION_TUNING.shortNameMaxEdits;
   }
@@ -84,7 +85,7 @@ function wordClose(spoken: string, indexed: string): boolean {
   return distance > 0 && distance <= Math.floor(maxLetters * DETECTION_TUNING.maxEditRatio);
 }
 
-function phraseClose(spoken: string, indexed: string): boolean {
+function phraseClose(spoken: string, indexed: string, allowShortEdit: boolean): boolean {
   if (spoken === indexed) return false;
   const spokenWordsOfPhrase = spoken.split(" ");
   const indexedWords = indexed.split(" ");
@@ -92,7 +93,7 @@ function phraseClose(spoken: string, indexed: string): boolean {
   let edits = 0;
   for (let i = 0; i < spokenWordsOfPhrase.length; i++) {
     if (spokenWordsOfPhrase[i] === indexedWords[i]) continue;
-    if (!wordClose(spokenWordsOfPhrase[i], indexedWords[i])) return false;
+    if (!wordClose(spokenWordsOfPhrase[i], indexedWords[i], allowShortEdit)) return false;
     edits += editDistance(spokenWordsOfPhrase[i], indexedWords[i]);
   }
   return edits > 0;
@@ -151,6 +152,7 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
 
   const addFuzzy = (norm: string, entity: Entity) => {
     if (!norm) return;
+    if (entity.catalog === true && !norm.includes(" ") && letterCount(norm) < DETECTION_TUNING.minFuzzyChars) return;
     const key = `${entity.id}\0${norm}`;
     if (seenFuzzy.has(key)) return;
     seenFuzzy.add(key);
@@ -206,13 +208,15 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
         for (const entity of exactHits) hits.push({ entity, score: 0 });
       } else if (width <= DETECTION_TUNING.maxFuzzyPhraseWords) {
         for (const term of fuzzyByWidth[width] ?? []) {
-          if (phraseClose(key, term.norm)) hits.push({ entity: term.entity, score: editDistance(key, term.norm) });
+          if (phraseClose(key, term.norm, term.entity.catalog !== true)) {
+            hits.push({ entity: term.entity, score: editDistance(key, term.norm) });
+          }
         }
       }
       if (width === 1) {
         for (const standin of standins) {
           if (key === standin.norm) hits.push({ entity: standin.entity, score: 0 });
-          else if (wordClose(key, standin.norm)) {
+          else if (wordClose(key, standin.norm, standin.entity.catalog !== true)) {
             hits.push({ entity: standin.entity, score: editDistance(key, standin.norm) });
           }
         }

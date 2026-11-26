@@ -1,7 +1,9 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
+import { englishWords } from "./common-words";
 import { DETECTION_TUNING } from "./detection-tuning";
 import { EntityDetector } from "./detector";
+import { ingestMarkdownContent } from "./ingestion";
 import { MarkdownProvider } from "./providers/markdown";
 import { WOTC_SRD_NAMES } from "./wotc-srd-names";
 import { SAMPLE_WORLD } from "../sample-world/index";
@@ -9,6 +11,40 @@ import { SAMPLE_WORLD } from "../sample-world/index";
 import type { Entity, EntityType } from "./index";
 
 const letterCount = (value: string): number => value.replace(/[^a-z]/gi, "").length;
+
+function editDistance(left: string, right: string): number {
+  const scores = Array.from({ length: left.length + 1 }, () => new Array<number>(right.length + 1).fill(0));
+  for (let row = 0; row < scores.length; row++) scores[row][0] = row;
+  for (let col = 0; col < scores[0].length; col++) scores[0][col] = col;
+  for (let row = 1; row < scores.length; row++) {
+    for (let col = 1; col < scores[0].length; col++) {
+      const cost = left[row - 1] === right[col - 1] ? 0 : 1;
+      scores[row][col] = Math.min(scores[row - 1][col] + 1, scores[row][col - 1] + 1, scores[row - 1][col - 1] + cost);
+      if (row > 1 && col > 1 && left[row - 1] === right[col - 2] && left[row - 2] === right[col - 1]) {
+        scores[row][col] = Math.min(scores[row][col], scores[row - 2][col - 2] + 1);
+      }
+    }
+  }
+  return scores[left.length][right.length];
+}
+
+function oneEditShortNames(detector: EntityDetector, word: string): string[] {
+  const found: string[] = [];
+  for (const entity of detector.detect(word)) {
+    const forms = [entity.name, ...entity.aliases].flatMap((name) => spokenForms(name));
+    if (forms.some((form) => form.split(" ").includes(word))) continue;
+    for (const token of new Set(forms.flatMap((form) => form.split(" ")))) {
+      if (token.length >= DETECTION_TUNING.minFuzzyChars || token.length < DETECTION_TUNING.minWordChars) continue;
+      if (token[0] !== word[0]) continue;
+      const maxLetters = Math.max(token.length, word.length);
+      if (Math.min(token.length, word.length) / maxLetters < DETECTION_TUNING.minLengthRatio) continue;
+      if (editDistance(token, word) !== 1) continue;
+      found.push(entity.name);
+      break;
+    }
+  }
+  return found;
+}
 
 const bonusSuffix = (): RegExp => new RegExp(DETECTION_TUNING.bonusSuffix, "gi");
 
@@ -44,6 +80,7 @@ const srdEntity = (name: string, index: number): Entity => ({
   type: "NPC" as EntityType,
   aliases: [],
   summary: "",
+  catalog: true,
 });
 
 describe("default index", () => {
@@ -193,6 +230,58 @@ describe("default index", () => {
   ])("does not turn the everyday word %s into a short name", (transcript) => {
     expect(names(transcript)).toEqual([]);
   });
+
+  it.each([
+    "she wore a grey cloak",
+    "tie the ropes and climb",
+    "play the harp",
+    "hardy folk",
+    "don't drown the captive",
+    "ogle",
+    "lama",
+    "kale",
+    "keel",
+    "mire",
+    "liar",
+    "lire",
+    "bran",
+  ])("does not one-edit the ordinary wording in %s", (transcript) => {
+    expect(names(transcript)).toEqual([]);
+  });
+
+  it("does not one-edit any four- to six-letter English word into a short name", () => {
+    const short = new EntityDetector(
+      ingestMarkdownContent(`
+# Gorm
+**Type:** NPC
+
+# Kael
+**Type:** NPC
+
+# Vex
+**Type:** NPC
+
+# Lira
+**Type:** NPC
+
+# Tor
+**Type:** NPC
+
+# Bryn
+**Type:** NPC
+
+# Mira
+**Type:** NPC
+`),
+    );
+    const misses: string[] = [];
+    for (const word of englishWords()) {
+      for (const name of oneEditShortNames(detector, word)) misses.push(`default ${word} -> ${name}`);
+      for (const name of oneEditShortNames(short, word)) misses.push(`notes ${word} -> ${name}`);
+      if (misses.length >= 30) break;
+    }
+    expect(misses).toEqual([]);
+  }, 120_000);
 
   it.each([
     ["Gorn", "Gorm Ironfist"],

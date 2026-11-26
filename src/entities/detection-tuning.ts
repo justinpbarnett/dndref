@@ -1,5 +1,3 @@
-import { isCommonWord } from "./common-words";
-
 /**
  * How detection is tuned.
  *
@@ -8,7 +6,7 @@ import { isCommonWord } from "./common-words";
  * quiet, `shortNameMaxEdits` is the whole budget below that length, and
  * `carryOverChars` only matters because `intervalMs` cuts the transcript into
  * passes that a spoken name can straddle. Tuning detection means editing this
- * file. Whether a short word is ordinary speech also consults `common-words.ts`.
+ * file. Whether a spoken word is English consults `common-words.ts`.
  *
  * All of it governs fuzzy matching, which is how the app matches by default.
  * A ruleset that asks for exact matching takes none of these: exact matching
@@ -26,17 +24,17 @@ export const DETECTION_TUNING = {
   minWordChars: 4,
 
   /**
-   * Below this length a misspelling is allowed only for a distinctive name,
-   * and only up to `shortNameMaxEdits`. One edit of an ordinary four-letter
-   * word is another word ("mage" / "make"), so the open budget stays here.
+   * Below this length a name from the table's own notes may take a
+   * `shortNameMaxEdits` edit, and only when the spoken word is not English.
+   * The SRD catalog is standard spelling and takes none of that edit.
    */
   minFuzzyChars: 6,
 
   /**
-   * Edits a name shorter than `minFuzzyChars` may absorb when neither side is
-   * ordinary speech: one substitution, one doubled letter, or one dropped
-   * letter. The first letter still has to agree. A dropped letter that leaves
-   * fewer than `minWordChars` is never searched.
+   * Edits a notes name shorter than `minFuzzyChars` may absorb when the
+   * spoken word is not in `common-words.ts`: one substitution, one doubled
+   * letter, or one dropped letter. The first letter still has to agree.
+   * A dropped letter that leaves fewer than `minWordChars` is never searched.
    */
   shortNameMaxEdits: 1,
 
@@ -109,15 +107,14 @@ export const DETECTION_TUNING = {
   /**
    * A one-word alias, or an article plus one word, built from these is ordinary
    * speech. It does not fire when the word was cut from the entity's own title
-   * ("order" from The Dawnwarden Order, "compact" from The Obsidian Compact) or
-   * written as a common noun ("the ruins", "the blacksmith").
-   * `genuineOrdinaryAlias` is the exception: the notes wrote a determiner plus
-   * a proper noun, and that word is not in the title ("the Order" for a faction
-   * headed something else). The article stays on the phrase, so the bare word
-   * still does not match. A proper name ("Malachar") and a multi-word alias
-   * ("Dawnwarden Order", "grey mage") still match. Catalog names that happen to
-   * be ordinary words (Solar, Noble, Scout, Pony) are names, not aliases, and
-   * are left alone.
+   * ("order" from The Dawnwarden Order, "compact" from The Obsidian Compact).
+   * `genuineOrdinaryAlias` is the exception, and case does not matter: the notes
+   * wrote a determiner plus one of these words, and that word is not in the
+   * title ("the order" or "the Order" for a faction headed something else).
+   * The article stays on the phrase, so the bare word still does not match.
+   * A proper name ("Malachar") and a multi-word alias ("Dawnwarden Order",
+   * "grey mage") still match. Catalog names that happen to be ordinary words
+   * (Solar, Noble, Scout, Pony) are names, not aliases, and are left alone.
    */
   ordinaryAliasWords: [
     "blade",
@@ -133,34 +130,6 @@ export const DETECTION_TUNING = {
   ],
 
   /**
-   * English words of four or five letters that `common-words.ts` does not
-   * contain. A short name that is one of these takes no edit, and a transcript
-   * word that is one of these does not become a name. "germ" is one edit from
-   * Gorm. "mage" and "pony" are ordinary names a typo must not invent.
-   */
-  extraCommonWords: [
-    "boar",
-    "crab",
-    "druid",
-    "dryad",
-    "germ",
-    "ghoul",
-    "gory",
-    "hyena",
-    "lich",
-    "mage",
-    "mule",
-    "mummy",
-    "pony",
-    "raven",
-    "ruins",
-    "spire",
-    "thug",
-    "troll",
-    "vale",
-  ],
-
-  /**
    * How much of the transcript tail carries into the next pass, so a name
    * spoken across a pass boundary is still searched as one phrase.
    */
@@ -169,11 +138,6 @@ export const DETECTION_TUNING = {
 
 const articles = new Set<string>(DETECTION_TUNING.articles);
 const ordinaryAliasWords = new Set<string>(DETECTION_TUNING.ordinaryAliasWords);
-const ordinarySpeech = new Set<string>([
-  ...DETECTION_TUNING.ordinaryAliasWords,
-  ...DETECTION_TUNING.ordinaryLeadingWords,
-  ...DETECTION_TUNING.extraCommonWords,
-]);
 
 const wordTokens = (text: string): string[] =>
   text
@@ -183,14 +147,10 @@ const wordTokens = (text: string): string[] =>
     .split(/[^A-Za-z]+/)
     .filter(Boolean);
 
-export const isOrdinarySpeech = (word: string): boolean => ordinarySpeech.has(word) || isCommonWord(word);
-
 export function genuineOrdinaryAlias(alias: string, entityName: string): string | null {
   const tokens = wordTokens(alias);
   if (tokens.length !== 2 || !articles.has(tokens[0].toLowerCase())) return null;
-  const proper = tokens[1];
-  const word = proper.toLowerCase();
-  if (proper[0] === proper[0].toLowerCase()) return null;
+  const word = tokens[1].toLowerCase();
   if (!ordinaryAliasWords.has(word)) return null;
   if (wordTokens(entityName).some((token) => token.toLowerCase() === word)) return null;
   return `${tokens[0].toLowerCase()} ${word}`;
