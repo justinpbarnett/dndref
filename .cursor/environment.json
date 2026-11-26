@@ -1,0 +1,4 @@
+{
+  "name": "dndref",
+  "install": "[ ! -d '/agent/repos/dndref' ] || cd '/agent/repos/dndref' || exit $?\nbash .cursor/install.sh"
+}
