@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addCard, MAX_CARDS } from "./card-stack";
+import { addCard, addRankedCards, MAX_CARDS } from "./card-stack";
 import type { CardState } from "./session-types";
 import type { Entity } from "../entities/index";
 
@@ -52,5 +52,138 @@ describe("addCard", () => {
     const cards = [makeCard("valdrath")];
 
     expect(addCard(cards, makeEntity("valdrath"))).toBe(cards);
+  });
+});
+
+const rankedHits = ["guard", "mage", "cubic-gate", "planetar", "assassin", "spell-scroll", "killer-whale"].map(
+  makeEntity,
+);
+
+describe("addRankedCards", () => {
+  it("keeps the strongest matches when a pass returns more hits than the stack holds", () => {
+    const next = addRankedCards([], rankedHits);
+
+    expect(next).toHaveLength(MAX_CARDS);
+    expect(next.map((card) => card.entity.id)).toEqual([
+      "spell-scroll",
+      "assassin",
+      "planetar",
+      "cubic-gate",
+      "mage",
+      "guard",
+    ]);
+  });
+
+  it("keeps a card already showing when it is one of the strongest hits", () => {
+    const guard = makeCard("guard");
+
+    const next = addRankedCards([guard], rankedHits);
+
+    expect(next).toHaveLength(MAX_CARDS);
+    expect(next.find((card) => card.entity.id === "guard")).toBe(guard);
+    expect(next.map((card) => card.entity.id)).not.toContain("killer-whale");
+  });
+
+  it("keeps pinned cards and spends the open slots on the strongest hits", () => {
+    const pinned = makeCard("pinned", true);
+
+    const next = addRankedCards([pinned, makeCard("stale")], rankedHits);
+
+    expect(next[0]).toBe(pinned);
+    expect(next.map((card) => card.entity.id)).toEqual([
+      "pinned",
+      "assassin",
+      "planetar",
+      "cubic-gate",
+      "mage",
+      "guard",
+    ]);
+  });
+
+  it("evicts the rightmost unpinned card when one new hit arrives on a full stack", () => {
+    const cards = [...fill(MAX_CARDS - 1, true), makeCard("evictable")];
+
+    const next = addRankedCards(cards, [makeEntity("newcomer")]);
+
+    expect(next.map((card) => card.entity.id)).toEqual([
+      ...fill(MAX_CARDS - 1, true).map((card) => card.entity.id),
+      "newcomer",
+    ]);
+  });
+
+  it("leaves a full stack of pinned cards unchanged", () => {
+    const full = fill(MAX_CARDS, true);
+
+    expect(addRankedCards(full, [makeEntity("newcomer")])).toBe(full);
+  });
+
+  it("returns the same stack when the pass names only cards already showing", () => {
+    const cards = [makeCard("guard")];
+
+    expect(addRankedCards(cards, [makeEntity("guard")])).toBe(cards);
+  });
+
+  it("keeps already-showing keepers when a stronger new hit arrives on a full stack", () => {
+    const stack = ["killer-whale", "spell-scroll", "assassin", "planetar", "cubic-gate", "guard"].map((id) =>
+      makeCard(id),
+    );
+
+    const next = addRankedCards(stack, rankedHits);
+
+    expect(next.map((card) => card.entity.id)).toEqual([
+      "mage",
+      "spell-scroll",
+      "assassin",
+      "planetar",
+      "cubic-gate",
+      "guard",
+    ]);
+    for (const id of ["spell-scroll", "assassin", "planetar", "cubic-gate", "guard"]) {
+      expect(next.find((card) => card.entity.id === id)).toBe(stack.find((card) => card.entity.id === id));
+    }
+  });
+
+  it("keeps a later hit in the same pass when one stronger new hit needs a seat", () => {
+    const stack = ["killer-whale", "spell-scroll", "assassin", "planetar", "cubic-gate", "guard"].map((id) =>
+      makeCard(id),
+    );
+    const pass = ["guard", "mage", "cubic-gate"].map(makeEntity);
+
+    const next = addRankedCards(stack, pass);
+
+    expect(next.map((card) => card.entity.id)).toEqual([
+      "mage",
+      "killer-whale",
+      "spell-scroll",
+      "assassin",
+      "cubic-gate",
+      "guard",
+    ]);
+    for (const id of ["killer-whale", "spell-scroll", "assassin", "cubic-gate", "guard"]) {
+      expect(next.find((card) => card.entity.id === id)).toBe(stack.find((card) => card.entity.id === id));
+    }
+  });
+
+  it("keeps pinned cards and already-showing keepers when the pass overflows", () => {
+    const pinned = makeCard("pinned", true);
+    const stack = [
+      pinned,
+      ...["killer-whale", "spell-scroll", "assassin", "planetar", "guard"].map((id) => makeCard(id)),
+    ];
+
+    const next = addRankedCards(stack, rankedHits);
+
+    expect(next[0]).toBe(pinned);
+    expect(next.map((card) => card.entity.id)).toEqual([
+      "pinned",
+      "cubic-gate",
+      "mage",
+      "assassin",
+      "planetar",
+      "guard",
+    ]);
+    for (const id of ["assassin", "planetar", "guard"]) {
+      expect(next.find((card) => card.entity.id === id)).toBe(stack.find((card) => card.entity.id === id));
+    }
   });
 });

@@ -153,6 +153,52 @@ describe("SessionRuntime", () => {
     expect(runtime.getSnapshot().recentDetections).toBe(firstRecentDetections);
   });
 
+  it("keeps the strongest matches when one pass returns more hits than the stack holds", () => {
+    const ranked = ["guard", "mage", "cubic-gate", "planetar", "assassin", "spell-scroll", "killer-whale"].map((id) =>
+      makeEntity(id, id),
+    );
+    const runtime = new SessionRuntime();
+
+    runtime.setDetector(new FakeDetector(() => ranked));
+    runtime.activate();
+    runtime.appendTranscript("seven hits in one pass");
+    runtime.processTranscript();
+
+    expect(runtime.getSnapshot().cards.map((card) => card.entity.id)).toEqual([
+      "spell-scroll",
+      "assassin",
+      "planetar",
+      "cubic-gate",
+      "mage",
+      "guard",
+    ]);
+    expect(runtime.getSnapshot().recentDetections).toEqual(ranked);
+  });
+
+  it("does not evict a stronger card already showing to seat a weaker hit from the same pass", () => {
+    const guard = makeEntity("guard", "Guard");
+    const rest = ["mage", "cubic-gate", "planetar", "assassin", "spell-scroll", "killer-whale"].map((id) =>
+      makeEntity(id, id),
+    );
+    let hits = [guard];
+    const runtime = new SessionRuntime();
+
+    runtime.setDetector(new FakeDetector(() => hits));
+    runtime.activate();
+    runtime.appendTranscript("guard");
+    runtime.processTranscript();
+    const guardCard = runtime.getSnapshot().cards[0];
+
+    hits = [guard, ...rest];
+    runtime.appendTranscript("and six weaker hits");
+    runtime.processTranscript();
+
+    const cards = runtime.getSnapshot().cards;
+    expect(cards).toHaveLength(6);
+    expect(cards.find((card) => card.entity.id === "guard")).toBe(guardCard);
+    expect(cards.map((card) => card.entity.id)).not.toContain("killer-whale");
+  });
+
   it("adds detected entities to the card stack and recent detections", () => {
     const valdrath = makeEntity("valdrath", "Valdrath the Undying");
     const malachar = makeEntity("malachar", "Malachar the Grey");
