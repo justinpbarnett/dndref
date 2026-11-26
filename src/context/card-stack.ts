@@ -30,18 +30,29 @@ export function addCard(cards: CardState[], entity: Entity): CardState[] {
 }
 
 export function addRankedCards(cards: CardState[], rankedBestFirst: Entity[]): CardState[] {
-  const spared = new Set<string>();
-  let next = cards;
+  const pinned = cards.filter((card) => card.pinned);
+  const unpinnedSeats = Math.max(0, MAX_CARDS - pinned.length);
+  const showing = new Set(cards.map((card) => card.entity.id));
+  const keptIds = new Set(pinned.map((card) => card.entity.id));
+
+  const keptRanked: Entity[] = [];
   for (const entity of rankedBestFirst) {
-    if (next.some((card) => card.entity.id === entity.id)) {
-      spared.add(entity.id);
-      continue;
-    }
-    const placed = insertCard(next, entity, (card) => spared.has(card.entity.id));
-    if (placed === next) return next;
-    spared.add(entity.id);
-    next = placed;
+    if (keptIds.has(entity.id)) continue;
+    if (keptRanked.length >= unpinnedSeats) break;
+    keptRanked.push(entity);
+    keptIds.add(entity.id);
   }
+
+  const staleRoom = unpinnedSeats - keptRanked.length;
+  for (const card of cards.filter((card) => !keptIds.has(card.entity.id)).slice(0, staleRoom)) {
+    keptIds.add(card.entity.id);
+  }
+
+  const newcomers = keptRanked.filter((entity) => !showing.has(entity.id));
+  if (newcomers.length === 0 && cards.every((card) => keptIds.has(card.entity.id))) return cards;
+
+  let next = cards.filter((card) => keptIds.has(card.entity.id));
+  for (const entity of newcomers) next = insertCard(next, entity, (card) => keptIds.has(card.entity.id));
   return next;
 }
 

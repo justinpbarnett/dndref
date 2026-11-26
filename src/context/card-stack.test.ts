@@ -122,4 +122,68 @@ describe("addRankedCards", () => {
 
     expect(addRankedCards(cards, [makeEntity("guard")])).toBe(cards);
   });
+
+  it("keeps already-showing keepers when a stronger new hit arrives on a full stack", () => {
+    const stack = ["killer-whale", "spell-scroll", "assassin", "planetar", "cubic-gate", "guard"].map((id) =>
+      makeCard(id),
+    );
+
+    const next = addRankedCards(stack, rankedHits);
+
+    expect(next.map((card) => card.entity.id)).toEqual([
+      "mage",
+      "spell-scroll",
+      "assassin",
+      "planetar",
+      "cubic-gate",
+      "guard",
+    ]);
+    for (const id of ["spell-scroll", "assassin", "planetar", "cubic-gate", "guard"]) {
+      expect(next.find((card) => card.entity.id === id)).toBe(stack.find((card) => card.entity.id === id));
+    }
+  });
+
+  it("keeps a later hit in the same pass when one stronger new hit needs a seat", () => {
+    const stack = ["killer-whale", "spell-scroll", "assassin", "planetar", "cubic-gate", "guard"].map((id) =>
+      makeCard(id),
+    );
+    const pass = ["guard", "mage", "cubic-gate"].map(makeEntity);
+
+    const next = addRankedCards(stack, pass);
+
+    expect(next.map((card) => card.entity.id)).toEqual([
+      "mage",
+      "killer-whale",
+      "spell-scroll",
+      "assassin",
+      "cubic-gate",
+      "guard",
+    ]);
+    for (const id of ["killer-whale", "spell-scroll", "assassin", "cubic-gate", "guard"]) {
+      expect(next.find((card) => card.entity.id === id)).toBe(stack.find((card) => card.entity.id === id));
+    }
+  });
+
+  it("keeps pinned cards and already-showing keepers when the pass overflows", () => {
+    const pinned = makeCard("pinned", true);
+    const stack = [
+      pinned,
+      ...["killer-whale", "spell-scroll", "assassin", "planetar", "guard"].map((id) => makeCard(id)),
+    ];
+
+    const next = addRankedCards(stack, rankedHits);
+
+    expect(next[0]).toBe(pinned);
+    expect(next.map((card) => card.entity.id)).toEqual([
+      "pinned",
+      "cubic-gate",
+      "mage",
+      "assassin",
+      "planetar",
+      "guard",
+    ]);
+    for (const id of ["assassin", "planetar", "guard"]) {
+      expect(next.find((card) => card.entity.id === id)).toBe(stack.find((card) => card.entity.id === id));
+    }
+  });
 });
