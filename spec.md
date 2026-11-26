@@ -101,7 +101,7 @@ Not NLP. Each spoken phrase is compared with the loaded names and aliases:
 - A spoken form of a punctuated title. A trailing `, +1, +2, or +3` is dropped, a parenthetical is indexed both without the parentheses and as the text inside them, a slash is indexed as both sides, and apostrophes are dropped the way exact matching drops them (`will o wisp`, `will-o-wisp`, and `will-o'-wisp` all meet).
 - An unqualified color ("red dragon") is the adult. Young, ancient, and wyrmling match when that age is spoken.
 
-The longest match owns its span, so "dire wolf" does not also raise Wolf and "wand of the war mage" does not also raise Mage. A one-word alias that is ordinary speech ("the order", "compact") does not fire. A proper name or a multi-word alias does. A catalog name that is itself an ordinary word (Solar, Noble, Scout, Pony) still matches.
+The longest match owns its span, so "dire wolf" does not also raise Wolf and "wand of the war mage" does not also raise Mage. A one-word alias that is ordinary speech does not fire when it is a nickname cut from the title ("the order" for The Dawnwarden Order, "compact") or a lowercase common noun ("the ruins"). The same words fire when the notes write them as a determiner plus a proper noun that the title does not contain ("the Order" for some other faction), and the article stays part of the phrase. A name shorter than the usual misspelling length takes one edit when neither side is an ordinary word, so "Gorn" can be Gorm and "make" cannot be Mage. A catalog name that is itself an ordinary word (Solar, Noble, Scout, Pony) still matches.
 
 Runs every 2 seconds on only the _new_ transcript text since the last check (`processedUpToRef`), plus a short tail so a name split across the boundary is still seen.
 

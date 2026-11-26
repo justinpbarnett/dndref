@@ -108,6 +108,9 @@ describe("default index", () => {
     "the blade",
     "the blacksmith",
     "the fortress",
+    "the spire",
+    "the vale",
+    "the compact",
   ])("raises nothing for the ordinary alias in %s", (transcript) => {
     expect(names(transcript)).toEqual([]);
   });
@@ -169,6 +172,36 @@ describe("default index", () => {
     expect(names("bandit captain")).toEqual(["Bandit Captain"]);
     expect(names("wolf")).toEqual(["Wolf"]);
     expect(names("bandit")).toEqual(["Bandit"]);
+  });
+
+  it.each([
+    "germ",
+    "gore",
+    "gory",
+    "form",
+    "make",
+    "made",
+    "maeg",
+    "card",
+    "yard",
+    "gaurd",
+    "pond",
+    "poin",
+    "draw",
+    "word",
+    "boat",
+  ])("does not turn the everyday word %s into a short name", (transcript) => {
+    expect(names(transcript)).toEqual([]);
+  });
+
+  it.each([
+    ["Gorn", "Gorm Ironfist"],
+    ["Gormm", "Gorm Ironfist"],
+    ["Goorm", "Gorm Ironfist"],
+    ["Valdrat", "Valdrath the Undying"],
+    ["Valdrathh", "Valdrath the Undying"],
+  ])("hears the misheard short name %s as %s", (transcript, expected) => {
+    expect(names(transcript)).toEqual([expected]);
   });
 
   it.each(["solar", "noble", "scout", "pony"])("still hears the one-word catalog name %s", (transcript) => {

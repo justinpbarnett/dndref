@@ -1,5 +1,5 @@
 import { DEFAULT_MATCHING_MODE, type MatchingMode } from "./detection-mode";
-import { DETECTION_TUNING } from "./detection-tuning";
+import { DETECTION_TUNING, genuineOrdinaryAlias, isOrdinarySpeech } from "./detection-tuning";
 import { exactDetection } from "./exact-detection";
 
 import { Entity, EntityIndex, TranscriptMatcher } from "./index";
@@ -70,10 +70,16 @@ function wordClose(spoken: string, indexed: string): boolean {
   if (spoken[0] !== indexed[0]) return false;
   const spokenLetters = letterCount(spoken);
   const indexedLetters = letterCount(indexed);
-  if (indexedLetters < DETECTION_TUNING.minFuzzyChars || spokenLetters < DETECTION_TUNING.minWordChars) return false;
+  if (spokenLetters < DETECTION_TUNING.minWordChars) return false;
   const maxLetters = Math.max(spokenLetters, indexedLetters);
   const minLetters = Math.min(spokenLetters, indexedLetters);
   if (minLetters / maxLetters < DETECTION_TUNING.minLengthRatio) return false;
+  if (indexedLetters < DETECTION_TUNING.minFuzzyChars) {
+    if (indexedLetters < DETECTION_TUNING.minWordChars) return false;
+    if (isOrdinarySpeech(spoken) || isOrdinarySpeech(indexed)) return false;
+    const distance = editDistance(spoken, indexed);
+    return distance > 0 && distance <= DETECTION_TUNING.shortNameMaxEdits;
+  }
   const distance = editDistance(spoken, indexed);
   return distance > 0 && distance <= Math.floor(maxLetters * DETECTION_TUNING.maxEditRatio);
 }
@@ -177,6 +183,8 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
         claim(key, entity);
         addFuzzy(key, entity);
       }
+      const genuine = genuineOrdinaryAlias(alias, entity.name);
+      if (genuine) claim(genuine, entity);
     }
   }
 
