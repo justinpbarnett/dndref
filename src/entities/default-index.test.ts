@@ -10,6 +10,34 @@ import type { Entity, EntityType } from "./index";
 
 const letterCount = (value: string): number => value.replace(/[^a-z]/gi, "").length;
 
+const bonusSuffix = (): RegExp => new RegExp(DETECTION_TUNING.bonusSuffix, "gi");
+
+const normalizeSpoken = (text: string): string =>
+  text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/['\u2019]/g, "")
+    .replace(bonusSuffix(), " ")
+    .replace(/[^a-z]+/g, " ")
+    .trim();
+
+const spokenForms = (name: string): string[] => {
+  const forms = new Set<string>();
+  const stripped = name.replace(bonusSuffix(), " ");
+  forms.add(normalizeSpoken(stripped.replace(/\([^)]*\)/g, " ")));
+  for (const match of stripped.matchAll(/\(([^)]*)\)/g)) {
+    for (const part of match[1].split("/")) forms.add(normalizeSpoken(part));
+  }
+  if (!stripped.includes("(") && stripped.includes("/")) {
+    for (const part of stripped.split("/")) forms.add(normalizeSpoken(part));
+  }
+  const adult = new RegExp(`^${DETECTION_TUNING.unqualifiedDragonAge} ([a-z]+) dragon$`, "i").exec(name);
+  if (adult) forms.add(`${adult[1].toLowerCase()} dragon`);
+  forms.delete("");
+  return [...forms];
+};
+
 const srdEntity = (name: string, index: number): Entity => ({
   id: `srd-${index}`,
   name,
@@ -62,14 +90,30 @@ describe("default index", () => {
     "order",
     "blacksmith",
     "purple",
-    "weapon",
     "winter",
   ])("raises nothing for %s", (transcript) => {
     expect(names(transcript)).toEqual([]);
   });
 
-  it("hears the mage in grey mage and the person who goes by that name", () => {
-    expect(names("grey mage")).toEqual(["Mage", "Malachar the Grey"]);
+  it.each([
+    "I gave the order to retreat and keep the formation compact.",
+    "The crown of the hill is bare, and the ruins below are older than the town.",
+    "A blade of grass is stuck to the grey cloak.",
+    "in the order they arrived",
+    "the order",
+    "compact",
+    "the crown",
+    "the grey",
+    "the ruins",
+    "the blade",
+    "the blacksmith",
+    "the fortress",
+  ])("raises nothing for the ordinary alias in %s", (transcript) => {
+    expect(names(transcript)).toEqual([]);
+  });
+
+  it("hears grey mage as the person, not the monster inside that name", () => {
+    expect(names("grey mage")).toEqual(["Malachar the Grey"]);
   });
 
   it("does not spend the possessive sentence on Crown of Ashes", () => {
@@ -84,10 +128,11 @@ describe("default index", () => {
   });
 
   it.each([
-    ["the blacksmith", "Gorm Ironfist"],
-    ["the Order", "The Dawnwarden Order"],
-    ["the blade", "The Sundering Blade"],
-    ["the ruins", "Thornwall"],
+    ["Gorm", "Gorm Ironfist"],
+    ["Dawnwarden Order", "The Dawnwarden Order"],
+    ["Sundering Blade", "The Sundering Blade"],
+    ["Thornwall", "Thornwall"],
+    ["Malachar", "Malachar the Grey"],
     ["Valdrath the Undying approaches the throne", "Valdrath the Undying"],
     ["we entered Ironspire through the eastern gate", "Ironspire Fortress"],
     ["Seraphine briefed us on the mission", "Lady Seraphine Voss"],
@@ -101,12 +146,63 @@ describe("default index", () => {
     expect(names(transcript)).toContain(expected);
   });
 
-  it("detects every loaded name that is long enough to be searched", () => {
-    const missed = entities
-      .filter((entity) => letterCount(entity.name) >= DETECTION_TUNING.minWordChars)
-      .filter((entity) => !detector.detect(entity.name).some((hit) => hit.id === entity.id))
-      .map((entity) => entity.name);
+  it.each([
+    ["wand of the war mage", "Wand of the War Mage, +1, +2, or +3"],
+    ["Wand of the War Mage, +1, +2, or +3", "Wand of the War Mage, +1, +2, or +3"],
+    ["weapon", "Weapon, +1, +2, or +3"],
+    ["+1 weapon", "Weapon, +1, +2, or +3"],
+    ["deep gnome", "Deep Gnome (Svirfneblin)"],
+    ["svirfneblin", "Deep Gnome (Svirfneblin)"],
+    ["stone of good luck", "Stone of Good Luck (Luckstone)"],
+    ["luckstone", "Stone of Good Luck (Luckstone)"],
+    ["succubus", "Succubus/Incubus"],
+    ["incubus", "Succubus/Incubus"],
+    ["will-o-wisp", "Will-o'-Wisp"],
+    ["will o wisp", "Will-o'-Wisp"],
+    ["will-o'-wisp", "Will-o'-Wisp"],
+  ])("speaks %s as %s", (transcript, expected) => {
+    expect(names(transcript)).toEqual([expected]);
+  });
 
+  it("does not add the shorter name inside a longer one", () => {
+    expect(names("dire wolf")).toEqual(["Dire Wolf"]);
+    expect(names("bandit captain")).toEqual(["Bandit Captain"]);
+    expect(names("wolf")).toEqual(["Wolf"]);
+    expect(names("bandit")).toEqual(["Bandit"]);
+  });
+
+  it.each(["solar", "noble", "scout", "pony"])("still hears the one-word catalog name %s", (transcript) => {
+    const title = transcript[0].toUpperCase() + transcript.slice(1);
+    expect(names(transcript)).toEqual([title]);
+  });
+
+  it.each(["black", "blue", "brass", "bronze", "copper", "gold", "green", "red", "silver", "white"])(
+    "treats %s dragon as the adult",
+    (color) => {
+      const title = color[0].toUpperCase() + color.slice(1);
+      expect(names(`${color} dragon`)).toEqual([`Adult ${title} Dragon`]);
+    },
+  );
+
+  it("keeps an age that was actually spoken", () => {
+    expect(names("Young Red Dragon")).toEqual(["Young Red Dragon"]);
+    expect(names("ancient white dragon")).toEqual(["Ancient White Dragon"]);
+    expect(names("red dragon wyrmling")).toEqual(["Red Dragon Wyrmling"]);
+    expect(names("half red dragon veteran")).toEqual(["Half-Red Dragon Veteran"]);
+  });
+
+  it("detects every loaded name and the form a person would say", () => {
+    const missed: string[] = [];
+    for (const entity of entities) {
+      const named =
+        letterCount(entity.name) >= DETECTION_TUNING.minWordChars &&
+        detector.detect(entity.name).some((hit) => hit.id === entity.id);
+      if (!named && letterCount(entity.name) >= DETECTION_TUNING.minWordChars) missed.push(entity.name);
+      for (const form of spokenForms(entity.name)) {
+        if (letterCount(form) < DETECTION_TUNING.minWordChars) continue;
+        if (!detector.detect(form).some((hit) => hit.id === entity.id)) missed.push(`${form} -> ${entity.name}`);
+      }
+    }
     expect(missed).toEqual([]);
   });
 });

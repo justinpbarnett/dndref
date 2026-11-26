@@ -7,17 +7,39 @@ import { Entity, EntityIndex, TranscriptMatcher } from "./index";
 const articles = new Set<string>(DETECTION_TUNING.articles);
 const compoundMarkers = new Set<string>(DETECTION_TUNING.compoundMarkers);
 const ordinaryLeadingWords = new Set<string>(DETECTION_TUNING.ordinaryLeadingWords);
+const ordinaryAliasWords = new Set<string>(DETECTION_TUNING.ordinaryAliasWords);
 
 const letterCount = (value: string): number => value.replace(/[^a-z]/g, "").length;
 
-const tokenize = (text: string): string[] =>
-  text
+const bonusSuffix = (): RegExp => new RegExp(DETECTION_TUNING.bonusSuffix, "gi");
+
+function spokenWords(text: string): string[] {
+  return text
     .toLowerCase()
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
-    .replace(/\u2019/g, "'")
-    .split(/[^a-z']+/)
+    .replace(/['\u2019]/g, "")
+    .replace(bonusSuffix(), " ")
+    .split(/[^a-z]+/)
     .filter(Boolean);
+}
+
+function spokenKeys(name: string): string[] {
+  const keys = new Set<string>();
+  const stripped = name.replace(bonusSuffix(), " ");
+  const add = (text: string) => {
+    const norm = spokenWords(text).join(" ");
+    if (norm) keys.add(norm);
+  };
+  add(stripped.replace(/\([^)]*\)/g, " "));
+  for (const match of stripped.matchAll(/\(([^)]*)\)/g)) {
+    for (const part of match[1].split("/")) add(part);
+  }
+  if (!stripped.includes("(") && stripped.includes("/")) {
+    for (const part of stripped.split("/")) add(part);
+  }
+  return [...keys];
+}
 
 function editDistance(left: string, right: string): number {
   if (left === right) return 0;
@@ -44,6 +66,7 @@ function editDistance(left: string, right: string): number {
 
 function wordClose(spoken: string, indexed: string): boolean {
   if (spoken === indexed) return true;
+  if (spoken === `${indexed}s` || indexed === `${spoken}s`) return false;
   if (spoken[0] !== indexed[0]) return false;
   const spokenLetters = letterCount(spoken);
   const indexedLetters = letterCount(indexed);
@@ -57,20 +80,20 @@ function wordClose(spoken: string, indexed: string): boolean {
 
 function phraseClose(spoken: string, indexed: string): boolean {
   if (spoken === indexed) return false;
-  const spokenWords = spoken.split(" ");
+  const spokenWordsOfPhrase = spoken.split(" ");
   const indexedWords = indexed.split(" ");
-  if (spokenWords.length !== indexedWords.length) return false;
+  if (spokenWordsOfPhrase.length !== indexedWords.length) return false;
   let edits = 0;
-  for (let i = 0; i < spokenWords.length; i++) {
-    if (spokenWords[i] === indexedWords[i]) continue;
-    if (!wordClose(spokenWords[i], indexedWords[i])) return false;
-    edits += editDistance(spokenWords[i], indexedWords[i]);
+  for (let i = 0; i < spokenWordsOfPhrase.length; i++) {
+    if (spokenWordsOfPhrase[i] === indexedWords[i]) continue;
+    if (!wordClose(spokenWordsOfPhrase[i], indexedWords[i])) return false;
+    edits += editDistance(spokenWordsOfPhrase[i], indexedWords[i]);
   }
   return edits > 0;
 }
 
 function leadingWord(name: string): string | null {
-  const words = tokenize(name);
+  const words = spokenWords(name.replace(/\([^)]*\)/g, " "));
   if (words.some((word) => compoundMarkers.has(word))) return null;
   const content = words.filter((word) => !articles.has(word));
   if (content.length !== 2) return null;
@@ -82,7 +105,18 @@ function leadingWord(name: string): string | null {
   return first;
 }
 
+function dragonColor(name: string): string | null {
+  const match = new RegExp(`^${DETECTION_TUNING.unqualifiedDragonAge} ([a-z]+) dragon$`, "i").exec(name.trim());
+  return match ? match[1].toLowerCase() : null;
+}
+
+function ordinaryAlias(norm: string): boolean {
+  const content = norm.split(" ").filter((word) => !articles.has(word));
+  return content.length === 1 && ordinaryAliasWords.has(content[0]);
+}
+
 type IndexedTerm = { norm: string; entity: Entity };
+type Hit = { entity: Entity; score: number };
 
 export class EntityDetector {
   private readonly matchTranscript: TranscriptMatcher;
@@ -118,8 +152,7 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
     (fuzzyByWidth[width] ??= []).push({ norm, entity });
   };
 
-  const addName = (name: string, entity: Entity) => {
-    const norm = tokenize(name).join(" ");
+  const claimName = (norm: string, entity: Entity) => {
     claim(norm, entity);
     addFuzzy(norm, entity);
     const parts = norm.split(" ");
@@ -128,16 +161,22 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
       claim(stripped, entity);
       addFuzzy(stripped, entity);
     }
-    const leading = leadingWord(name);
-    if (leading) standins.push({ norm: leading, entity });
   };
 
-  for (const entity of entities) addName(entity.name, entity);
+  for (const entity of entities) {
+    for (const key of spokenKeys(entity.name)) claimName(key, entity);
+    const color = dragonColor(entity.name);
+    if (color) claimName(`${color} dragon`, entity);
+    const leading = leadingWord(entity.name);
+    if (leading) standins.push({ norm: leading, entity });
+  }
   for (const entity of entities) {
     for (const alias of entity.aliases) {
-      const norm = tokenize(alias).join(" ");
-      claim(norm, entity);
-      addFuzzy(norm, entity);
+      for (const key of spokenKeys(alias)) {
+        if (ordinaryAlias(key)) continue;
+        claim(key, entity);
+        addFuzzy(key, entity);
+      }
     }
   }
 
@@ -145,31 +184,47 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
   for (const key of exact.keys()) longest = Math.max(longest, key.split(" ").length);
 
   return (transcript) => {
-    const words = tokenize(transcript);
-    const found = new Map<string, { entity: Entity; score: number }>();
+    const words = spokenWords(transcript);
+    const found = new Map<string, Hit>();
     const record = (entity: Entity, score: number) => {
       const existing = found.get(entity.id);
       if (!existing || score < existing.score) found.set(entity.id, { entity, score });
     };
 
-    const limit = Math.min(longest, words.length);
-    for (let start = 0; start < words.length; start++) {
-      for (let width = 1; width <= limit && start + width <= words.length; width++) {
-        const key = words.slice(start, start + width).join(" ");
-        if (letterCount(key) < DETECTION_TUNING.minWordChars) continue;
-        for (const entity of exact.get(key) ?? []) record(entity, 0);
-        if (width <= DETECTION_TUNING.maxFuzzyPhraseWords) {
-          for (const term of fuzzyByWidth[width] ?? []) {
-            if (phraseClose(key, term.norm)) record(term.entity, editDistance(key, term.norm));
-          }
+    const hitsAt = (key: string, width: number): Hit[] => {
+      const hits: Hit[] = [];
+      const exactHits = exact.get(key) ?? [];
+      if (exactHits.length > 0) {
+        for (const entity of exactHits) hits.push({ entity, score: 0 });
+      } else if (width <= DETECTION_TUNING.maxFuzzyPhraseWords) {
+        for (const term of fuzzyByWidth[width] ?? []) {
+          if (phraseClose(key, term.norm)) hits.push({ entity: term.entity, score: editDistance(key, term.norm) });
         }
-        if (width === 1) {
-          for (const standin of standins) {
-            if (key === standin.norm) record(standin.entity, 0);
-            else if (wordClose(key, standin.norm)) record(standin.entity, editDistance(key, standin.norm));
+      }
+      if (width === 1) {
+        for (const standin of standins) {
+          if (key === standin.norm) hits.push({ entity: standin.entity, score: 0 });
+          else if (wordClose(key, standin.norm)) {
+            hits.push({ entity: standin.entity, score: editDistance(key, standin.norm) });
           }
         }
       }
+      return hits;
+    };
+
+    for (let index = 0; index < words.length; ) {
+      const room = Math.min(longest, words.length - index);
+      let consumed = 0;
+      for (let width = room; width >= 1; width--) {
+        const key = words.slice(index, index + width).join(" ");
+        if (letterCount(key) < DETECTION_TUNING.minWordChars) continue;
+        const hits = hitsAt(key, width);
+        if (hits.length === 0) continue;
+        for (const hit of hits) record(hit.entity, hit.score);
+        consumed = width;
+        break;
+      }
+      index += consumed || 1;
     }
 
     return [...found.values()]

@@ -31,9 +31,10 @@ export const DETECTION_TUNING = {
 
   /**
    * How much of a word a misspelling may change. One edit in five letters.
-   * Budget is counted on letters, not on spaces or apostrophes, so "gold
-   * dragon" cannot spend the spaces to become "blue dragon", and "Valdrath's"
-   * does not become "Valdrath".
+   * Budget is counted on letters, not on spaces, so "gold dragon" cannot
+   * spend the spaces to become "blue dragon". Apostrophes are dropped on
+   * both sides before this comparison, and a trailing s is not an edit, so
+   * "Valdrath's" still does not become "Valdrath".
    */
   maxEditRatio: 0.2,
 
@@ -62,6 +63,18 @@ export const DETECTION_TUNING = {
   compoundMarkers: ["of"],
 
   /**
+   * Trailing bonus list on a catalog title ("Weapon, +1, +2, or +3"). Stripped
+   * when building the spoken key, so "weapon" and "+1 weapon" both match.
+   */
+  bonusSuffix: String.raw`,\s*\+\d+(?:,\s*\+\d+)*(?:,?\s*or\s*\+\d+)?`,
+
+  /**
+   * "<color> dragon" with no age spoken. Young, ancient, and wyrmling match
+   * only when that age is spoken with them.
+   */
+  unqualifiedDragonAge: "adult",
+
+  /**
    * Leading words that are ordinary speech. They never stand in for a longer
    * title: "purple" does not raise Purple Worm, "awakened" does not raise
    * Awakened Tree. The full title still matches.
@@ -80,6 +93,27 @@ export const DETECTION_TUNING = {
     "spirit",
     "weapon",
     "winter",
+  ],
+
+  /**
+   * A one-word alias, or an article plus one word, does not fire when that
+   * word is ordinary speech. "the order" is not The Dawnwarden Order, and
+   * "compact" is not The Obsidian Compact. A proper name ("Malachar") and a
+   * multi-word alias ("Dawnwarden Order", "grey mage") still match. Catalog
+   * names that happen to be ordinary words (Solar, Noble, Scout, Pony) are
+   * names, not aliases, and are left alone.
+   */
+  ordinaryAliasWords: [
+    "blade",
+    "blacksmith",
+    "compact",
+    "crown",
+    "fortress",
+    "grey",
+    "order",
+    "ruins",
+    "spire",
+    "vale",
   ],
 
   /**
