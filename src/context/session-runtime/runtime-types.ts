@@ -1,8 +1,11 @@
-import type { Entity } from "../../entities/index";
+import type { DetectionMatch, Entity } from "../../entities/index";
 import type { STTProvider, STTSettings } from "../../stt/index";
 import type { CardState, SessionStatus, SttStatus } from "../session-types";
 
-export type SessionRuntimeDetector = { detect(transcript: string): Entity[] };
+export type SessionRuntimeDetector = {
+  detect(transcript: string): Entity[];
+  locate?(transcript: string): DetectionMatch[];
+};
 
 export type SessionRuntimeSnapshot = {
   status: SessionStatus;

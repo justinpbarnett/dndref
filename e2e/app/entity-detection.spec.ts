@@ -45,6 +45,19 @@ test.describe("voice entity detection", () => {
     await expect(page.getByText("Valdrath the Undying")).toHaveCount(1);
   });
 
+  test("a dismissed card stays dismissed when the next line does not say it", async ({ page }) => {
+    await table.say("Valdrath watches from the throne");
+    await expect(page.getByText("Valdrath the Undying")).toBeVisible();
+
+    const card = page.getByTestId("entity-card").filter({ hasText: "Valdrath the Undying" });
+    await card.locator('[aria-label="Dismiss"]').click();
+    await expect(page.getByText("Valdrath the Undying")).not.toBeVisible();
+
+    await table.say("okay what do we do next");
+    await expect(page.getByText("Valdrath the Undying")).not.toBeVisible();
+    await expect(page.getByTestId("entity-card")).toHaveCount(0);
+  });
+
   test("subsequent utterances add to existing cards", async ({ page }) => {
     await table.say("Valdrath on the throne");
     await table.say("Seraphine arrived at the keep");

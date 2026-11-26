@@ -1,8 +1,9 @@
 import { DEFAULT_MATCHING_MODE, type MatchingMode } from "./detection-mode";
 import { DETECTION_TUNING } from "./detection-tuning";
-import { exactDetection } from "./exact-detection";
+import { locateExact } from "./exact-detection";
+import { alignSpokenEnds } from "./match-end";
 
-import { Entity, EntityIndex, TranscriptMatcher } from "./index";
+import { DetectionMatch, Entity, EntityIndex, TranscriptMatcher } from "./index";
 
 const articles = new Set<string>(DETECTION_TUNING.articles);
 const compoundMarkers = new Set<string>(DETECTION_TUNING.compoundMarkers);
@@ -117,20 +118,30 @@ function ordinaryAlias(norm: string): boolean {
 
 type IndexedTerm = { norm: string; entity: Entity };
 type Hit = { entity: Entity; score: number };
+type Found = Hit & { end: number };
 
 export class EntityDetector {
-  private readonly matchTranscript: TranscriptMatcher;
+  private readonly locateTranscript: (transcript: string) => DetectionMatch[];
 
   constructor(entities: EntityIndex, mode: MatchingMode = DEFAULT_MATCHING_MODE) {
-    this.matchTranscript = mode === "exact" ? exactDetection(entities) : fuzzyDetection(entities);
+    this.locateTranscript = mode === "exact" ? locateExact(entities) : locateFuzzy(entities);
   }
 
   detect(transcript: string): Entity[] {
-    return this.matchTranscript(transcript);
+    return this.locate(transcript).map((match) => match.entity);
+  }
+
+  locate(transcript: string): DetectionMatch[] {
+    return this.locateTranscript(transcript);
   }
 }
 
 export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
+  const locate = locateFuzzy(entities);
+  return (transcript) => locate(transcript).map((match) => match.entity);
+}
+
+function locateFuzzy(entities: EntityIndex): (transcript: string) => DetectionMatch[] {
   const exact = new Map<string, Entity[]>();
   const fuzzyByWidth: IndexedTerm[][] = [];
   const standins: IndexedTerm[] = [];
@@ -185,10 +196,19 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
 
   return (transcript) => {
     const words = spokenWords(transcript);
-    const found = new Map<string, Hit>();
-    const record = (entity: Entity, score: number) => {
+    const ends = alignSpokenEnds(transcript, words);
+    const found = new Map<string, Found>();
+    const record = (entity: Entity, score: number, end: number) => {
       const existing = found.get(entity.id);
-      if (!existing || score < existing.score) found.set(entity.id, { entity, score });
+      if (!existing) {
+        found.set(entity.id, { entity, score, end });
+        return;
+      }
+      if (score < existing.score) {
+        existing.entity = entity;
+        existing.score = score;
+      }
+      if (end > existing.end) existing.end = end;
     };
 
     const hitsAt = (key: string, width: number): Hit[] => {
@@ -220,7 +240,8 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
         if (letterCount(key) < DETECTION_TUNING.minWordChars) continue;
         const hits = hitsAt(key, width);
         if (hits.length === 0) continue;
-        for (const hit of hits) record(hit.entity, hit.score);
+        const end = ends[index + width - 1];
+        for (const hit of hits) record(hit.entity, hit.score, end);
         consumed = width;
         break;
       }
@@ -229,6 +250,6 @@ export function fuzzyDetection(entities: EntityIndex): TranscriptMatcher {
 
     return [...found.values()]
       .sort((a, b) => a.score - b.score || a.entity.name.localeCompare(b.entity.name))
-      .map((hit) => hit.entity);
+      .map((hit) => ({ entity: hit.entity, end: hit.end }));
   };
 }

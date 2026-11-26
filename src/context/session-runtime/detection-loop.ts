@@ -6,8 +6,9 @@
  * together. A pass reads only the speech since the last one, and the cursor
  * advances only after the detector has answered, so nothing spoken during a
  * pass is skipped. A name can also arrive split across two passes, so each one
- * is fed the tail of the transcript before it. Whether the rejoined text then
- * matches is the detector's question, not this module's.
+ * is fed the tail of the transcript before it. A match counts only when its
+ * text ends in the speech added since the last pass, so a name that sits
+ * entirely in that tail is not raised again.
  */
 import { DETECTION_TUNING } from "../../entities/detection-tuning";
 import type { Entity } from "../../entities/index";
@@ -81,11 +82,23 @@ export class RuntimeDetectionLoop {
 
   private detectEntities(transcript: string, newText: string): Entity[] {
     const carried = this.previousDetectionContext;
-    const detectionInput = carried.trim() ? `${carried} ${newText}` : newText;
-    const detectedEntities = this.detector?.detect(detectionInput) ?? [];
+    const hasCarry = carried.trim().length > 0;
+    const detectionInput = hasCarry ? `${carried} ${newText}` : newText;
+    const newSpeechStart = hasCarry ? carried.length + 1 : 0;
+    const detectedEntities = this.matchesEndingInNewSpeech(detectionInput, newSpeechStart);
     this.processedTranscriptLength = transcript.length;
     this.previousDetectionContext = transcript.slice(-DETECTION_TUNING.carryOverChars);
     return detectedEntities;
+  }
+
+  private matchesEndingInNewSpeech(detectionInput: string, newSpeechStart: number): Entity[] {
+    const detector = this.detector;
+    if (!detector) return [];
+    if (!detector.locate) return detector.detect(detectionInput);
+    return detector
+      .locate(detectionInput)
+      .filter((match) => match.end > newSpeechStart)
+      .map((match) => match.entity);
   }
 
   /**

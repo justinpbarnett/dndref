@@ -24,7 +24,9 @@
  * unlike the fuzzy path nothing filters short words out first: dropping them
  * would break every name built from them, like "Swords to Plowshares".
  */
-import { Entity, EntityIndex, TranscriptMatcher } from "./index";
+import { alignExactEnds } from "./match-end";
+
+import { DetectionMatch, Entity, EntityIndex, TranscriptMatcher } from "./index";
 
 /**
  * The one spelling both sides of the comparison are reduced to.
@@ -47,7 +49,7 @@ const normalize = (text: string): string =>
 
 const wordCount = (name: string): number => name.split(" ").length;
 
-export function exactDetection(entities: EntityIndex): TranscriptMatcher {
+export function locateExact(entities: EntityIndex): (transcript: string) => DetectionMatch[] {
   // Names are laid down before any alias, and neither overwrites a term already
   // claimed, so a word that is one entity's real name always resolves to that
   // entity rather than to whichever other entity happens to nickname it.
@@ -64,13 +66,17 @@ export function exactDetection(entities: EntityIndex): TranscriptMatcher {
 
   return (transcript) => {
     const words = normalize(transcript).split(" ").filter(Boolean);
-    const found = new Map<string, Entity>();
+    const ends = alignExactEnds(transcript, words);
+    const found = new Map<string, DetectionMatch>();
 
     for (let i = 0; i < words.length; i++) {
       for (let width = Math.min(longestName, words.length - i); width >= 1; width--) {
         const hit = byName.get(words.slice(i, i + width).join(" "));
         if (!hit) continue;
-        found.set(hit.id, hit);
+        const end = ends[i + width - 1];
+        const existing = found.get(hit.id);
+        if (!existing) found.set(hit.id, { entity: hit, end });
+        else if (end > existing.end) found.set(hit.id, { entity: existing.entity, end });
         i += width - 1;
         break;
       }
@@ -78,4 +84,9 @@ export function exactDetection(entities: EntityIndex): TranscriptMatcher {
 
     return [...found.values()];
   };
+}
+
+export function exactDetection(entities: EntityIndex): TranscriptMatcher {
+  const locate = locateExact(entities);
+  return (transcript) => locate(transcript).map((match) => match.entity);
 }
