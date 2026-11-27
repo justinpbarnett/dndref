@@ -5,6 +5,7 @@ export type Entity = Record<"id" | "name" | "summary", string> & {
   aliases: string[];
   details?: string;
   image?: string;
+  catalog?: boolean;
 };
 
 export type EntityIndex = Entity[];

@@ -3,9 +3,10 @@
  *
  * These numbers only make sense against each other, so they are stated once,
  * together: a looser `maxEditRatio` needs a longer `minFuzzyChars` to stay
- * quiet, and `carryOverChars` only matters because `intervalMs` cuts the
- * transcript into passes that a spoken name can straddle. Tuning detection
- * means editing this file and nothing else.
+ * quiet, `shortNameMaxEdits` is the whole budget below that length, and
+ * `carryOverChars` only matters because `intervalMs` cuts the transcript into
+ * passes that a spoken name can straddle. Tuning detection means editing this
+ * file. Whether a spoken word is English consults `common-words.ts`.
  *
  * All of it governs fuzzy matching, which is how the app matches by default.
  * A ruleset that asks for exact matching takes none of these: exact matching
@@ -23,11 +24,19 @@ export const DETECTION_TUNING = {
   minWordChars: 4,
 
   /**
-   * A word shorter than this is matched whole or not at all. One edit of a
-   * four-letter word is another word ("mage" / "make"), so misspellings start
-   * here.
+   * Below this length a name from the table's own notes may take a
+   * `shortNameMaxEdits` edit, and only when the spoken word is not English.
+   * The SRD catalog is standard spelling and takes none of that edit.
    */
   minFuzzyChars: 6,
+
+  /**
+   * Edits a notes name shorter than `minFuzzyChars` may absorb when the
+   * spoken word is not in `common-words.ts`: one substitution, one doubled
+   * letter, or one dropped letter. The first letter still has to agree.
+   * A dropped letter that leaves fewer than `minWordChars` is never searched.
+   */
+  shortNameMaxEdits: 1,
 
   /**
    * How much of a word a misspelling may change. One edit in five letters.
@@ -96,12 +105,16 @@ export const DETECTION_TUNING = {
   ],
 
   /**
-   * A one-word alias, or an article plus one word, does not fire when that
-   * word is ordinary speech. "the order" is not The Dawnwarden Order, and
-   * "compact" is not The Obsidian Compact. A proper name ("Malachar") and a
-   * multi-word alias ("Dawnwarden Order", "grey mage") still match. Catalog
-   * names that happen to be ordinary words (Solar, Noble, Scout, Pony) are
-   * names, not aliases, and are left alone.
+   * A one-word alias, or an article plus one word, built from these is ordinary
+   * speech. It does not fire when the word was cut from the entity's own title
+   * ("order" from The Dawnwarden Order, "compact" from The Obsidian Compact).
+   * `genuineOrdinaryAlias` is the exception, and case does not matter: the notes
+   * wrote a determiner plus one of these words, and that word is not in the
+   * title ("the order" or "the Order" for a faction headed something else).
+   * The article stays on the phrase, so the bare word still does not match.
+   * A proper name ("Malachar") and a multi-word alias ("Dawnwarden Order",
+   * "grey mage") still match. Catalog names that happen to be ordinary words
+   * (Solar, Noble, Scout, Pony) are names, not aliases, and are left alone.
    */
   ordinaryAliasWords: [
     "blade",
@@ -122,3 +135,23 @@ export const DETECTION_TUNING = {
    */
   carryOverChars: 80,
 } as const;
+
+const articles = new Set<string>(DETECTION_TUNING.articles);
+const ordinaryAliasWords = new Set<string>(DETECTION_TUNING.ordinaryAliasWords);
+
+const wordTokens = (text: string): string[] =>
+  text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/['\u2019]/g, "")
+    .split(/[^A-Za-z]+/)
+    .filter(Boolean);
+
+export function genuineOrdinaryAlias(alias: string, entityName: string): string | null {
+  const tokens = wordTokens(alias);
+  if (tokens.length !== 2 || !articles.has(tokens[0].toLowerCase())) return null;
+  const word = tokens[1].toLowerCase();
+  if (!ordinaryAliasWords.has(word)) return null;
+  if (wordTokens(entityName).some((token) => token.toLowerCase() === word)) return null;
+  return `${tokens[0].toLowerCase()} ${word}`;
+}

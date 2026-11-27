@@ -37,7 +37,7 @@ export class SRDProvider implements WorldDataProvider {
   async load(): Promise<EntityIndex> {
     if (this.sources.length === 0) return [];
     const cacheSession = openAppData();
-    const cacheKey = `${SRD_CACHE_KEY_PREFIX}v3-${[...this.sources].sort().join(",")}`;
+    const cacheKey = `${SRD_CACHE_KEY_PREFIX}v4-${[...this.sources].sort().join(",")}`;
     const cached = await loadCache(cacheKey, cacheSession);
     if (cached) return cached;
 

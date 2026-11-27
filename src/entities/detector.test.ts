@@ -1,6 +1,7 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 
 import { EntityDetector } from "./detector";
+import { ingestMarkdownContent } from "./ingestion";
 
 import { slugify, normalizeEntityType, EntityType } from "./index";
 
@@ -89,6 +90,150 @@ describe("EntityDetector", () => {
         "Gimble Lock",
       );
     });
+  });
+});
+
+describe("custom world names", () => {
+  const notes = `
+# The Dawnwarden Order
+**Type:** Faction
+**Aliases:** the Order, Dawnwardens
+
+# The Quiet Houses
+**Type:** Faction
+**Aliases:** the order, The Ruins
+
+# The Hidden Court
+**Type:** Faction
+**Aliases:** the Order
+
+The city never uses the long name.
+
+# Gorm
+**Type:** NPC
+
+# Zythe
+**Type:** NPC
+`;
+  const detector = new EntityDetector(ingestMarkdownContent(notes));
+  const names = (transcript: string) => detector.detect(transcript).map((entity) => entity.name).sort();
+
+  it("hears a determiner alias in either case when the word is not in the title", () => {
+    expect(names("the order")).toEqual(["The Hidden Court", "The Quiet Houses"]);
+    expect(names("word came from the order")).toEqual(["The Hidden Court", "The Quiet Houses"]);
+    expect(names("the ruins")).toEqual(["The Quiet Houses"]);
+    expect(names("the ruins below")).toEqual(["The Quiet Houses"]);
+  });
+
+  it("hears a faction whose heading is that proper name", () => {
+    const named = new EntityDetector(
+      ingestMarkdownContent(`
+# The Order
+**Type:** Faction
+`),
+    );
+    expect(named.detect("the order").map((entity) => entity.name)).toEqual(["The Order"]);
+    expect(named.detect("we joined the order").map((entity) => entity.name)).toEqual(["The Order"]);
+  });
+
+  it("stays silent when the word was cut from the title", () => {
+    expect(names("the order")).not.toContain("The Dawnwarden Order");
+    expect(names("Dawnwardens")).toEqual(["The Dawnwarden Order"]);
+  });
+
+  it.each([
+    "order",
+    "I want to order another round",
+    "keep the formation compact",
+    "The crown of the hill is bare",
+    "A blade of grass is stuck to the grey cloak",
+    "make",
+    "germ",
+    "gore",
+    "gory",
+    "form",
+    "card",
+    "yard",
+  ])("does not raise a card for the everyday wording %s", (transcript) => {
+    expect(names(transcript)).toEqual([]);
+  });
+
+  it.each([
+    ["Gorn", "Gorm"],
+    ["Gormm", "Gorm"],
+    ["Goorm", "Gorm"],
+    ["Zyth", "Zythe"],
+    ["Zythee", "Zythe"],
+    ["Zyghe", "Zythe"],
+  ])("hears the misheard short name %s as %s", (transcript, expected) => {
+    expect(names(transcript)).toEqual([expected]);
+  });
+
+  it("does not spend a trailing s on a short name", () => {
+    expect(names("Gorms")).toEqual([]);
+  });
+});
+
+describe("short custom names", () => {
+  const detector = new EntityDetector(
+    ingestMarkdownContent(`
+# Gorm
+**Type:** NPC
+
+# Kael
+**Type:** NPC
+
+# Vex
+**Type:** NPC
+
+# Lira
+**Type:** NPC
+
+# Tor
+**Type:** NPC
+
+# Bryn
+**Type:** NPC
+
+# Mira
+**Type:** NPC
+`),
+  );
+  const names = (transcript: string) => detector.detect(transcript).map((entity) => entity.name).sort();
+
+  it.each([
+    "she wore a grey cloak",
+    "tie the ropes and climb",
+    "play the harp",
+    "hardy folk",
+    "don't drown the captive",
+    "ogle",
+    "lama",
+    "kale",
+    "keel",
+    "mire",
+    "liar",
+    "lire",
+    "bran",
+  ])("stays silent for %s", (transcript) => {
+    expect(names(transcript)).toEqual([]);
+  });
+
+  it.each(["Gorn", "gormm", "goorm"])("hears %s as Gorm", (transcript) => {
+    expect(names(transcript)).toEqual(["Gorm"]);
+  });
+});
+
+describe("catalog spellings", () => {
+  const worg = { id: "worg", name: "Worg", type: "NPC" as EntityType, aliases: [], summary: "" };
+
+  it("one-edits a notes name and not the same spelling from the catalog", () => {
+    const notes = new EntityDetector([worg]);
+    const catalog = new EntityDetector([{ ...worg, id: "srd-worg", catalog: true }]);
+    expect(notes.detect("worb").map((entity) => entity.name)).toEqual(["Worg"]);
+    expect(notes.detect("wore")).toEqual([]);
+    expect(catalog.detect("worb")).toEqual([]);
+    expect(catalog.detect("worg").map((entity) => entity.name)).toEqual(["Worg"]);
   });
 });
 

@@ -9,6 +9,7 @@ export type NormalizeIngestedEntityOptions = {
   idPrefix?: string;
   idNamespace?: string | number;
   index?: number;
+  catalog?: boolean;
 };
 
 export function normalizeIngestedEntity(
@@ -31,6 +32,8 @@ export function normalizeIngestedEntity(
 
   const image = normalizeNonEmptyString(record.image);
   if (image) entity.image = image;
+
+  if (options.catalog) entity.catalog = true;
 
   return entity;
 }
