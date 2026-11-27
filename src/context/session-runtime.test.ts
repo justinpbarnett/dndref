@@ -247,6 +247,27 @@ describe("SessionRuntime", () => {
     await vi.waitFor(() => expect(asked).toEqual([["Lightning Bolt"]]));
   });
 
+  it("holds speech that arrives after a ruleset switch until the new detector is installed", () => {
+    const valdrath = makeEntity("valdrath", "Valdrath the Undying");
+    const detector = new FakeDetector((input) => (input.includes("Valdrath") ? [valdrath] : []));
+    const runtime = new SessionRuntime();
+
+    runtime.setDetector(detector);
+    runtime.activate();
+    runtime.appendTranscript("hello there");
+    runtime.processTranscript();
+    expect(runtime.getSnapshot().cards).toEqual([]);
+
+    runtime.clearCards();
+    runtime.appendTranscript("Valdrath watches from the throne");
+    runtime.processTranscript();
+    expect(runtime.getSnapshot().cards).toEqual([]);
+
+    runtime.setDetector(detector);
+    runtime.processTranscript();
+    expect(runtime.getSnapshot().cards.map((card) => card.entity.name)).toEqual(["Valdrath the Undying"]);
+  });
+
   it("empties the stack when the table switches game, without stopping the session", () => {
     const valdrath = makeEntity("valdrath", "Valdrath the Undying");
     const runtime = new SessionRuntime();

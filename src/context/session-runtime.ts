@@ -68,7 +68,10 @@ export class SessionRuntime extends SnapshotStore<SessionRuntimeSnapshot> {
   pin = (instanceId: string): void => this.cardActions.pin(instanceId);
   unpin = (instanceId: string): void => this.cardActions.unpin(instanceId);
   dismiss = (instanceId: string): void => this.cardActions.dismiss(instanceId);
-  clearCards = (): void => this.cardActions.clear();
+  clearCards = (): void => {
+    this.setDetector(null);
+    this.cardActions.clear();
+  };
 
   private setSessionActive(patch: SnapshotPatch = {}): void {
     this.detectionLoop.activate();
