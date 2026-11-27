@@ -18,6 +18,8 @@ export type WorldDataProvider = { readonly name: string; load(): Promise<EntityI
  */
 export type TranscriptMatcher = (transcript: string) => Entity[];
 
+export type DetectionMatch = { entity: Entity; end: number };
+
 export const slugify = (name: string): string =>
   name
     .toLowerCase()
