@@ -61,8 +61,9 @@ const splitAliasString = (value: string): string[] =>
     .filter(Boolean);
 
 function normalizeSummary(summary: unknown, description: unknown): string {
-  const value = typeof summary === "string" ? summary : description;
-  return typeof value === "string" ? value.trim() : "";
+  const fromSummary = typeof summary === "string" ? summary.trim() : "";
+  if (fromSummary) return fromSummary;
+  return typeof description === "string" ? description.trim() : "";
 }
 
 const buildEntityId = (name: string, options: NormalizeIngestedEntityOptions): string =>

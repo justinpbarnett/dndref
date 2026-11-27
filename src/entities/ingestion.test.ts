@@ -46,6 +46,18 @@ describe("world data ingestion", () => {
     });
   });
 
+  it("uses the description when the summary is blank", () => {
+    expect(
+      normalizeIngestedEntity({ name: "Zyxqor", type: "NPC", summary: "", description: "A singular villain." }),
+    ).toMatchObject({ summary: "A singular villain." });
+    expect(
+      normalizeIngestedEntity({ name: "Zyxqor", summary: "   ", description: "  A singular villain.  " }),
+    ).toMatchObject({ summary: "A singular villain." });
+    expect(normalizeIngestedEntity({ name: "Zyxqor", summary: "Kept.", description: "Ignored." })).toMatchObject({
+      summary: "Kept.",
+    });
+  });
+
   it("drops records no world source could name", () => {
     expect(ingestEntityRecords([null, { name: "  " }, "text", { name: "Lord Ember" }, { type: "NPC" }])).toEqual([
       { id: "lord-ember-0", name: "Lord Ember", type: "Unknown", aliases: [], summary: "" },
