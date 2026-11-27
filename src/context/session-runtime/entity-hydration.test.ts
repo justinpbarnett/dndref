@@ -147,6 +147,45 @@ describe("RuntimeEntityHydration", () => {
     expect(hydrate.calls).toHaveLength(1);
   });
 
+  it("drops an answer that arrives after the hydrator is replaced", async () => {
+    const table = harness();
+    const bolt = named("Lightning Bolt");
+    let finish!: (entities: Entity[]) => void;
+    table.hydration.setHydrator(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    table.deal(bolt);
+
+    const pending = table.hydration.fill([bolt]);
+    table.hydration.setHydrator(async () => []);
+    finish([{ ...bolt, summary: "STALE FROM OLD WORLD" }]);
+    await pending;
+
+    expect(table.summaryOf("Lightning Bolt")).toBe("");
+  });
+
+  it("keeps an in-flight answer when the same hydrator is set again", async () => {
+    const table = harness();
+    const bolt = named("Lightning Bolt");
+    let finish!: (entities: Entity[]) => void;
+    const hydrate: EntityHydrator = () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      });
+    table.hydration.setHydrator(hydrate);
+    table.deal(bolt);
+
+    const pending = table.hydration.fill([bolt]);
+    table.hydration.setHydrator(hydrate);
+    finish([{ ...bolt, summary: "Deals 3 damage." }]);
+    await pending;
+
+    expect(table.summaryOf("Lightning Bolt")).toBe("Deals 3 damage.");
+  });
+
   it("forgets what it learned when the world changes", async () => {
     const table = harness();
     const bolt = named("Lightning Bolt");

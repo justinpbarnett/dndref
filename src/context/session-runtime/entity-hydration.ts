@@ -29,6 +29,7 @@ type RuntimeEntityHydrationOptions = {
 
 export class RuntimeEntityHydration {
   private hydrate: EntityHydrator | null = null;
+  private generation = 0;
   private readonly filled = new Map<string, Entity>();
   private readonly asked = new Set<string>();
 
@@ -36,13 +37,16 @@ export class RuntimeEntityHydration {
 
   /** A new hydrator means a new world, so nothing learned about the old one carries over. */
   setHydrator = (hydrate: EntityHydrator | null): void => {
+    if (hydrate === this.hydrate) return;
     this.hydrate = hydrate;
     this.filled.clear();
     this.asked.clear();
+    this.generation += 1;
   };
 
   async fill(entities: Entity[]): Promise<void> {
     const hydrate = this.hydrate;
+    const generation = this.generation;
     if (!hydrate) return;
 
     this.applyToCards();
@@ -55,6 +59,7 @@ export class RuntimeEntityHydration {
     try {
       hydrated = await hydrate(wanted);
     } catch (e) {
+      if (generation !== this.generation) return;
       // Let a later pass try again: the table is still running, and the next
       // time one of these names is said the network may be back.
       for (const entity of wanted) this.asked.delete(entity.id);
@@ -62,6 +67,7 @@ export class RuntimeEntityHydration {
       return;
     }
 
+    if (generation !== this.generation) return;
     for (const entity of hydrated) if (entity.summary) this.filled.set(entity.id, entity);
     this.applyToCards();
   }
