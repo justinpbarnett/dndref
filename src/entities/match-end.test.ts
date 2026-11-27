@@ -30,4 +30,11 @@ describe("match ends", () => {
   it("gives up the ends rather than a different word list", () => {
     expect(alignSpokenEnds("Valdrath", ["nope"])).toEqual([8]);
   });
+
+  it("keeps a Latin word's end when a capital sigma is the only fold difference", () => {
+    const line = "Valdrath \u039a\u039f\u03a3\u039c\u039f\u03a3";
+    expect(alignSpokenEnds(line, ["valdrath"])).toEqual([8]);
+    expect(alignExactEnds(line, ["valdrath"])).toEqual([8]);
+    expect(alignSpokenEnds("\u039a\u039f\u03a3\u039c\u039f\u03a3 Valdrath", ["valdrath"])).toEqual([15]);
+  });
 });

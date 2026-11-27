@@ -60,22 +60,25 @@ function sameWords(left: string[], right: string[]): boolean {
   return left.length === right.length && left.every((word, index) => word === right[index]);
 }
 
+const sameFold = (left: string, right: string): boolean =>
+  left.replace(/\u03c2/g, "\u03c3") === right.replace(/\u03c2/g, "\u03c3");
+
 const unmatched = (text: string, words: string[]): number[] => words.map(() => text.length);
 
 export function alignSpokenEnds(text: string, words: string[]): number[] {
   const base = folded(text);
   const mapped = mapFolded(text);
-  if (mapped.text !== base) return unmatched(text, words);
+  if (!sameFold(mapped.text, base)) return unmatched(text, words);
   const withBonus = applyBonus(mapped);
   const canonical = base.replace(new RegExp(DETECTION_TUNING.bonusSuffix, "gi"), " ");
-  if (withBonus.text !== canonical) return unmatched(text, words);
+  if (!sameFold(withBonus.text, canonical)) return unmatched(text, words);
   const aligned = wordsOf(withBonus, /[a-z]+/g);
   return sameWords(aligned.words, words) ? aligned.ends : unmatched(text, words);
 }
 
 export function alignExactEnds(text: string, words: string[]): number[] {
   const mapped = mapFolded(text);
-  if (mapped.text !== folded(text)) return unmatched(text, words);
+  if (!sameFold(mapped.text, folded(text))) return unmatched(text, words);
   const aligned = wordsOf(mapped, /[a-z0-9]+/g);
   return sameWords(aligned.words, words) ? aligned.ends : unmatched(text, words);
 }

@@ -79,6 +79,23 @@ describe("carry-over does not revive a match that ended before the new speech", 
     expect(cardNames(runtime)).toEqual(["Valdrath the Undying"]);
   });
 
+  it("keeps a dismissed tail-only name dismissed when the next line contains a capital sigma", () => {
+    const kosmos = "\u039a\u039f\u03a3\u039c\u039f\u03a3";
+    const detector = new EntityDetector([valdrath]);
+    const runtime = listening(detector);
+
+    runtime.appendTranscript("Valdrath watches from the throne");
+    runtime.processTranscript();
+    runtime.dismiss(runtime.getSnapshot().cards[0].instanceId);
+    runtime.appendTranscript(`okay ${kosmos} what do we do next`);
+    runtime.processTranscript();
+    expect(cardNames(runtime)).toEqual([]);
+
+    expect(detector.detect(`Valdrath watches ${kosmos} from the throne`).map((hit) => hit.name)).toEqual(
+      detector.detect("Valdrath watches from the throne").map((hit) => hit.name),
+    );
+  });
+
   it("keeps a dismissed exact-match card dismissed until the name is spoken again", () => {
     const bolt = entity("bolt", "Lightning Bolt");
     const runtime = listening(new EntityDetector([bolt], "exact"));
